@@ -1,0 +1,163 @@
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="rest-data-provider">
+  <script>
+    Polymer({
+      is: 'rest-data-provider',
+
+      properties: {
+
+        loading: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        delay: {
+          type: Number,
+          value: 100
+        },
+
+        count: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+
+        received: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+
+        url: {
+          type: String
+        },
+
+        colmap: {
+          type: Object,
+          value: function() {
+            return {}
+          }
+        },
+
+        columns: {
+          type: Array,
+          notify: true
+        },
+
+        frozen: {
+          type: Array,
+          value: function() { return [] }
+        },
+
+        itemMap: {
+          type: Object,
+          value: function() { return {} },
+          notify: true
+        },
+
+        primaryFieldName: {
+          type: String,
+          value: "id"
+        },
+
+        timeseries: {
+          type: Boolean,
+          value: false
+        },
+
+        stop: {
+          type: Number,
+          value: 0
+        },
+
+        filter: {
+          type: String
+        },
+
+        dataProvider: {
+          notify: true,
+        }
+      },
+
+      observers: [
+        '_computeDataProvider(filter)'
+      ],
+
+      _computeDataProvider: function(filter) {
+          var _this = this;
+          this.set('dataProvider', function(opts, callback) {
+              console.log('dataProvider', opts, callback, _this.url, _this.sortOrders, this);
+              if (!opts.page){
+                _this.count = 0;
+                _this.received = 0;
+              }
+              var xhr = new XMLHttpRequest();
+              var url = _this.url + '?';
+              url += 'limit=' + opts.pageSize + '&';
+              if (!_this.timeseries) {
+                  url += 'start=' + (opts.page * opts.pageSize) + '&';
+              } else if (_this.stop) {
+                  url += 'stop=' + Math.floor(_this.stop) + '&';
+              }
+              if (_this.filter) {
+                  url += 'filter=' + encodeURIComponent(_this.filter);
+                  console.log('filter', _this.filter);
+              }
+              if (opts.sortOrders && opts.sortOrders.length)
+                  url += 'order=' + encodeURIComponent(opts.sortOrders.map(function(b){ return (b.direction=='desc'?'-':'') + b.path}))
+              if (opts.page == 0)
+                  _this.set('received', 0);
+              xhr.open('GET', url);
+
+              xhr.onreadystatechange = function() {
+                  if( xhr.readyState === 4 && xhr.status === 200 ) {
+                      var response = JSON.parse(xhr.responseText), items;
+                      if (!_this.timeseries){
+                        _this.count = response.count;
+                        items = response.items;
+                      } else {
+                        items = response;
+                        if (items.length < opts.pageSize)
+                            _this.count += items.length;
+                        else
+                            _this.count += items.length;
+                      }
+                      _this.received += items.length;
+                      if (items.length){
+                          // update column map using response.items values
+                          items.forEach(function(i){
+                              _this.itemMap[i[_this.primaryFieldName]] = i;
+                              Object.keys(i).forEach(function(k){
+                                  _this.colmap[k] = true;
+                              });
+                          });
+                          _this.set('received', Object.keys(_this.itemMap).length);
+                          // Compute columns list from colmap, removing frozen columns
+                          var cols = Object.keys(_this.colmap);
+                          _this.frozen.forEach(function(f){
+                              if (cols.indexOf(f) > -1)
+                                  cols.splice(cols.indexOf(f), 1);
+                          });
+                          _this.set('columns', cols);
+                          if (_this.timeseries && items.length == opts.pageSize){
+                              _this.set('stop', items[items.length-1][_this.primaryFieldName])
+                              console.log('setting stop to', items[items.length-1][_this.primaryFieldName])
+                          } else if (_this.timeseries && items.length < opts.pageSize) {
+                              _this.count = _this.received;
+                          }
+                      }
+                      callback(items);
+                  }
+                  _this.loading = false;
+              };
+
+              xhr.send();
+              _this.loading = true;
+          });
+      }
+    });
+  </script>
+</dom-module>
