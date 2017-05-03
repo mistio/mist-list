@@ -4,7 +4,7 @@
   "main": "mist-list.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "vaadin-grid": "2.1-polymer-2",
+    "vaadin-grid": "2.0.1",
     "moment": "^2.18.1",
     "paper-menu-button": "^1.5.2",
     "paper-input": "^1.1.24",
