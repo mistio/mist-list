@@ -418,6 +418,13 @@ Polymer({
     },
 
     _getTitle: function(column) {
+        if (this.renderers[column] && this.renderers[column].title) {
+            if (typeof this.renderers[column].title == 'function')
+                return this.renderers[column].title();
+            else
+                return this.renderers[column].title;
+        }
+
         return column;
     },
 
