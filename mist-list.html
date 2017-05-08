@@ -431,7 +431,7 @@ Polymer({
     _getBody: function(column, item) {
         if (item) {
             if (this.renderers[column])
-                return this.renderers[column].body(item[column]);
+                return this.renderers[column].body(item[column], item);
             if (typeof(item[column]) == 'undefined') return '';
             if (typeof(item[column]) == 'string')
                 return item[column];
