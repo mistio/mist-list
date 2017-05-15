@@ -19,7 +19,7 @@
 <dom-module id="mist-list">
     <template>
         <style is="custom-style">
-            :host {
+             :host {
                 height: 100%
             }
 
@@ -89,94 +89,95 @@
             }
 
 
-          vaadin-grid .details {
-              display: block;
-              font-family: monospace;
-              overflow: scroll;
-              height: 266px;
-              margin: 0 16px;
-          }
+            vaadin-grid .details {
+                display: block;
+                font-family: monospace;
+                overflow: scroll;
+                height: 266px;
+                margin: 0 16px;
+            }
 
-          vaadin-grid .details table {
-              position: inherit;
-              padding-left: 0px;
-              overflow: scroll;
-              border-spacing: 0px;
-          }
-          vaadin-grid .details table tbody {
-              border-top: 1px solid #dbdbdb;
-              border-bottom: 1px solid #dbdbdb;
-              margin-top: 2px;
-              margin-bottom: 2px;
-          }
-          vaadin-grid .details table tr.keys {
-              display: none;
-          }
-          vaadin-grid .details td.key {
-              font-weight: bold;
-              min-width: 155px;
-              border-right: 1px solid #dbdbdb;
-              padding: 3px 16px 3px 30px;
-              text-align: right;
-          }
+            vaadin-grid .details table {
+                position: inherit;
+                padding-left: 0px;
+                overflow: scroll;
+                border-spacing: 0px;
+            }
 
-          vaadin-grid .details td.value {
-              padding-left: 8px;
-              white-space: pre-wrap;
-              text-align: left;
-          }
+            vaadin-grid .details table tbody {
+                border-top: 1px solid #dbdbdb;
+                border-bottom: 1px solid #dbdbdb;
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
 
-          vaadin-grid-sorter, span.header {
-              text-transform: uppercase;
-          }
+            vaadin-grid .details table tr.keys {
+                display: none;
+            }
 
-          paper-input {
-              display: inline-block;
-              margin-left: 16px;
-              width: 100%;
-          }
+            vaadin-grid .details td.key {
+                font-weight: bold;
+                min-width: 155px;
+                border-right: 1px solid #dbdbdb;
+                padding: 3px 16px 3px 30px;
+                text-align: right;
+            }
 
-          div#actions {
-              background-color: #424242;
-              z-index: 3;
-              position: absolute;
-              padding: 10px 16px;
-              right: 40px;
-              left: 25px;
-              width: auto;
-          }
+            vaadin-grid .details td.value {
+                padding-left: 8px;
+                white-space: pre-wrap;
+                text-align: left;
+            }
 
-          paper-toolbar {
-              --paper-toolbar-background: #fff;
-              color: #000;
-          }
+            vaadin-grid-sorter,
+            span.header {
+                text-transform: uppercase;
+            }
 
-          span.title {
-              margin-left: 16px !important;
-              overflow: visible !important;
-              text-transform: capitalize;
-          }
+            paper-input {
+                display: inline-block;
+                margin-left: 16px;
+                width: 100%;
+            }
 
-          span.count {
-              font-size: 12px;
-          }
+            div#actions {
+                background-color: #424242;
+                z-index: 3;
+                position: absolute;
+                padding: 10px 16px;
+                right: 0px;
+                left: 0px;
+                width: auto;
+            }
+
+            paper-toolbar {
+                --paper-toolbar-background: #fff;
+                color: #000;
+            }
+
+            span.title {
+                margin-left: 16px !important;
+                overflow: visible !important;
+                text-transform: capitalize;
+            }
+
+            span.count {
+                font-size: 12px;
+            }
         </style>
-        <rest-data-provider url="[[apiurl]]" data-provider="{{dataProvider}}" 
-            loading="{{_loading}}" count={{count}} received={{received}}
-            columns={{columns}} frozen=[[frozen]]
-            item-map={{itemMap}}
-            primary-field-name="[[primaryFieldName]]"
-            timeseries=[[timeseries]]
-            filter="[[filter]]"></rest-data-provider>
-
+        <template is="dom-if" restamp if="[[apiurl]]">
+            <rest-data-provider url="[[apiurl]]" data-provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
+                columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
+                filter="[[filter]]"></rest-data-provider>
+        </template>
         <paper-toolbar>
             <paper-icon-button icon="manage-icons:menu" drawer-toggle on-tap="_toggleDrawer"></paper-icon-button>
             <span class="count" hidden$=[[timeseries]]>
-                <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
-            </span>
+                    <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
+                </span>
             <span class="title">
-                [[name]]
-            </span>
+                    [[name]]
+                </span>
             <paper-input hidden>
             </paper-input>
             <paper-menu-button ignore-select horizontal-align="right">
@@ -198,50 +199,52 @@
         <vaadin-context-menu open-on="contextmenu">
             <template>
                 <paper-menu>
-                <paper-item on-tap="_add">Add</paper-item>
-                <template is="dom-if" if="[[_isGridBody(detail)]]">
-                    <paper-item detail="[[detail]]" on-tap="_remove">Remove</paper-item>
-                </template>
+                    <paper-item on-tap="_add">Add</paper-item>
+                    <template is="dom-if" if="[[_isGridBody(detail)]]">
+                        <paper-item detail="[[detail]]" on-tap="_remove">Remove</paper-item>
+                    </template>
                 </paper-menu>
             </template>
         </vaadin-context-menu>
 
-        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
+        <vaadin-grid id="grid" items="[[items]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
+            on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <template class="row-details">
-            <div class="details-cell">
-                <div class="details">
-                    <table>
-                    <tbody>
-                        <template is="dom-repeat" items="{{_itemKeys(item)}}" as="i">
-                        <tr class$="[[i.key]]">
-                            <td class="key">[[i]]</td>
-                            <td class="value">[[_getRawBody(i, item)]]</td>
-                        </tr>
-                        </template>
-                    </tbody>
-                    </table>
+                <div class="details-cell">
+                    <div class="details">
+                        <table>
+                            <tbody>
+                                <template is="dom-repeat" items="{{_itemKeys(item)}}" as="i">
+                                    <tr class$="[[i.key]]">
+                                        <td class="key">[[i]]</td>
+                                        <td class="value">[[_getRawBody(i, item)]]</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             </template>
             <vaadin-grid-column hidden>
                 <vaadin-grid-filter path="*" value=[[filter]] hidden></vaadin-grid-filter>
             </vaadin-grid-column>
             <template is="dom-if" if="[[selectable]]" restamp>
-            <vaadin-grid-column width="54px" flex-grow="0" frozen style="overflow: visible">
-                <template class="header">
-                    <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
-                </template>
-                <template>
-                    <mist-check selected="{{selected}}" select-all="[[selectAll]]"></mist-check>
-                </template>
-            </vaadin-grid-column>
+                <vaadin-grid-column width="54px" flex-grow="0" frozen style="overflow: visible">
+                    <template class="header">
+                        <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
+                    </template>
+                    <template>
+                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"></mist-check>
+                    </template>
+                </vaadin-grid-column>
             </template>
             <template is="dom-if" if="[[expands]]" restamp>
                 <vaadin-grid-column width="50px" flex-grow="0" frozen style="overflow: visible">
                     <template class="header">
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(expanded)]]; margin-left: -8px;" toggles active="{{expanded}}" id="btn-[[_computeId(item)]]"></paper-icon-button>
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(expanded)]]; margin-left: -8px;" toggles active="{{expanded}}"
+                            id="btn-[[_computeId(item)]]"></paper-icon-button>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -251,7 +254,9 @@
                         <vaadin-grid-sorter path="[[column]]" style="z-index: 1 !important" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
-                    <template><div inner-h-t-m-l="[[_getBody(column, item)]]"></div></template>
+                    <template>
+                        <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                    </template>
                 </vaadin-grid-column>
             </template>
 
@@ -261,18 +266,22 @@
                         <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
-                    <template><div inner-h-t-m-l="[[_getBody(column, item)]]"></div></template>
+                    <template>
+                        <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                    </template>
                 </vaadin-grid-column>
             </template>
 
-            <template is="dom-if" if="{{!visible.length}}" restamp>
+            <template is="dom-if" if="[[!visible.length]]" restamp>
                 <template is="dom-repeat" items="[[columns]]" as="column">
                     <vaadin-grid-column resizable>
                         <template class="header">
                             <vaadin-grid-sorter path="[[column]]" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                         </template>
-                        <template><div inner-h-t-m-l="[[_getBody(column, item)]]"></div></template>
+                        <template>
+                            <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                        </template>
                     </vaadin-grid-column>
                 </template>
             </template>
@@ -281,259 +290,304 @@
 </dom-module>
 
 <script>
-Polymer({
-    is: 'mist-list',
-    properties: {
-        apiurl: {
-            type: String
-        },
+    Polymer({
+        is: 'mist-list',
+        properties: {
+            apiurl: {
+                type: String
+            },
 
-        count: {
-            type: Number
-        },
+            items: {
+                type: Array,
+            },
 
-        columns: {
-            type: Array,
-            value: function() { return [] }
-        },
+            count: {
+                type: Number
+            },
 
-        frozen: {
-            type: Array,
-            value: function() { return [] }
-        },
+            columns: {
+                type: Array,
+                value: function() {
+                    return []
+                }
+            },
 
-        visible: {
-            type: Array,
-            value: function() { return [] }
-        },
+            colmap: {
+                type: Object,
+                value: function() {
+                    return {}
+                }
+            },
 
-        renderers: {
-            type: Object,
-            value: function() { return {} }
-        },
+            frozen: {
+                type: Array,
+                value: function() {
+                    return []
+                }
+            },
 
-        selectedItems: {
-            type: Array,
-            value: function() { return [] },
-            observer: 'selectedItemsChanged',
-            notify: true
-        },
+            visible: {
+                type: Array
+            },
 
-        selectAll: {
-            type: Boolean
-        },
+            renderers: {
+                type: Object,
+                value: function() {
+                    return {}
+                }
+            },
 
-        primaryFieldName: {
-            type: String,
-            value: "id"
-        },
+            selectedItems: {
+                type: Array,
+                value: function() {
+                    return []
+                },
+                observer: 'selectedItemsChanged',
+                notify: true
+            },
 
-        sortOrder: {
-            type: Array,
-            value: function() { return []; }
-        },
+            selectAll: {
+                type: Boolean
+            },
 
-        multiSort: {
-            type: Boolean,
-            value: false
-        },
+            primaryFieldName: {
+                type: String,
+                value: "id"
+            },
 
-        route: {
-            type: Object
-        },
+            sortOrder: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
 
-        expands: {
-            type: Boolean,
-            value: false
-        },
+            multiSort: {
+                type: Boolean,
+                value: false
+            },
 
-        itemMap: {
-            type: Object,
-            notify: true
-        },
+            route: {
+                type: Object
+            },
 
-        timeseries: {
-            type: Boolean,
-            value: false
-        },
+            expands: {
+                type: Boolean,
+                value: false
+            },
 
-        selectable: {
-            type: Boolean,
-            value: false
-        },
+            itemMap: {
+                type: Object,
+                notify: true,
+                value: function() {
+                    return {}
+                }
+            },
 
-        baseFilter: {
-            type: String,
-            value: ""
-        },
+            timeseries: {
+                type: Boolean,
+                value: false
+            },
 
-        userFilter: {
-            type: String,
-            value: ""
-        },
+            selectable: {
+                type: Boolean,
+                value: false
+            },
 
-        filter: {
-            type: String,
-            computed: '_computeFilter(baseFilter, userFilter)'
-        }
-    },
+            baseFilter: {
+                type: String,
+                value: ""
+            },
 
-    observers: [
-        'toggleSelectAll(selectAll)'
-    ],
+            userFilter: {
+                type: String,
+                value: ""
+            },
 
-    listeners: {
-        'receive-log': 'eventReceived'
-    },
-
-    ready: function() {
-    },
-
-    windowResize: function() {
-        this.$.grid.style.height = window.innerHeight - this.offsetTop - 190 + "px";
-        this.$.grid.style.width = "100%";
-        this.async(function() {
-            console.log('offsetWidth', this.$.grid.offsetWidth);
-        }, 10);
-    },
-
-    _activeItemChanged: function(e) {
-        var grid = e.target;
-        this._clickedItem = grid.activeItem ? grid.activeItem : this._clickedItem;
-
-        // we should either redirect to the proper route path, or expand the item
-        if (this.route != undefined)
-            this.set('route.path', this._clickedItem[this.primaryFieldName]);
-        else if (this.expands)
-            if (grid.expandedItems.indexOf(this._clickedItem) > -1) {
-                grid.collapseItem(this._clickedItem);
-            } else {
-                grid.expandItem(this._clickedItem);
+            filter: {
+                type: String,
+                computed: '_computeFilter(baseFilter, userFilter)'
             }
-    },
+        },
 
-    _itemKeys: function(item){
-        if (!item) return [];
-        return Object.keys(item)
-    },
+        observers: [
+            'toggleSelectAll(selectAll)',
+            '_itemsUpdated(items)'
+        ],
 
-    _getTitle: function(column) {
-        if (this.renderers[column] && this.renderers[column].title) {
-            if (typeof this.renderers[column].title == 'function')
-                return this.renderers[column].title();
-            else
-                return this.renderers[column].title;
-        }
+        listeners: {
+            'receive-log': 'eventReceived'
+        },
 
-        return column;
-    },
+        ready: function() {},
 
-    _getBody: function(column, item) {
-        if (item) {
-            if (this.renderers[column])
-                return this.renderers[column].body(item[column], item);
-            if (typeof(item[column]) == 'undefined') return '';
-            if (typeof(item[column]) == 'string')
-                return item[column];
+        windowResize: function() {
+            this.$.grid.style.height = window.innerHeight - this.offsetTop - 190 + "px";
+            this.$.grid.style.width = "100%";
+            this.async(function() {
+                console.log('offsetWidth', this.$.grid.offsetWidth);
+            }, 10);
+        },
 
-            var ret = JSON.stringify(item[column]);
-            if (['undefined', '[]', '{}'].indexOf(ret) == -1)
-                return ret;
-        }
-        return '';
-    },
+        _itemsUpdated: function(items) {
+            this.set('received', this.items.length);
+            this.set('count', this.items.length);
+            if (items.length){
+                // update column map using response.items values
+                var _this = this;
+                this.items.forEach(function(i){
+                    _this.itemMap[i[_this.primaryFieldName]] = i;
+                    Object.keys(i).forEach(function(k){
+                        _this.colmap[k] = true;
+                    });
+                });
+                // Compute columns list from colmap, removing frozen columns
+                var cols = Object.keys(_this.colmap);
+                _this.frozen.forEach(function(f){
+                    if (cols.indexOf(f) > -1)
+                        cols.splice(cols.indexOf(f), 1);
+                });
+                _this.set('columns', cols);
+            }
+        },
 
-    _getRawBody: function(column, item) {
-        if (item)
-            return JSON.stringify(item[column]);
-        return '';
-    },
+        _activeItemChanged: function(e) {
+            var grid = e.target;
+            this._clickedItem = grid.activeItem ? grid.activeItem : this._clickedItem;
 
-    _isColumnVisible: function(column) {
-        return this.visible.indexOf(column) > -1;
-    },
+            // we should either redirect to the proper route path, or expand the item
+            if (this.route != undefined)
+                this.set('route.path', this._clickedItem[this.primaryFieldName]);
+            else if (this.expands)
+                if (grid.expandedItems.indexOf(this._clickedItem) > -1) {
+                    grid.collapseItem(this._clickedItem);
+                } else {
+                    grid.expandItem(this._clickedItem);
+                }
+        },
 
-    _getSelectedColumnsIndexArray: function(visible) {
-        if (!this.visible) return [];
-        var ret = [];
-        for (var i = 0; i < this.visible.length; i++)
-            ret.push(this.columns.indexOf(this.visible[i]));
-        console.log('_getSelectedColumnsIndexArray returning', ret);
-        return ret;
-    },
+        _itemKeys: function(item) {
+            if (!item) return [];
+            return Object.keys(item)
+        },
 
-    _hasReceivedAll: function(received, count) {
-        return this.count && this.received == this.count
-    },
+        _getTitle: function(column) {
+            if (this.renderers[column] && this.renderers[column].title) {
+                if (typeof this.renderers[column].title == 'function')
+                    return this.renderers[column].title();
+                else
+                    return this.renderers[column].title;
+            }
 
-    _checkboxChanged: function(e){
-        console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
-        if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
-            this.push('visible', e.model.column);
-        } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
-            this.splice('visible', this.visible.indexOf(e.model.column), 1);
-        }
-    },
+            return column;
+        },
 
-    _toggleDrawer: function() {
-        document.querySelector('app-drawer').toggle();
-    },
+        _getBody: function(column, item) {
+            if (item) {
+                if (this.renderers[column])
+                    return this.renderers[column].body(item[column], item);
+                if (typeof(item[column]) == 'undefined') return '';
+                if (typeof(item[column]) == 'string')
+                    return item[column];
 
-    _isGridBody: function(detail) {
-        console.warn('_isGridBody', detail);
-        //return detail.sourceEvent.target.parentElement.parentElement.tagName === 'TD';
-    },
-
-    toggleSelectAll: function(e) {
-        if (!this.selectAll) {
-            this.selectedItems = [];
-            if (this.$.grid)
-                this.$.grid.selectedItems = [];
-        }
-    },
-
-    selectedItemsChanged: function(items) {
-        if (this.count == this.selectedItems.length)
-            this.selectAll = true;
-        else
-            this.selectAll = false
-    },
-
-    _getDirection: function(column) {
-        for (var i=0; i < this.sortOrder.length; i++) {
-            if (this.sortOrder[i] && this.sortOrder[i].path == column)
-                return this.sortOrder[i].direction;
-        }
-    },
-
-    _computeIconStyle: function(expanded) {
-        // TODO: animate icon
-        if (!expanded) return "transform: rotate(270deg);" 
-    },
-
-    _computeId: function(item) {
-        if (!item)
+                var ret = JSON.stringify(item[column]);
+                if (['undefined', '[]', '{}'].indexOf(ret) == -1)
+                    return ret;
+            }
             return '';
-        return item[this.primaryFieldName];
-    },
+        },
 
-    eventReceived: function(item) {
-        console.log('eventReceived', item);
-        console.log(this.$.grid._cache[0]);
-        // TODO filter incoming events
-        this.async(function(){
-            this.$.grid.unshift('_cache.0', item.detail);
-            this.$.grid.fire('iron-resize');
+        _getRawBody: function(column, item) {
+            if (item)
+                return JSON.stringify(item[column]);
+            return '';
+        },
+
+        _isColumnVisible: function(column) {
+            return this.visible && this.visible.indexOf(column) > -1;
+        },
+
+        _getSelectedColumnsIndexArray: function(visible) {
+            if (!this.visible) return [];
+            var ret = [];
+            for (var i = 0; i < this.visible.length; i++)
+                ret.push(this.columns.indexOf(this.visible[i]));
+            console.log('_getSelectedColumnsIndexArray returning', ret);
+            return ret;
+        },
+
+        _hasReceivedAll: function(received, count) {
+            return this.count && this.received == this.count
+        },
+
+        _checkboxChanged: function(e) {
+            console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
+            if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
+                this.push('visible', e.model.column);
+            } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
+                this.splice('visible', this.visible.indexOf(e.model.column), 1);
+            }
+        },
+
+        _toggleDrawer: function() {
+            document.querySelector('app-drawer').toggle();
+        },
+
+        _isGridBody: function(detail) {
+            console.warn('_isGridBody', detail);
+            //return detail.sourceEvent.target.parentElement.parentElement.tagName === 'TD';
+        },
+
+        toggleSelectAll: function(e) {
+            if (!this.selectAll) {
+                this.selectedItems = [];
+                if (this.$.grid)
+                    this.$.grid.selectedItems = [];
+            }
+        },
+
+        selectedItemsChanged: function(items) {
+            if (this.count == this.selectedItems.length)
+                this.selectAll = true;
+            else
+                this.selectAll = false
+        },
+
+        _getDirection: function(column) {
+            for (var i = 0; i < this.sortOrder.length; i++) {
+                if (this.sortOrder[i] && this.sortOrder[i].path == column)
+                    return this.sortOrder[i].direction;
+            }
+        },
+
+        _computeIconStyle: function(expanded) {
+            // TODO: animate icon
+            if (!expanded) return "transform: rotate(270deg);"
+        },
+
+        _computeId: function(item) {
+            if (!item)
+                return '';
+            return item[this.primaryFieldName];
+        },
+
+        eventReceived: function(item) {
+            console.log('eventReceived', item);
             console.log(this.$.grid._cache[0]);
-        })
-    },
+            // TODO filter incoming events
+            this.async(function() {
+                this.$.grid.unshift('_cache.0', item.detail);
+                this.$.grid.fire('iron-resize');
+                console.log(this.$.grid._cache[0]);
+            })
+        },
 
-    _computeFilter: function(baseFilter, userFilter) {
-        if (!baseFilter)
-            return userFilter;
-        if (!userFilter)
-            return baseFilter;
-        return '(' + baseFilter + ') AND (' + userFilter + ')';
-    }
-});
+        _computeFilter: function(baseFilter, userFilter) {
+            if (!baseFilter)
+                return userFilter;
+            if (!userFilter)
+                return baseFilter;
+            return '(' + baseFilter + ') AND (' + userFilter + ')';
+        }
+    });
 </script>

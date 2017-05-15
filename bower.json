@@ -1,5 +1,10 @@
 {
   "name": "mist-list",
+  "version": "1.0.0",
+  "authors": [
+    "Dimitris Moraitis <dimo@mist.io>",
+    "Christina Papakonstantinou <xristina@mist.io>"
+  ],
   "description": "Flexible list element based on vaadin-grid",
   "main": "mist-list.html",
   "dependencies": {
