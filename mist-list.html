@@ -9,7 +9,8 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">\
+<link rel="import" href="../paper-styles/shadow.html">
 
 <link rel="import" href="mist-check.html">
 <link rel="import" href="rest-data-provider.html">
@@ -19,10 +20,15 @@
 <dom-module id="mist-list">
     <template>
         <style is="custom-style">
-             :host {
+            :host {
                 height: 100%
             }
 
+            :host[selectable] vaadin-grid {
+                --vaadin-grid-cell: {
+                    cursor: pointer;
+                };
+            }
             vaadin-grid {
                 font: 400 14px;
                 color: #424242;
@@ -30,10 +36,11 @@
 
                 --vaadin-grid-cell: {
                     padding: 0 16px;
+                    cursor: pointer;
                 };
 
                 --vaadin-grid-body-cell: {
-                    height: 65px;
+                    height: 64px;
                 };
 
                 --vaadin-grid-header-cell: {
@@ -42,7 +49,7 @@
                 };
 
                 --vaadin-grid-body-row-selected-cell: {
-                    background-color: #ccc;
+                    background-color: #eee;
                     color: #333;
                 };
 
@@ -152,7 +159,14 @@
 
             paper-toolbar {
                 --paper-toolbar-background: #fff;
+                border: 1px solid #dbdbdb;
+                border-bottom: 0 none;
                 color: #000;
+            }
+
+            paper-toolbar .title {
+                font-size: 15px !important;
+                text-transform: uppercase;
             }
 
             span.title {
