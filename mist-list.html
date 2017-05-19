@@ -49,7 +49,7 @@
                 };
 
                 --vaadin-grid-body-row-selected-cell: {
-                    background-color: #eee;
+                    background-color: #ffff8d;
                     color: #333;
                 };
 
@@ -145,6 +145,14 @@
                 display: inline-block;
                 margin-left: 16px;
                 width: 100%;
+            }
+
+            mist-check[let-propagate="true"]::content iron-icon {
+                color: inherit;
+            }
+
+            mist-check::content iron-icon {
+                color: #424242;
             }
 
             div#actions {
