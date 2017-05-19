@@ -544,7 +544,8 @@
         },
 
         _toggleDrawer: function() {
-            document.querySelector('app-drawer').toggle();
+            if (document.querySelector('app-drawer'))
+                document.querySelector('app-drawer').toggle();
         },
 
         _isGridBody: function(detail) {
