@@ -19,7 +19,7 @@
 
 <dom-module id="mist-list">
     <template>
-        <style is="custom-style">
+        <style>
             :host {
                 height: 100%
             }
@@ -29,6 +29,7 @@
                     cursor: pointer;
                 };
             }
+
             vaadin-grid {
                 font: 400 14px;
                 color: #424242;
@@ -49,8 +50,9 @@
                 };
 
                 --vaadin-grid-body-row-selected-cell: {
-                    background-color: #ffff8d;
-                    color: #333;
+                    background-color: rgba(255, 255, 141, 0.9) !important;
+                    color: rgba(41, 41, 41, 1);
+                    opacity: .8;
                 };
 
                 --vaadin-grid-body-row-odd-cell: {
@@ -59,6 +61,8 @@
 
                 --vaadin-grid-body-row-hover-cell: {
                     background-color: rgb(245, 245, 245);
+                    opacity: 1.0 !important;
+                    color: rgba(51, 51, 51, .85);
                 };
 
                 --vaadin-grid-body-row-details-cell: {
@@ -147,11 +151,11 @@
                 width: 100%;
             }
 
-            mist-check[let-propagate="true"]::content iron-icon {
+            mist-check[let-propagate="true"]::slotted() iron-icon {
                 color: inherit;
             }
 
-            mist-check::content iron-icon {
+            mist-check::slotted() iron-icon {
                 color: #424242;
             }
 
@@ -160,9 +164,8 @@
                 z-index: 3;
                 position: absolute;
                 padding: 10px 16px;
-                right: 0px;
-                left: 0px;
-                width: auto;
+                width: calc(100% - 96px);
+                height: 36px;
             }
 
             paper-toolbar {
@@ -173,19 +176,37 @@
             }
 
             paper-toolbar .title {
-                font-size: 15px !important;
-                text-transform: uppercase;
+                font-size: 16px !important;
             }
 
             span.title {
-                margin-left: 16px !important;
                 overflow: visible !important;
                 text-transform: capitalize;
+                font-weight: 600;
             }
 
             span.count {
-                font-size: 12px;
-                margin-left: 13px;
+                font-size: 16px;
+                width: 68px;
+                display: inline-block;
+                text-align: center;
+                opacity: .5;
+            }
+
+            paper-menu-button.column-menu {
+                position: absolute;
+                z-index: 99999;
+                background-color: rgba(240, 240, 240, 0.9);
+                padding: 7px 0;
+                margin: 1px 0;
+            }
+            vaadin-grid .cell {
+                padding: 0 !important;
+            }
+
+            paper-input#searchInput {
+                margin-bottom: 16px;
+                margin-left: 8px;
             }
         </style>
         <template is="dom-if" restamp if="[[apiurl]]">
@@ -193,32 +214,35 @@
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[filter]]"></rest-data-provider>
         </template>
-        <paper-toolbar>
-            <paper-icon-button icon="manage-icons:menu" drawer-toggle on-tap="_toggleDrawer"></paper-icon-button>
-            <span class="count" hidden$=[[timeseries]]>
+        <paper-toolbar hidden$=[[!toolbar]] on-tap="_toolbarClick">
+            <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
+            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5; margin-left: 5px"></iron-icon>
+            <div hidden$=[[editingFilter]] style="margin-left: 8px">
+                <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
-            <span class="title">
+                <span class="title">
                     [[name]]
                 </span>
-            <paper-input hidden>
+            </div>
+            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown" value={{userFilter}}>
             </paper-input>
-            <paper-menu-button ignore-select horizontal-align="right">
-                <paper-icon-button icon="view-week" class="dropdown-trigger" alt="multi select"></paper-icon-button>
-                <paper-menu class="dropdown-content">
-                    <template is="dom-repeat" items="[[columns]]" as="column">
-                        <paper-item label="[[column]]">
-                            <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
-                        </paper-item>
-                    </template>
-                </paper-menu>
-            </paper-menu-button>
         </paper-toolbar>
 
         <div id="actions" hidden$=[[!selectedItems.length]]>
             <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
-            <content select=".mistactions"></content>
+            <slot name="actions"></slot>
         </div>
+        <paper-menu-button ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length)]]">
+            <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
+            <paper-menu class="dropdown-content">
+                <template is="dom-repeat" items="[[columns]]" as="column">
+                    <paper-item label="[[column]]">
+                        <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                    </paper-item>
+                </template>
+            </paper-menu>
+        </paper-menu-button>
         <vaadin-context-menu open-on="contextmenu">
             <template>
                 <paper-menu>
@@ -233,7 +257,7 @@
         <vaadin-grid id="grid" items="[[items]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <template class="row-details">
-                <div class="details-cell">
+                <div class="details-cell" on-tap="_preventDefault">
                     <div class="details">
                         <table>
                             <tbody>
@@ -252,22 +276,22 @@
                 <vaadin-grid-filter path="*" value=[[filter]] hidden></vaadin-grid-filter>
             </vaadin-grid-column>
             <template is="dom-if" if="[[selectable]]" restamp>
-                <vaadin-grid-column width="54px" flex-grow="0" frozen style="overflow: visible">
+                <vaadin-grid-column width="64px" flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
                     <template class="header">
                         <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"></mist-check>
+                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style="margin-left: -16px; padding: 14px"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
-            <template is="dom-if" if="[[expands]]" restamp>
-                <vaadin-grid-column width="50px" flex-grow="0" frozen style="overflow: visible">
+            <template is="dom-if" if="[[_or(expands, columnMenu)]]" restamp>
+                <vaadin-grid-column width="46px" flex-grow="0" frozen>
                     <template class="header">
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(expanded)]]; margin-left: -8px;" toggles active="{{expanded}}"
-                            id="btn-[[_computeId(item)]]"></paper-icon-button>
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(expanded)]]; margin-left: -12px;" toggles active="{{expanded}}"
+                            id="btn-[[_computeId(item)]]" hidden$=[[!expands]]></paper-icon-button>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -400,6 +424,21 @@
                 value: false
             },
 
+            drawer: {
+                type: Boolean,
+                value: false
+            },
+
+            toolbar: {
+                type: Boolean,
+                value: false
+            },
+
+            columnMenu: {
+                type: Boolean,
+                value: false
+            },
+
             itemMap: {
                 type: Object,
                 notify: true,
@@ -414,6 +453,16 @@
             },
 
             selectable: {
+                type: Boolean,
+                value: false
+            },
+
+            searchable: {
+                type: Boolean,
+                value: false
+            },
+
+            editingFilter: {
                 type: Boolean,
                 value: false
             },
@@ -444,14 +493,6 @@
         },
 
         ready: function() {},
-
-        windowResize: function() {
-            this.$.grid.style.height = window.innerHeight - this.offsetTop - 190 + "px";
-            this.$.grid.style.width = "100%";
-            this.async(function() {
-                console.log('offsetWidth', this.$.grid.offsetWidth);
-            }, 10);
-        },
 
         _itemsUpdated: function(items) {
             this.set('received', this.items.length);
@@ -613,6 +654,47 @@
             if (!userFilter)
                 return baseFilter;
             return '(' + baseFilter + ') AND (' + userFilter + ')';
+        },
+
+        _computeMenuButtonStyle: function(selectable, expands, columnMenu, selectedItemsLength) {
+            if (!columnMenu || selectedItemsLength)
+                return 'display: none';
+            var left = 28;
+            if (selectable)
+                left += 64;
+            return 'left:' + left + 'px;'
+        },
+
+        _or: function(a, b) {
+            return a || b
+        },
+
+        _preventDefault: function(e) {
+            e.preventDefault();
+        },
+
+        _toolbarClick: function() {
+            console.warn('toolbar clicked');
+            if (this.searchable) {
+                this.editingFilter = true;
+                this.async(function(){
+                    if (!this.$.searchInput.focused)
+                        this.$.searchInput.focused = true;
+                }, 100);
+            }
+        },
+
+        _stopEditingFilter: function(f) {
+            console.warn('focused', this.$.searchInput.focused, f.target.focused);
+            if (!f.target.focused)
+                this.editingFilter = false;
+        },
+
+        _keyDown: function(e) {
+            if (e.keyCode == 27) {
+                this.editingFilter = false;
+                this.userFilter = '';
+            }
         }
     });
 </script>
