@@ -61,7 +61,7 @@
             opacity: 0;
         }
         </style>
-        <div class="check" on-click="toggle">
+        <div class="check">
             <span class="unchecked layout horizontal center-center">
                 <content></content>
             </span>
@@ -89,6 +89,10 @@ Polymer({
             value: false,
             observer: 'selectAllChanged'
         }
+    },
+
+    listeners: {
+        'click': 'toggle'
     },
 
     toggle: function(e) {
