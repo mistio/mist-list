@@ -164,8 +164,9 @@
                 z-index: 3;
                 position: absolute;
                 padding: 10px 16px;
-                width: calc(100% - 96px);
+                width: calc(100% - 32px);
                 height: 36px;
+                top: 0;
             }
 
             paper-toolbar {
@@ -210,7 +211,7 @@
             }
         </style>
         <template is="dom-if" restamp if="[[apiurl]]">
-            <rest-data-provider url="[[apiurl]]" data-provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
+            <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]"></rest-data-provider>
         </template>
@@ -251,6 +252,10 @@
 
         <vaadin-grid id="grid" items="[[filteredItems]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
+            <div id="actions" hidden$=[[!selectedItems.length]] slot="actions">
+                <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+                <slot name="actions"></slot>
+            </div>
             <template class="row-details">
                 <div class="details-cell" on-tap="_preventDefault">
                     <div class="details">
@@ -326,10 +331,6 @@
             </template>
         </vaadin-grid>
 
-        <div id="actions" hidden$=[[!selectedItems.length]]>
-            <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
-            <slot name="actions"></slot>
-        </div>
     </template>
 </dom-module>
 
