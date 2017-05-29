@@ -212,7 +212,7 @@
         <template is="dom-if" restamp if="[[apiurl]]">
             <rest-data-provider url="[[apiurl]]" data-provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
-                filter="[[filter]]"></rest-data-provider>
+                filter="[[combinedFilter]]"></rest-data-provider>
         </template>
         <paper-toolbar hidden$=[[!toolbar]] on-tap="_toolbarClick">
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
@@ -228,11 +228,6 @@
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown" value={{userFilter}}>
             </paper-input>
         </paper-toolbar>
-
-        <div id="actions" hidden$=[[!selectedItems.length]]>
-            <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
-            <slot name="actions"></slot>
-        </div>
         <paper-menu-button ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length)]]">
             <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
             <paper-menu class="dropdown-content">
@@ -254,7 +249,7 @@
             </template>
         </vaadin-context-menu>
 
-        <vaadin-grid id="grid" items="[[items]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
+        <vaadin-grid id="grid" items="[[filteredItems]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <template class="row-details">
                 <div class="details-cell" on-tap="_preventDefault">
@@ -272,9 +267,6 @@
                     </div>
                 </div>
             </template>
-            <vaadin-grid-column hidden>
-                <vaadin-grid-filter path="*" value=[[filter]] hidden></vaadin-grid-filter>
-            </vaadin-grid-column>
             <template is="dom-if" if="[[selectable]]" restamp>
                 <vaadin-grid-column width="64px" flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
                     <template class="header">
@@ -333,6 +325,11 @@
                 </template>
             </template>
         </vaadin-grid>
+
+        <div id="actions" hidden$=[[!selectedItems.length]]>
+            <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+            <slot name="actions"></slot>
+        </div>
     </template>
 </dom-module>
 
@@ -346,6 +343,10 @@
 
             items: {
                 type: Array,
+            },
+
+            filteredItems: {
+                type: Array
             },
 
             count: {
@@ -477,7 +478,7 @@
                 value: ""
             },
 
-            filter: {
+            combinedFilter: {
                 type: String,
                 computed: '_computeFilter(baseFilter, userFilter)'
             }
@@ -485,7 +486,8 @@
 
         observers: [
             'toggleSelectAll(selectAll)',
-            '_itemsUpdated(items)'
+            '_itemsUpdated(items)',
+            '_filterItems(items, combinedFilter)'
         ],
 
         listeners: {
@@ -494,13 +496,30 @@
 
         ready: function() {},
 
+        _filterItems: function(items, filter) {
+            this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+        },
+
+        applyFilter: function(item, index) {
+            var queryTerms = this.combinedFilter.split(' ');
+
+            // Check if all terms exist in stringified item
+            for (var i=0; i < queryTerms.length; i++) {
+                if (queryTerms[i] && queryTerms[i].length &&
+                    JSON.stringify(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
+                        return false;
+                    }
+            }
+            return true;
+        },
+
         _itemsUpdated: function(items) {
             this.set('received', this.items.length);
             this.set('count', this.items.length);
             if (items.length){
                 // update column map using response.items values
                 var _this = this;
-                this.items.forEach(function(i){
+                this.items.forEach(function(i){ // TODO: optimize
                     _this.itemMap[i[_this.primaryFieldName]] = i;
                     Object.keys(i).forEach(function(k){
                         _this.colmap[k] = true;
@@ -543,7 +562,6 @@
                 else
                     return this.renderers[column].title;
             }
-
             return column;
         },
 
