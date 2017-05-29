@@ -1,6 +1,6 @@
 {
   "name": "mist-list",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "authors": [
     "Dimitris Moraitis <dimo@mist.io>",
     "Christina Papakonstantinou <xristina@mist.io>"
@@ -9,7 +9,7 @@
   "main": "mist-list.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "vaadin-grid": "2.0.1",
+    "vaadin-grid": "3.0.0-alpha1",
     "moment": "^2.18.1",
     "paper-menu-button": "^1.5.2",
     "paper-input": "^1.1.24",
