@@ -74,6 +74,10 @@
                 };
             }
 
+            vaadin-grid::content div#table {
+                outline-width: 0px !important;
+            }
+
             vaadin-grid input[type=checkbox] {
                 height: 16px;
                 width: 16px;
@@ -162,11 +166,12 @@
             div#actions {
                 background-color: #666;
                 z-index: 3;
-                position: absolute;
+                position: relative;
                 padding: 10px 16px;
                 width: calc(100% - 32px);
                 height: 36px;
-                top: 0;
+                margin-bottom: -56px;
+                color: #fff;
             }
 
             paper-toolbar {
@@ -199,7 +204,7 @@
                 z-index: 99999;
                 background-color: rgba(240, 240, 240, 0.9);
                 padding: 7px 0;
-                margin: 1px 0;
+                margin: 1px 4px;
             }
             vaadin-grid .cell {
                 padding: 0 !important;
@@ -250,12 +255,13 @@
             </template>
         </vaadin-context-menu>
 
+        <div id="actions" hidden$=[[!selectedItems.length]]>
+            <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+            <slot name="actions"></slot>
+        </div>
+
         <vaadin-grid id="grid" items="[[filteredItems]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
-            <div id="actions" hidden$=[[!selectedItems.length]] slot="actions">
-                <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
-                <slot name="actions"></slot>
-            </div>
             <template class="row-details">
                 <div class="details-cell" on-tap="_preventDefault">
                     <div class="details">
@@ -344,6 +350,7 @@
 
             items: {
                 type: Array,
+                observer: 'itemsChanged'
             },
 
             filteredItems: {
@@ -528,11 +535,27 @@
                 });
                 // Compute columns list from colmap, removing frozen columns
                 var cols = Object.keys(_this.colmap);
-                _this.frozen.forEach(function(f){
+                this.frozen.forEach(function(f){
                     if (cols.indexOf(f) > -1)
                         cols.splice(cols.indexOf(f), 1);
                 });
-                _this.set('columns', cols);
+                this.set('columns', cols);
+                if (this.selectedItems.length) {
+                    this.debounce('cleanupSelectedItems', function() {
+                        var newSelectedItems = [];
+                        for (var i = 0; i < this.selectedItems.length; i++) {
+                            var j = this.items.findIndex(
+                                        function(item) {
+                                            return item.id === _this.selectedItems[i].id
+                                        }
+                                    );
+                            if (j > -1)
+                                newSelectedItems.push(this.items[j]);
+                        }
+                        this.set('selectedItems', newSelectedItems);
+                        this.fire('resize');
+                    }, 200);
+                }
             }
         },
 
@@ -678,7 +701,7 @@
         _computeMenuButtonStyle: function(selectable, expands, columnMenu, selectedItemsLength) {
             if (!columnMenu || selectedItemsLength)
                 return 'display: none';
-            var left = 28;
+            var left = 36;
             if (selectable)
                 left += 64;
             return 'left:' + left + 'px;'
