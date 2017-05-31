@@ -21,7 +21,14 @@
     <template>
         <style>
             :host {
-                height: 100%
+                display: block;
+            }
+
+            :host[resizable] {
+                padding: 0 1%;
+                width: calc(80% + 120px);
+                margin: auto;
+                max-width: 100%;
             }
 
             :host[selectable] vaadin-grid {
@@ -466,6 +473,11 @@
                 value: false
             },
 
+            resizable: {
+                type: Boolean,
+                value: false
+            },
+
             searchable: {
                 type: Boolean,
                 value: false
@@ -495,17 +507,53 @@
         observers: [
             'toggleSelectAll(selectAll)',
             '_itemsUpdated(items)',
-            '_filterItems(items, combinedFilter)'
+            '_filterItems(items, combinedFilter)',
+            'windowResize(filteredItems.length, route.path)'
         ],
 
         listeners: {
-            'receive-log': 'eventReceived'
+            'receive-log': 'eventReceived',
+            'resize': 'windowResize'
         },
 
         ready: function() {},
 
+        attached: function() {
+            if (this.resizable) {
+                var _this = this;
+                window.addEventListener("resize", function() { _this.windowResize(); });
+                this.async(function(){this.windowResize()}, 100);
+            }
+        },
+
+        windowResize: function() {
+            if (this.resizable)
+                this.debounce('windowResize', function() {
+                    var top = this.getBoundingClientRect().top;
+                    this.style.height = Math.min(window.innerHeight - top - 32, this.$.grid.$.items.clientHeight + 60) + "px";
+                }, 100);
+        },
+
         _filterItems: function(items, filter) {
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+            if (this.selectedItems.length) {
+                this.debounce('cleanupSelectedItems', function() {
+                    var newSelectedItems = [], _this = this;
+                    for (var i = 0; i < _this.selectedItems.length; i++) {
+                        var j = this.filteredItems.findIndex(
+                            function(item) {
+                                return item.id === _this.selectedItems[i].id
+                            }
+                        );
+                        if (j > -1)
+                            newSelectedItems.push(this.filteredItems[j]);
+                    }
+                    this.set('selectedItems', newSelectedItems);
+                    this.async(function(){
+                        this.fire('resize');
+                    }, 100);
+                }, 200);
+            }
         },
 
         applyFilter: function(item, index) {
@@ -540,22 +588,6 @@
                         cols.splice(cols.indexOf(f), 1);
                 });
                 this.set('columns', cols);
-                if (this.selectedItems.length) {
-                    this.debounce('cleanupSelectedItems', function() {
-                        var newSelectedItems = [];
-                        for (var i = 0; i < this.selectedItems.length; i++) {
-                            var j = this.items.findIndex(
-                                        function(item) {
-                                            return item.id === _this.selectedItems[i].id
-                                        }
-                                    );
-                            if (j > -1)
-                                newSelectedItems.push(this.items[j]);
-                        }
-                        this.set('selectedItems', newSelectedItems);
-                        this.fire('resize');
-                    }, 200);
-                }
             }
         },
 
