@@ -263,7 +263,7 @@
         </vaadin-context-menu>
 
         <div id="actions" hidden$=[[!selectedItems.length]]>
-            <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+            <mist-check selected="{{selectAll}}" on-tap="toggleSelectAll" let-propagate=true>[[selectedItems.length]]</mist-check>
             <slot name="actions"></slot>
         </div>
 
@@ -365,7 +365,8 @@
             },
 
             count: {
-                type: Number
+                type: Number,
+                value: 0
             },
 
             columns: {
@@ -405,12 +406,12 @@
                 value: function() {
                     return []
                 },
-                observer: 'selectedItemsChanged',
                 notify: true
             },
 
             selectAll: {
-                type: Boolean
+                type: Boolean,
+                value: false
             },
 
             primaryFieldName: {
@@ -505,10 +506,10 @@
         },
 
         observers: [
-            'toggleSelectAll(selectAll)',
             '_itemsUpdated(items)',
             '_filterItems(items, combinedFilter)',
-            'windowResize(filteredItems.length, route.path)'
+            'windowResize(filteredItems.length, route.path)',
+            'selectedItemsChanged(selectedItems.length)',
         ],
 
         listeners: {
@@ -679,15 +680,15 @@
         },
 
         toggleSelectAll: function(e) {
-            if (!this.selectAll) {
-                this.selectedItems = [];
-                if (this.$.grid)
-                    this.$.grid.selectedItems = [];
-            }
+            // this event only occures in deselect all
+            this.selectAll = false;
+            this.selectedItems = [];
+            if (this.$.grid)
+                this.$.grid.selectedItems = [];
         },
 
-        selectedItemsChanged: function(items) {
-            if (this.count == this.selectedItems.length)
+        selectedItemsChanged: function(itemslength) {
+            if (this.count && this.count == this.selectedItems.length)
                 this.selectAll = true;
             else
                 this.selectAll = false
