@@ -37,6 +37,10 @@
                 };
             }
 
+            :host[toolbar] vaadin-grid {
+                height: calc(100% - 64px);
+            }
+
             vaadin-grid {
                 font: 400 14px;
                 color: #424242;
@@ -93,7 +97,7 @@
             vaadin-grid .image {
                 height: 40px;
                 width: 40px;
-                display: inline-block;
+                display: inlne-block;
                 border-radius: 50%;
                 vertical-align: middle;
                 margin-right: 15px;
@@ -108,13 +112,15 @@
             vaadin-grid .details-cell {
                 background: #fff;
                 width: 100%;
+                font-size: 12px;
             }
 
 
             vaadin-grid .details {
                 display: block;
                 font-family: monospace;
-                overflow: scroll;
+                overflow-x: auto;
+                overflow-y: scroll;
                 height: 266px;
                 margin: 0 16px;
             }
@@ -154,6 +160,8 @@
             vaadin-grid-sorter,
             span.header {
                 text-transform: uppercase;
+                font-size: 14px;
+                font-weight: 400;
             }
 
             paper-input {
@@ -189,7 +197,8 @@
             }
 
             paper-toolbar .title {
-                font-size: 16px !important;
+                font-size: 18px !important;
+                text-tranform: uppercase;
             }
 
             span.title {
@@ -225,23 +234,24 @@
         <template is="dom-if" restamp if="[[apiurl]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
-                filter="[[combinedFilter]]"></rest-data-provider>
+                filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
-        <paper-toolbar hidden$=[[!toolbar]] on-tap="_toolbarClick">
+        <paper-toolbar hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
-            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5; margin-left: 5px"></iron-icon>
-            <div hidden$=[[editingFilter]] style="margin-left: 8px">
+            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
+            <h2 hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
                 <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
                 <span class="title">
                     [[name]]
                 </span>
-            </div>
+            </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown" value={{userFilter}}>
             </paper-input>
+            <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
         </paper-toolbar>
-        <paper-menu-button ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length)]]">
+        <paper-menu-button ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
             <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
             <paper-menu class="dropdown-content">
                 <template is="dom-repeat" items="[[columns]]" as="column">
@@ -366,7 +376,7 @@
 
             count: {
                 type: Number,
-                value: 0
+                value: 10
             },
 
             columns: {
@@ -502,6 +512,22 @@
             combinedFilter: {
                 type: String,
                 computed: '_computeFilter(baseFilter, userFilter)'
+            },
+
+            streaming: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
+
+            infinite: {
+                type: Boolean,
+                value: false
+            },
+
+            finished: {
+                type: Boolean,
+                value: false
             }
         },
 
@@ -523,19 +549,34 @@
             if (this.resizable) {
                 var _this = this;
                 window.addEventListener("resize", function() { _this.windowResize(); });
-                this.async(function(){this.windowResize()}, 100);
+                this.async(function(){this.windowResize()}, 500);
+            }
+            if (this.infinite)
+                this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+        },
+
+        _onWheel: function(e){
+            var t = this.querySelector('vaadin-grid-table');
+            if (t._scrollBottom / t._scrollHeight > 0.75 && !this.finished) {
+                var pageno = this.$.grid._getPageForIndex(this.count);
+                console.log('request page', pageno);
+                this.$.grid._loadPage(pageno);
             }
         },
 
         windowResize: function() {
             if (this.resizable)
                 this.debounce('windowResize', function() {
-                    var top = this.getBoundingClientRect().top;
-                    this.style.height = Math.min(window.innerHeight - top - 32, this.$.grid.$.items.clientHeight + 60) + "px";
+                    var top = this.getBoundingClientRect().top,
+                        newHeight = Math.min(window.innerHeight - top - 64, this.$.grid.$.items.clientHeight + 60);
+                    //if (this.columnMenu)
+                    //    newHeight += 64;
+                    this.style.height = newHeight + "px";
                 }, 100);
         },
 
         _filterItems: function(items, filter) {
+            console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             if (this.selectedItems.length) {
                 this.debounce('cleanupSelectedItems', function() {
@@ -558,12 +599,18 @@
         },
 
         applyFilter: function(item, index) {
-            var queryTerms = this.combinedFilter.split(' ');
+            // TODO: properly filter parenthesis
+            var queryTerms = this.combinedFilter.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g, ' ').replace(/ OR /g, ' ').split(' ');
 
-            // Check if all terms exist in stringified item
-            for (var i=0; i < queryTerms.length; i++) {
-                if (queryTerms[i] && queryTerms[i].length &&
-                    JSON.stringify(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
+            // Check if all terms exist in item
+            for (var i = 0; i < queryTerms.length; i++) {
+                if (queryTerms[i] && queryTerms[i].length)
+                    if (queryTerms[i].indexOf(':') > -1) {
+                        var kv = queryTerms[i].split(':'),
+                            k = kv[0], v = kv[1];
+                        if (item[k] != v)
+                            return false;
+                    } else if (JSON.stringify(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
                         return false;
                     }
             }
@@ -680,7 +727,7 @@
         },
 
         toggleSelectAll: function(e) {
-            // this event only occures in deselect all
+            // this event only occurs in deselect all
             this.selectAll = false;
             this.selectedItems = [];
             if (this.$.grid)
@@ -713,14 +760,14 @@
         },
 
         eventReceived: function(item) {
-            console.log('eventReceived', item);
-            console.log(this.$.grid._cache[0]);
-            // TODO filter incoming events
-            this.async(function() {
-                this.$.grid.unshift('_cache.0', item.detail);
-                this.$.grid.fire('iron-resize');
-                console.log(this.$.grid._cache[0]);
-            })
+            if (!this.streaming)
+                return;
+            console.debug('eventReceived', item, this.applyFilter(item.detail));
+            if (this.applyFilter(item.detail))
+                this.async(function() {
+                    this.$.grid.unshift('_cache.0', item.detail);
+                    this.$.grid.fire('iron-resize');
+                });
         },
 
         _computeFilter: function(baseFilter, userFilter) {
@@ -731,10 +778,10 @@
             return '(' + baseFilter + ') AND (' + userFilter + ')';
         },
 
-        _computeMenuButtonStyle: function(selectable, expands, columnMenu, selectedItemsLength) {
-            if (!columnMenu || selectedItemsLength)
+        _computeMenuButtonStyle: function(selectable, expands, columnMenu, selectedItemsLength, count) {
+            if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
-            var left = 36;
+            var left = 0;
             if (selectable)
                 left += 64;
             return 'left:' + left + 'px;'
@@ -748,28 +795,29 @@
             e.preventDefault();
         },
 
-        _toolbarClick: function() {
-            console.warn('toolbar clicked');
+        _startEditingFilter: function(e) {
             if (this.searchable) {
                 this.editingFilter = true;
-                this.async(function(){
-                    if (!this.$.searchInput.focused)
-                        this.$.searchInput.focused = true;
-                }, 100);
+                this.$.searchInput.focus();
             }
         },
 
         _stopEditingFilter: function(f) {
-            console.warn('focused', this.$.searchInput.focused, f.target.focused);
-            if (!f.target.focused)
-                this.editingFilter = false;
+            this.async(function(){
+                if (!this.$.searchInput.focused && !this.userFilter.length)
+                    this.editingFilter = false;
+            }, 100);
         },
 
         _keyDown: function(e) {
             if (e.keyCode == 27) {
-                this.editingFilter = false;
-                this.userFilter = '';
+                this._clearFilter(e);
             }
+        },
+
+        _clearFilter: function(e) {
+            this.userFilter = '';
+            this.editingFilter = false;
         }
     });
 </script>
