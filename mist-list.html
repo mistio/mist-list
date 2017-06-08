@@ -501,7 +501,8 @@
 
             baseFilter: {
                 type: String,
-                value: ""
+                value: "",
+                observer: '_baseFilterUpdated'
             },
 
             userFilter: {
@@ -817,6 +818,13 @@
 
         _clearFilter: function(e) {
             this.userFilter = '';
+            this.editingFilter = false;
+        },
+
+        _baseFilterUpdated: function() {
+            // Reset the user defined filter every time the base filter gets updated
+            if (this.userFilter)
+                this.set('userFilter', '');
             this.editingFilter = false;
         }
     });
