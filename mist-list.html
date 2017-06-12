@@ -22,6 +22,7 @@
         <style>
             :host {
                 display: block;
+                --row-height: 64px;
             }
 
             :host[resizable] {
@@ -52,12 +53,13 @@
                 };
 
                 --vaadin-grid-body-cell: {
-                    height: 64px;
+                    height: var(--row-height);
                 };
 
                 --vaadin-grid-header-cell: {
                     background: rgba(240, 240, 240, 0.9);
-                    min-height: 56px;
+                    min-height: 42px;
+                    height: calc(var(--row-height) - 8px);
                 };
 
                 --vaadin-grid-body-row-selected-cell: {
@@ -217,9 +219,9 @@
 
             paper-menu-button.column-menu {
                 position: absolute;
-                z-index: 99999;
+                z-index: 1;
                 background-color: rgba(240, 240, 240, 0.9);
-                padding: 7px 0;
+                padding: calc(var(--row-height)/2 - 25px) 0;
                 margin: 1px 4px;
             }
             vaadin-grid .cell {
@@ -301,7 +303,7 @@
                         <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style="margin-left: -16px; padding: 16px"></mist-check>
+                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item, renderers.indicator)]]"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -376,7 +378,7 @@
 
             count: {
                 type: Number,
-                value: 10
+                value: 0
             },
 
             columns: {
@@ -569,7 +571,7 @@
             if (this.resizable)
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top,
-                        newHeight = Math.min(window.innerHeight - top - 64, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
                     //if (this.columnMenu)
                     //    newHeight += 64;
                     this.style.height = newHeight + "px";
@@ -752,6 +754,12 @@
         _computeIconStyle: function(expanded) {
             // TODO: animate icon
             if (!expanded) return "transform: rotate(270deg);"
+        },
+
+        _computeIndicatorStyle: function(item, indicator) {
+            if (!indicator)
+                return '';
+            return this._getBody('indicator', item)
         },
 
         _computeId: function(item) {
