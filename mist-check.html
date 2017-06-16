@@ -58,6 +58,11 @@
             color: inherit;
         }
 
+        .check img {
+            width: 24px;
+            height: 24px;
+        }
+
         :host[disabled] {
             display: inline-block;
             opacity: 0;
@@ -66,6 +71,9 @@
         <div class="check">
             <span class="unchecked layout horizontal center-center">
                 <content></content>
+                <template is="dom-if" if="[[icon]]">
+                    <img src="[[icon]]"/>
+                </template>
             </span>
             <iron-icon icon="check"></iron-icon>
         </div>
