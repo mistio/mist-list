@@ -172,6 +172,10 @@
                 width: 100%;
             }
 
+            mist-check[let-propagate="true"] {
+                display: inline-block;
+            }
+
             mist-check[let-propagate="true"]::slotted(iron-icon) {
                 color: inherit;
             }
@@ -189,6 +193,7 @@
                 height: 36px;
                 margin-bottom: -56px;
                 color: #fff;
+                display: flex;
             }
 
             paper-toolbar {
@@ -303,7 +308,7 @@
                         <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item, renderers.indicator)]]"></mist-check>
+                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]" icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -760,6 +765,13 @@
             if (!indicator)
                 return '';
             return this._getBody('indicator', item)
+        },
+
+        _computeIcon:  function(item, icon) {
+            if (!icon)
+                return '';
+            if (item)
+                return this.renderers['icon'].body(item, item);
         },
 
         _computeId: function(item) {
