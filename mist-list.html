@@ -825,7 +825,7 @@
 
         _stopEditingFilter: function(f) {
             this.async(function(){
-                if (!this.$.searchInput.focused && !this.userFilter.length)
+                if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length))
                     this.editingFilter = false;
             }, 100);
         },
