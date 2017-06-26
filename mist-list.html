@@ -99,7 +99,7 @@
             vaadin-grid .image {
                 height: 40px;
                 width: 40px;
-                display: inlne-block;
+                display: inline-block;
                 border-radius: 50%;
                 vertical-align: middle;
                 margin-right: 15px;
@@ -341,7 +341,7 @@
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
-                        <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                        <div style="margin-left:-16px;padding:16px;" inner-h-t-m-l="[[_getBody(column, item)]]" on-tap="_tapField"></div>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -825,7 +825,7 @@
 
         _stopEditingFilter: function(f) {
             this.async(function(){
-                if (!this.$.searchInput.focused && !this.userFilter.length)
+                if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length))
                     this.editingFilter = false;
             }, 100);
         },
@@ -846,6 +846,13 @@
             if (this.userFilter)
                 this.set('userFilter', '');
             this.editingFilter = false;
+        },
+        _tapField: function(e){
+            console.log('tap pre', e, e.model.column, this.renderers[e.model.column]);
+            if (this.renderers[e.model.column].tap() && this.renderers[e.model.column].tap().length) {
+                e.preventDefault();
+                this.fire(this.renderers[e.model.column].tap(), {item: e.model.item})
+            }
         }
     });
 </script>
