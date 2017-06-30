@@ -93,11 +93,6 @@ Polymer({
             value: false,
             reflectToAttribute: true,
             notify: true
-        },
-        selectAll: {
-            type: Boolean,
-            value: false,
-            observer: 'selectAllChanged'
         }
     },
 
@@ -110,11 +105,6 @@ Polymer({
         if (!this.letPropagate)
             e.stopImmediatePropagation();
         return true;
-    },
-    selectAllChanged: function(selectall){
-        if (this.selectAll) {
-            this.set('selected', this.selectAll);
-        }
     }
 
 });

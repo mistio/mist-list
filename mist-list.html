@@ -187,9 +187,9 @@
             div#actions {
                 background-color: #666;
                 z-index: 3;
-                position: relative;
+                position: fixed;
                 padding: 10px 16px;
-                width: calc(100% - 32px);
+                width: 100%;
                 height: 36px;
                 margin-bottom: -56px;
                 color: #fff;
@@ -279,13 +279,12 @@
             </template>
         </vaadin-context-menu>
 
-        <div id="actions" hidden$=[[!selectedItems.length]]>
-            <mist-check selected="{{selectAll}}" on-tap="toggleSelectAll" let-propagate=true>[[selectedItems.length]]</mist-check>
-            <slot name="actions"></slot>
-        </div>
-
         <vaadin-grid id="grid" items="[[filteredItems]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
+            <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
+                <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+                <slot name="actions"></slot>
+            </div>
             <template class="row-details">
                 <div class="details-cell" on-tap="_preventDefault">
                     <div class="details">
@@ -308,7 +307,7 @@
                         <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" select-all="[[selectAll]]"  style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]" icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
+                        <mist-check selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]" icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -323,7 +322,7 @@
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
-                <vaadin-grid-column frozen resizable>
+                <vaadin-grid-column frozen resizable width$="[[frozenWidth]]px">
                     <template class="header" style="z-index: 1">
                         <vaadin-grid-sorter path="[[column]]" style="z-index: 1 !important" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
@@ -536,6 +535,11 @@
             finished: {
                 type: Boolean,
                 value: false
+            },
+
+            frozenWidth: {
+                type: Number,
+                value: 200
             }
         },
 
@@ -544,6 +548,7 @@
             '_filterItems(items, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
+            'toggleSelectAll(selectAll)'
         ],
 
         listeners: {
@@ -736,10 +741,7 @@
 
         toggleSelectAll: function(e) {
             // this event only occurs in deselect all
-            this.selectAll = false;
-            this.selectedItems = [];
-            if (this.$.grid)
-                this.$.grid.selectedItems = [];
+            this.selectedItems = this.selectAll && this.filteredItems || [];
         },
 
         selectedItemsChanged: function(itemslength) {
@@ -768,10 +770,9 @@
         },
 
         _computeIcon:  function(item, icon) {
-            if (!icon)
+            if (!icon || !item || !this.renderers['icon'])
                 return '';
-            if (item)
-                return this.renderers['icon'].body(item, item);
+            return this.renderers['icon'].body(item, item) || '';
         },
 
         _computeId: function(item) {
