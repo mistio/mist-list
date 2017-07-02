@@ -258,16 +258,7 @@
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
         </paper-toolbar>
-        <paper-menu-button ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-            <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
-            <paper-menu class="dropdown-content">
-                <template is="dom-repeat" items="[[columns]]" as="column">
-                    <paper-item label="[[column]]">
-                        <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
-                    </paper-item>
-                </template>
-            </paper-menu>
-        </paper-menu-button>
+
         <vaadin-context-menu open-on="contextmenu">
             <template>
                 <paper-menu>
@@ -285,6 +276,16 @@
                 <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
                 <slot name="actions"></slot>
             </div>
+            <paper-menu-button slot="actions" ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+                <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
+                <paper-menu class="dropdown-content">
+                    <template is="dom-repeat" items="[[columns]]" as="column">
+                        <paper-item label="[[column]]">
+                            <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                        </paper-item>
+                    </template>
+                </paper-menu>
+            </paper-menu-button>
             <template class="row-details">
                 <div class="details-cell" on-tap="_preventDefault">
                     <div class="details">
@@ -312,7 +313,7 @@
                 </vaadin-grid-column>
             </template>
             <template is="dom-if" if="[[_or(expands, columnMenu)]]" restamp>
-                <vaadin-grid-column width="46px" flex-grow="0" frozen>
+                <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen>
                     <template class="header">
                     </template>
                     <template>
@@ -324,7 +325,7 @@
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[frozenWidth]]px">
                     <template class="header" style="z-index: 1">
-                        <vaadin-grid-sorter path="[[column]]" style="z-index: 1 !important" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" style="z-index: 1 !important" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
@@ -336,7 +337,7 @@
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
                 <vaadin-grid-column resizable>
                     <template class="header">
-                        <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
@@ -349,7 +350,7 @@
                 <template is="dom-repeat" items="[[columns]]" as="column">
                     <vaadin-grid-column resizable>
                         <template class="header">
-                            <vaadin-grid-sorter path="[[column]]" hidden$=[[timeseries]]>[[_getTitle(column)]]</vaadin-grid-sorter>
+                            <vaadin-grid-sorter path="[[column]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                         </template>
                         <template>
@@ -382,7 +383,19 @@
 
             count: {
                 type: Number,
-                value: 0
+                value: 0,
+                notify: true
+            },
+
+            autoHide: {
+                type: Boolean,
+                value: false
+            },
+
+            hidden: {
+                type: Boolean,
+                computed: '_computeHidden(autoHide, count)',
+                reflectToAttribute: true
             },
 
             columns: {
@@ -559,8 +572,8 @@
         ready: function() {},
 
         attached: function() {
+            var _this = this;
             if (this.resizable) {
-                var _this = this;
                 window.addEventListener("resize", function() { _this.windowResize(); });
                 this.async(function(){this.windowResize()}, 500);
             }
@@ -758,6 +771,10 @@
             }
         },
 
+        _getComparisonFunction: function(column){
+            return this.renderers[column] && this.renderers[column].cmp;
+        },
+
         _computeIconStyle: function(expanded) {
             // TODO: animate icon
             if (!expanded) return "transform: rotate(270deg);"
@@ -805,7 +822,9 @@
                 return 'display: none';
             var left = 0;
             if (selectable)
-                left += 64;
+                left += 52;
+            if (expands)
+                left += 12;
             return 'left:' + left + 'px;'
         },
 
@@ -848,12 +867,21 @@
                 this.set('userFilter', '');
             this.editingFilter = false;
         },
+
         _tapField: function(e){
             console.log('tap pre', e, e.model.column, this.renderers[e.model.column]);
-            if (this.renderers[e.model.column].tap() && this.renderers[e.model.column].tap().length) {
+            if (this.renderers[e.model.column].tap) {
                 e.preventDefault();
                 this.fire(this.renderers[e.model.column].tap(), {item: e.model.item})
             }
+        },
+
+        _computeHidden: function(autoHide, count) {
+            return autoHide && !count;
+        },
+
+        _computeMenuCellWidth: function(expands) {
+            return expands && '46px' || '24px';
         }
     });
 </script>
