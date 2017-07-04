@@ -874,7 +874,7 @@
             console.log('tap pre', e, e.model.column, this.renderers[e.model.column]);
             if (this.renderers[e.model.column].tap) {
                 e.preventDefault();
-                this.fire(this.renderers[e.model.column].tap(), {item: e.model.item})
+                this.fire(this.renderers[e.model.column].tap(e.model.column, e.model.item), {item: e.model.item})
             }
         },
 
