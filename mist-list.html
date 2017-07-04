@@ -57,7 +57,7 @@
                 };
 
                 --vaadin-grid-header-cell: {
-                    background: rgba(240, 240, 240, 0.9);
+                    background: rgba(240, 240, 240, 1);
                     min-height: 42px;
                     height: calc(var(--row-height) - 8px);
                 };
@@ -270,7 +270,7 @@
             </template>
         </vaadin-context-menu>
 
-        <vaadin-grid id="grid" items="[[filteredItems]]" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
+        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
                 <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
@@ -439,8 +439,7 @@
             },
 
             selectAll: {
-                type: Boolean,
-                value: false
+                type: Boolean
             },
 
             primaryFieldName: {
@@ -604,6 +603,8 @@
         _filterItems: function(items, filter) {
             console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+            this.$.grid.set('items', this.filteredItems);
+
             if (this.selectedItems.length) {
                 this.debounce('cleanupSelectedItems', function() {
                     var newSelectedItems = [], _this = this;
@@ -759,9 +760,9 @@
 
         selectedItemsChanged: function(itemslength) {
             if (this.count && this.count == this.selectedItems.length)
-                this.selectAll = true;
+                this.set('selectAll', true);
             else
-                this.selectAll = false
+                this.set('selectAll', false);
         },
 
         _getDirection: function(column) {
