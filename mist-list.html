@@ -821,10 +821,11 @@
             if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
             var left = 0;
-            if (selectable)
+            if (selectable) {
                 left += 52;
-            if (expands)
-                left += 12;
+                if (expands)
+                    left += 12;
+            }
             return 'left:' + left + 'px;'
         },
 
