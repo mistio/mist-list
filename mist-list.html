@@ -50,7 +50,6 @@
                 --vaadin-grid-cell: {
                     padding: 0 16px;
                     cursor: pointer;
-                    overflow: hidden;
                 };
 
                 --vaadin-grid-body-cell: {
@@ -90,6 +89,10 @@
 
             vaadin-grid::content div#table {
                 outline-width: 0px !important;
+            }
+
+            vaadin-grid::content vaadin-grid-table-cell {
+                overflow: hidden;
             }
 
             vaadin-grid input[type=checkbox] {
