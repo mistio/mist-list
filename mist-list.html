@@ -50,6 +50,7 @@
                 --vaadin-grid-cell: {
                     padding: 0 16px;
                     cursor: pointer;
+                    overflow: hidden;
                 };
 
                 --vaadin-grid-body-cell: {
@@ -270,11 +271,13 @@
             </template>
         </vaadin-context-menu>
 
+        <slot name="actions"></slot>
+
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
                 <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
-                <slot name="actions"></slot>
+                <slot name="action-buttons"></slot>
             </div>
             <paper-menu-button slot="actions" ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
                 <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
