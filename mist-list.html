@@ -759,9 +759,11 @@
             //return detail.sourceEvent.target.parentElement.parentElement.tagName === 'TD';
         },
 
-        toggleSelectAll: function(e) {
-            // this event only occurs in deselect all
-            this.selectedItems = this.selectAll && this.filteredItems || [];
+        toggleSelectAll: function(selectAll) {
+            if (this.selectAll)
+                this.set('selectedItems', this.get('filteredItems').slice());
+            else if (!this.selectAll && this.count && this.count == this.selectedItems.length)
+                this.set('selectedItems', []);
         },
 
         selectedItemsChanged: function(itemslength) {
