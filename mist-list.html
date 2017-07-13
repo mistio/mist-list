@@ -155,12 +155,17 @@
                 border-right: 1px solid #dbdbdb;
                 padding: 3px 16px 3px 30px;
                 text-align: right;
+                vertical-align: top;
             }
 
             vaadin-grid .details td.value {
                 padding-left: 8px;
                 white-space: pre-wrap;
                 text-align: left;
+                display: -webkit-box;
+                max-height: 200px;
+                overflow-y: auto;
+                border-bottom: 1px dotted #eee;
             }
 
             vaadin-grid-sorter,
