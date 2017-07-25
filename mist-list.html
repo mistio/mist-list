@@ -377,9 +377,9 @@
             </template>
         </vaadin-grid>
 
-        <p class="nodata" hidden$="[[!showNoData]]">
-            No items found.
-        </p>
+        <div class="nodata" hidden$="[[!showNoData]]">
+            <slot name="no-items-found"></slot>
+        </div>
 
     </template>
 </dom-module>
