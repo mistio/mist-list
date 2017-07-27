@@ -246,6 +246,11 @@
                 margin-bottom: 16px;
                 margin-left: 8px;
             }
+            .nodata {
+                padding: 24px;
+                font-style: italic;
+                text-align: center;
+            }
         </style>
         <template is="dom-if" restamp if="[[apiurl]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -371,6 +376,10 @@
                 </template>
             </template>
         </vaadin-grid>
+
+        <div class="nodata" hidden$="[[!showNoData]]">
+            <slot name="no-items-found"></slot>
+        </div>
 
     </template>
 </dom-module>
@@ -563,6 +572,10 @@
             frozenWidth: {
                 type: Number,
                 value: 200
+            },
+            showNoData: {
+                type: Boolean,
+                value: false
             }
         },
 
@@ -571,7 +584,8 @@
             '_filterItems(items, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
-            'toggleSelectAll(selectAll)'
+            'toggleSelectAll(selectAll)',
+            'setShowNoData(items, filteredItems.length)'
         ],
 
         listeners: {
@@ -589,6 +603,17 @@
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+        },
+
+        setShowNoData: function(items, filteredItems){
+            if (this.items && !this.items.length)
+                this.set('showNoData', true);
+            else {
+                if (this.filteredItems && !this.filteredItems.length)
+                    this.set('showNoData', true);
+                else
+                    this.set('showNoData', false);
+            }
         },
 
         _onWheel: function(e){
