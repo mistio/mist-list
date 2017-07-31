@@ -581,7 +581,7 @@
 
         observers: [
             '_itemsUpdated(items)',
-            '_filterItems(items, combinedFilter)',
+            '_filterItems(items, items.length, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
@@ -636,7 +636,7 @@
                 }, 100);
         },
 
-        _filterItems: function(items, filter) {
+        _filterItems: function(items, length, filter) {
             console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.$.grid.set('items', this.filteredItems);
