@@ -257,6 +257,7 @@
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
+        <slot name="header"></slot>
         <paper-toolbar hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
@@ -394,11 +395,13 @@
 
             items: {
                 type: Array,
-                observer: 'itemsChanged'
+                observer: 'itemsChanged',
+                notify: true
             },
 
             filteredItems: {
-                type: Array
+                type: Array,
+                notify: true
             },
 
             count: {
@@ -550,7 +553,8 @@
 
             combinedFilter: {
                 type: String,
-                computed: '_computeFilter(baseFilter, userFilter)'
+                computed: '_computeFilter(baseFilter, userFilter)',
+                notify: true
             },
 
             streaming: {
