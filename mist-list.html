@@ -395,13 +395,11 @@
 
             items: {
                 type: Array,
-                observer: 'itemsChanged',
-                notify: true
+                observer: 'itemsChanged'
             },
 
             filteredItems: {
-                type: Array,
-                notify: true
+                type: Array
             },
 
             count: {
@@ -580,6 +578,11 @@
             showNoData: {
                 type: Boolean,
                 value: false
+            },
+            filteredItemsLength: {
+                type: Number,
+                computed: 'computedfilteredItemsLength(filteredItems)',
+                notify: true
             }
         },
 
@@ -607,6 +610,10 @@
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+        },
+
+        computedfilteredItemsLength: function(filteredItems){
+            return filteredItems ? filteredItems.length : 0;
         },
 
         setShowNoData: function(items, filteredItems){
