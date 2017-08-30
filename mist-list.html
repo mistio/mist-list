@@ -257,6 +257,7 @@
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
+        <slot name="header"></slot>
         <paper-toolbar hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
@@ -576,12 +577,17 @@
             showNoData: {
                 type: Boolean,
                 value: false
+            },
+            filteredItemsLength: {
+                type: Number,
+                computed: 'computedfilteredItemsLength(filteredItems)',
+                notify: true
             }
         },
 
         observers: [
             '_itemsUpdated(items)',
-            '_filterItems(items, combinedFilter)',
+            '_filterItems(items, items.length, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
@@ -603,6 +609,10 @@
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+        },
+
+        computedfilteredItemsLength: function(filteredItems){
+            return filteredItems ? filteredItems.length : 0;
         },
 
         setShowNoData: function(items, filteredItems){
@@ -628,7 +638,11 @@
         windowResize: function() {
             if (this.resizable)
                 this.debounce('windowResize', function() {
-                    var top = this.getBoundingClientRect().top,
+                    var top = this.getBoundingClientRect().top;
+                    var newHeight;
+                    if (this.querySelector('[slot="header"]'))
+                        newHeight = Math.min(window.innerHeight - top - 202, this.$.grid.$.items.clientHeight + 60);
+                    else 
                         newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
                     //if (this.columnMenu)
                     //    newHeight += 64;
@@ -636,7 +650,7 @@
                 }, 100);
         },
 
-        _filterItems: function(items, filter) {
+        _filterItems: function(items, length, filter) {
             console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.$.grid.set('items', this.filteredItems);
