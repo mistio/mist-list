@@ -116,7 +116,7 @@
             }
 
             vaadin-grid .details-cell {
-                background: #fff;
+                background: #f0f0f0;
                 width: 100%;
                 font-size: 12px;
             }
@@ -304,8 +304,8 @@
                 </paper-menu>
             </paper-menu-button>
             <template class="row-details">
-                <div class="details-cell" on-tap="_preventDefault">
-                    <div class="details">
+                <div class="details-cell">
+                    <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
                         <table>
                             <tbody>
                                 <template is="dom-repeat" items="{{_itemKeys(item)}}" as="i">
@@ -580,7 +580,7 @@
             },
             filteredItemsLength: {
                 type: Number,
-                computed: 'computedfilteredItemsLength(filteredItems)',
+                computed: '_computeFilteredItemsLength(filteredItems)',
                 notify: true
             }
         },
@@ -604,14 +604,21 @@
         attached: function() {
             var _this = this;
             if (this.resizable) {
-                window.addEventListener("resize", function() { _this.windowResize(); });
+                this.resizeHandler = function() { _this.windowResize(); }
+                window.addEventListener("resize", this.resizeHandler);
                 this.async(function(){this.windowResize()}, 500);
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
         },
 
-        computedfilteredItemsLength: function(filteredItems){
+        detached: function() {
+            if (this.resizable) {
+                window.removeEventListener("resize", this.resizeHandler);
+            }
+        },
+
+        _computeFilteredItemsLength: function(filteredItems){
             return filteredItems ? filteredItems.length : 0;
         },
 
@@ -924,7 +931,7 @@
 
         _tapField: function(e){
             console.log('tap pre', e, e.model.column, this.renderers[e.model.column]);
-            if (this.renderers[e.model.column].tap) {
+            if (this.renderers[e.model.column] && this.renderers[e.model.column].tap) {
                 e.preventDefault();
                 this.fire(this.renderers[e.model.column].tap(e.model.column, e.model.item), {item: e.model.item})
             }
