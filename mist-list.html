@@ -679,6 +679,10 @@
                         this.fire('resize');
                     }, 100);
                 }, 200);
+            } else {
+                this.async(function(){
+                    this.$.grid.fire('iron-resize');
+                }, 100);
             }
         },
 
