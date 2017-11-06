@@ -648,9 +648,9 @@
                     var top = this.getBoundingClientRect().top;
                     var newHeight;
                     if (this.querySelector('[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 202, this.$.grid.$.items.clientHeight + 60);
-                    else 
                         newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
+                    else
+                        newHeight = Math.min(window.innerHeight - top - 74, this.$.grid.$.items.clientHeight + 60);
                     //if (this.columnMenu)
                     //    newHeight += 64;
                     this.style.height = newHeight + "px";
