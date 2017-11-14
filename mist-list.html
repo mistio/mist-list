@@ -647,10 +647,10 @@
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top;
                     var newHeight;
-                    if (this.querySelector('[slot="header"]'))
+                    if (this.querySelector('h2[slot="header"]'))
                         newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 74, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 40, this.$.grid.$.items.clientHeight + 60);
                     //if (this.columnMenu)
                     //    newHeight += 64;
                     this.style.height = newHeight + "px";
