@@ -660,6 +660,7 @@
         _filterItems: function(items, length, filter) {
             console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+            this.fire('mist-list-filtered-items-length-changed', {length:this.filteredItems.length});
             this.$.grid.set('items', this.filteredItems);
 
             if (this.selectedItems.length) {
