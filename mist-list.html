@@ -296,11 +296,15 @@
             <paper-menu-button slot="actions" ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
                 <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
                 <paper-menu class="dropdown-content">
-                    <template is="dom-repeat" items="[[columns]]" as="column">
+                    <paper-menu>
+                        <paper-item>Select columns</paper-item>
+                        <paper-item>Export CSV</paper-item>
+                    </paper-menu>
+                    <!-- <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
                             <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
                         </paper-item>
-                    </template>
+                    </template> -->
                 </paper-menu>
             </paper-menu-button>
             <template class="row-details">
@@ -646,11 +650,12 @@
             if (this.resizable)
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top;
-                    var newHeight;
+                    var newHeight,
+                        isSmallScreen = window.innerWidth <= 768;
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 96 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 60);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 40, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 40 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 60);
                     //if (this.columnMenu)
                     //    newHeight += 64;
                     this.style.height = newHeight + "px";
