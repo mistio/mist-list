@@ -297,8 +297,9 @@
 
         <template is="dom-if" if="[[visible]]" restamp>
             <paper-dialog id="columnsDialog" with-backdrop>
-                <h2>Select visible columns</h2>
+                <h2>Select columns</h2>
                 <paper-dialog-scrollable>
+                    <p>Select the list's visible columns.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
                             <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
@@ -311,8 +312,9 @@
             </paper-dialog>
 
             <paper-dialog id="csvDialog" with-backdrop>
-                <h2>Export list including the selected columns</h2>
+                <h2>Export list in CSV</h2>
                 <paper-dialog-scrollable>
+                    <p>Export the list including the selected columns.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
                             <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged" let-propagate=true>[[column]]</paper-checkbox>
