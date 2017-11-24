@@ -1016,6 +1016,7 @@
 
         _exportCsv: function(e) {
             console.log('export csv', this.CSVvisible);
+            this.fire('export-list-csv', {payload: this.CSVvisible});
         },
 
         _visibleChanged: function(visible) {
