@@ -260,6 +260,10 @@
                 max-width: 600px;
             }
 
+            paper-dialog p {
+                width: 100%;
+            }
+
             paper-dialog paper-item {
                 width: 27%;
                 min-width: 150px;
@@ -1057,7 +1061,8 @@
         },
 
         _csvError: function(e) {
-            this.fire('export-list-csv', {message: 'Error in CSV.'+e.detail.xhr.error});
+            console.log('_csvError',e);
+            this.fire('export-list-csv', {message: 'Error in CSV.'+e.detail.error});
         },
 
         _visibleChanged: function(visible) {
