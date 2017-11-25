@@ -338,7 +338,7 @@
                 <paper-icon-button icon="icons:expand-more" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
                 <paper-menu class="dropdown-content">
                     <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
-                    <paper-item on-tap="_openDialogExportCsv">Export CSV</paper-item>
+                    <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Export CSV</paper-item>
                 </paper-menu>
             </paper-menu-button>
             <template class="row-details">
