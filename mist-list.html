@@ -271,7 +271,7 @@
             }
 
         </style>
-        <template is="dom-if" restamp if="[[apiurl]]">
+        <template is="dom-if" restamp if="[[_useDataProvider(apiurl,items)]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
@@ -419,6 +419,17 @@
         <div class="nodata" hidden$="[[!showNoData]]">
             <slot name="no-items-found"></slot>
         </div>
+
+
+        <iron-ajax id="getCsv"
+            method="GET"
+            loading="{{loadingCSV}}"
+            on-request="_csvRequest"
+            on-response="_csvResponse"
+            on-error="_csvError"
+            handle-as="txt"></iron-ajax>
+
+        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden> Download </a>
 
     </template>
 </dom-module>
@@ -1006,6 +1017,10 @@
             return expands && '46px' || '24px';
         },
 
+        _useDataProvider: function(apiurl,items) {
+            return this.apiurl && !this.items;
+        },
+
         _openDialogSelectColumns: function(e) {
             this.querySelector('#columnsDialog').open();
         },
@@ -1014,9 +1029,35 @@
             this.querySelector('#csvDialog').open();
         },
 
-        _exportCsv: function(e) {
-            console.log('export csv', this.CSVvisible);
-            this.fire('export-list-csv', {payload: this.CSVvisible});
+        _exportCsv: function(e){
+            this.$.getCsv.headers["Csrf-Token"] = CSRF_TOKEN;
+            this.$.getCsv.headers["Accept"] = "text/csv";
+            this.$.getCsv.url = this.apiurl+"?columns="+this.frozen.concat(this.CSVvisible).join();
+            this.$.getCsv.generateRequest();
+        },
+
+        _csvRequest: function(e) {
+            this.fire('export-list-csv', {message: 'Requesting CSV.'});
+        },
+
+        _computeCSVname: function(str) {
+            var ch = str.split('/');
+            return ch[ch.length-1]+'-list.csv';
+        },
+
+        _csvResponse: function(e) {
+            this.set('CSVresponse', e.detail.xhr.response);
+            this._downloadFile();
+        },
+
+        _downloadFile: function(name, data) {
+            this.querySelector("#downloadCSV").click();
+            //clear
+            this.set('CSVresponse', '');
+        },
+
+        _csvError: function(e) {
+            this.fire('export-list-csv', {message: 'Error in CSV.'+e.detail.xhr.error});
         },
 
         _visibleChanged: function(visible) {
