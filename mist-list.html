@@ -275,7 +275,7 @@
             }
 
         </style>
-        <template is="dom-if" restamp if="[[_useDataProvider(apiurl,items)]]">
+        <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
@@ -639,6 +639,11 @@
                 type: Number,
                 computed: '_computeFilteredItemsLength(filteredItems)',
                 notify: true
+            },
+            useDataProvider: {
+                type: Boolean,
+                computed: '_computeUseDataProvider(apiurl, items)',
+                value: true
             }
         },
 
@@ -1021,7 +1026,7 @@
             return expands && '46px' || '24px';
         },
 
-        _useDataProvider: function(apiurl,items) {
+        _computeUseDataProvider: function(apiurl, items) {
             return this.apiurl && !this.items;
         },
 
