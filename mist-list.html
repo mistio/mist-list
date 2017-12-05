@@ -316,9 +316,9 @@
             </paper-dialog>
 
             <paper-dialog id="csvDialog" with-backdrop>
-                <h2>Export list in CSV</h2>
+                <h2>Download the list in CSV</h2>
                 <paper-dialog-scrollable>
-                    <p>Export the list including the selected columns.</p>
+                    <p>Download the list including the selected columns.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
                             <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged" let-propagate=true>[[column]]</paper-checkbox>
@@ -327,7 +327,7 @@
                 </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm autofocus on-tap="_exportCsv">Export CSV</paper-button>
+                    <paper-button dialog-confirm autofocus on-tap="_exportCsv">Download CSV</paper-button>
                 </div>
             </paper-dialog>
         </template>
@@ -339,10 +339,10 @@
                 <slot name="action-buttons"></slot>
             </div>
             <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                <paper-icon-button icon="icons:expand-more" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
+                <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
                 <paper-menu class="dropdown-content">
                     <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
-                    <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Export CSV</paper-item>
+                    <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
                 </paper-menu>
             </paper-menu-button>
             <template class="row-details">
