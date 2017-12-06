@@ -715,7 +715,7 @@
                         newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
                     else
                         newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
-                    if (this.$.grid.$.items.scrollWidth > this.$.grid.$.items.clientWidth)
+                    if (this.$.grid.$.items.scrollWidth > this.$.grid.$.items.clientWidth && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
