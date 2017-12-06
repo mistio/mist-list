@@ -316,9 +316,9 @@
             </paper-dialog>
 
             <paper-dialog id="csvDialog" with-backdrop>
-                <h2>Download the list in CSV</h2>
+                <h2>Download list data in CSV</h2>
                 <paper-dialog-scrollable>
-                    <p>Download the list including the selected columns.</p>
+                    <p>Select columns to download.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
                             <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged" let-propagate=true>[[column]]</paper-checkbox>
@@ -712,11 +712,11 @@
                     var newHeight,
                         isSmallScreen = window.innerWidth <= 768;
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 73);
+                        newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 73);
-                    //if (this.columnMenu)
-                    //    newHeight += 64;
+                        newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
+                    if (this.$.grid.$.items.scrollWidth > this.$.grid.$.items.clientWidth)
+                        newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
         },
