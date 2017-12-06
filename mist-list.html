@@ -712,9 +712,9 @@
                     var newHeight,
                         isSmallScreen = window.innerWidth <= 768;
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 83 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 73);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 27 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 73);
                     //if (this.columnMenu)
                     //    newHeight += 64;
                     this.style.height = newHeight + "px";
