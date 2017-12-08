@@ -26,7 +26,7 @@
             }
 
             :host[resizable] {
-                padding: 0 1%;
+                padding: 0;
                 width: calc(80% + 120px);
                 margin: auto;
                 max-width: 100%;
@@ -198,7 +198,7 @@
                 z-index: 3;
                 position: fixed;
                 padding: 10px 16px;
-                width: 100%;
+                width: calc(100% - 32px);
                 height: 36px;
                 margin-bottom: -56px;
                 color: #fff;
@@ -238,6 +238,7 @@
                 padding: calc(var(--row-height)/2 - 25px) 0;
                 margin: 1px 4px;
             }
+
             vaadin-grid .cell {
                 padding: 0 !important;
             }
@@ -246,13 +247,35 @@
                 margin-bottom: 16px;
                 margin-left: 8px;
             }
+
             .nodata {
                 padding: 24px;
                 font-style: italic;
                 text-align: center;
             }
+
+            paper-dialog ::content #scrollable {
+                display: flex;
+                flex-wrap: wrap;
+                max-width: 600px;
+            }
+
+            paper-dialog p {
+                width: 100%;
+            }
+
+            paper-dialog paper-item {
+                width: 27%;
+                min-width: 150px;
+                cursor: pointer;
+            }
+
+            paper-menu paper-item {
+                cursor: pointer;
+            }
+
         </style>
-        <template is="dom-if" restamp if="[[apiurl]]">
+        <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
                 columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
@@ -274,18 +297,40 @@
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
         </paper-toolbar>
 
-        <vaadin-context-menu open-on="contextmenu">
-            <template>
-                <paper-menu>
-                    <paper-item on-tap="_add">Add</paper-item>
-                    <template is="dom-if" if="[[_isGridBody(detail)]]">
-                        <paper-item detail="[[detail]]" on-tap="_remove">Remove</paper-item>
-                    </template>
-                </paper-menu>
-            </template>
-        </vaadin-context-menu>
-
         <slot name="actions"></slot>
+
+        <template is="dom-if" if="[[visible]]" restamp>
+            <paper-dialog id="columnsDialog" with-backdrop>
+                <h2>Select columns</h2>
+                <paper-dialog-scrollable>
+                    <p>Select the list's visible columns.</p>
+                    <template is="dom-repeat" items="[[columns]]" as="column">
+                        <paper-item label="[[column]]">
+                            <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                        </paper-item>
+                    </template>
+                </paper-dialog-scrollable>
+                <div class="buttons">
+                    <paper-button dialog-confirm>Close</paper-button>
+                </div>
+            </paper-dialog>
+
+            <paper-dialog id="csvDialog" with-backdrop>
+                <h2>Download list data in CSV</h2>
+                <paper-dialog-scrollable>
+                    <p>Select columns to download.</p>
+                    <template is="dom-repeat" items="[[columns]]" as="column">
+                        <paper-item label="[[column]]">
+                            <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                        </paper-item>
+                    </template>
+                </paper-dialog-scrollable>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm autofocus on-tap="_exportCsv">Download CSV</paper-button>
+                </div>
+            </paper-dialog>
+        </template>
 
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
@@ -293,14 +338,11 @@
                 <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
                 <slot name="action-buttons"></slot>
             </div>
-            <paper-menu-button slot="actions" ignore-select horizontal-align="left" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" alt="multi select"></paper-icon-button>
+            <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+                <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
                 <paper-menu class="dropdown-content">
-                    <template is="dom-repeat" items="[[columns]]" as="column">
-                        <paper-item label="[[column]]">
-                            <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
-                        </paper-item>
-                    </template>
+                    <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
+                    <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
                 </paper-menu>
             </paper-menu-button>
             <template class="row-details">
@@ -382,6 +424,16 @@
             <slot name="no-items-found"></slot>
         </div>
 
+        <iron-ajax id="getCsv"
+            method="GET"
+            loading="{{loadingCSV}}"
+            on-request="_csvRequest"
+            on-response="_csvResponse"
+            on-error="_csvError"
+            handle-as="txt"></iron-ajax>
+
+        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden> Download </a>
+
     </template>
 </dom-module>
 
@@ -441,6 +493,10 @@
             },
 
             visible: {
+                type: Array
+            },
+
+            CSVvisible: {
                 type: Array
             },
 
@@ -582,6 +638,11 @@
                 type: Number,
                 computed: '_computeFilteredItemsLength(filteredItems)',
                 notify: true
+            },
+            useDataProvider: {
+                type: Boolean,
+                computed: '_computeUseDataProvider(apiurl, items)',
+                value: true
             }
         },
 
@@ -591,7 +652,8 @@
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
-            'setShowNoData(items, filteredItems.length)'
+            'setShowNoData(items, filteredItems.length)',
+            '_visibleChanged(visible)'
         ],
 
         listeners: {
@@ -646,13 +708,14 @@
             if (this.resizable)
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top;
-                    var newHeight;
+                    var newHeight,
+                        isSmallScreen = window.innerWidth <= 768;
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 96, this.$.grid.$.items.clientHeight + 60);
+                        newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 40, this.$.grid.$.items.clientHeight + 60);
-                    //if (this.columnMenu)
-                    //    newHeight += 64;
+                        newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.$.items.clientHeight + 58);
+                    if (this.$.grid.$.items.scrollWidth > this.$.grid.$.items.clientWidth && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
+                        newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
         },
@@ -707,8 +770,10 @@
         },
 
         _itemsUpdated: function(items) {
-            this.set('received', this.items.length);
-            this.set('count', this.items.length);
+            if (this.items) {
+                this.set('received', this.items.length);
+                this.set('count', this.items.length);
+            }
             if (items.length){
                 // update column map using response.items values
                 var _this = this;
@@ -783,12 +848,16 @@
             return this.visible && this.visible.indexOf(column) > -1;
         },
 
+        _isCsvVisible: function(column) {
+            return this.CSVvisible && this.CSVvisible.indexOf(column) > -1;
+        },
+
         _getSelectedColumnsIndexArray: function(visible) {
             if (!this.visible) return [];
             var ret = [];
             for (var i = 0; i < this.visible.length; i++)
                 ret.push(this.columns.indexOf(this.visible[i]));
-            console.log('_getSelectedColumnsIndexArray returning', ret);
+            // console.log('_getSelectedColumnsIndexArray returning', ret);
             return ret;
         },
 
@@ -797,11 +866,19 @@
         },
 
         _checkboxChanged: function(e) {
-            console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
+            // console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
             if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
                 this.push('visible', e.model.column);
             } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
                 this.splice('visible', this.visible.indexOf(e.model.column), 1);
+            }
+        },
+
+        _CSVcheckboxChanged: function(e) {
+            if (e.target.active && this.CSVvisible.indexOf(e.model.column) == -1) {
+                this.push('CSVvisible', e.model.column);
+            } else if (!e.target.active && this.CSVvisible.indexOf(e.model.column) > -1) {
+                this.splice('CSVvisible', this.CSVvisible.indexOf(e.model.column), 1);
             }
         },
 
@@ -948,6 +1025,54 @@
 
         _computeMenuCellWidth: function(expands) {
             return expands && '46px' || '24px';
+        },
+
+        _computeUseDataProvider: function(apiurl, items) {
+            return this.apiurl && this.apiurl.length && !this.items;
+        },
+
+        _openDialogSelectColumns: function(e) {
+            this.querySelector('#columnsDialog').open();
+        },
+
+        _openDialogExportCsv: function(e) {
+            this.querySelector('#csvDialog').open();
+        },
+
+        _exportCsv: function(e){
+            this.$.getCsv.headers["Csrf-Token"] = CSRF_TOKEN;
+            this.$.getCsv.headers["Accept"] = "text/csv";
+            this.$.getCsv.url = this.apiurl+"?columns="+this.frozen.concat(this.CSVvisible).join();
+            this.$.getCsv.generateRequest();
+        },
+
+        _csvRequest: function(e) {
+            this.fire('export-list-csv', {message: 'Requesting CSV.'});
+        },
+
+        _computeCSVname: function(str) {
+            var ch = str.split('/');
+            return ch[ch.length-1]+'-list.csv';
+        },
+
+        _csvResponse: function(e) {
+            this.set('CSVresponse', e.detail.xhr.response);
+            this._downloadFile();
+        },
+
+        _downloadFile: function(name, data) {
+            this.querySelector("#downloadCSV").click();
+            //clear
+            this.set('CSVresponse', '');
+        },
+
+        _csvError: function(e) {
+            console.log('_csvError',e);
+            this.fire('export-list-csv', {message: 'Error in CSV.'+e.detail.error});
+        },
+
+        _visibleChanged: function(visible) {
+            this.set('CSVvisible', this.CSVvisible || visible);
         }
     });
 </script>
