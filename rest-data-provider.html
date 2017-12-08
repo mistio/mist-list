@@ -95,6 +95,7 @@
             ],
 
             _computeDataProvider: function(filter) {
+                if (this.url && this.url.length)
                 this.debounce('_computeDataProvider', function() {
                     this.stop = 0;
                     this.finished = false;
