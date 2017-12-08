@@ -424,7 +424,6 @@
             <slot name="no-items-found"></slot>
         </div>
 
-
         <iron-ajax id="getCsv"
             method="GET"
             loading="{{loadingCSV}}"
@@ -771,8 +770,10 @@
         },
 
         _itemsUpdated: function(items) {
-            this.set('received', this.items.length);
-            this.set('count', this.items.length);
+            if (this.items) {
+                this.set('received', this.items.length);
+                this.set('count', this.items.length);
+            }
             if (items.length){
                 // update column map using response.items values
                 var _this = this;
@@ -1027,7 +1028,7 @@
         },
 
         _computeUseDataProvider: function(apiurl, items) {
-            return this.apiurl && !this.items;
+            return this.apiurl && this.apiurl.length && !this.items;
         },
 
         _openDialogSelectColumns: function(e) {
