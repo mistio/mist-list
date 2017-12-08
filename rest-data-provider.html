@@ -91,10 +91,10 @@
             },
 
             observers: [
-                '_computeDataProvider(filter)'
+                '_computeDataProvider(filter, url)'
             ],
 
-            _computeDataProvider: function(filter) {
+            _computeDataProvider: function(filter, url) {
                 if (this.url && this.url.length)
                     this.debounce('_computeDataProvider', function() {
                         this.stop = 0;
