@@ -607,7 +607,8 @@
 
             combinedFilter: {
                 type: String,
-                computed: '_computeFilter(baseFilter, userFilter)'
+                computed: '_computeFilter(baseFilter, userFilter)',
+                notify: true
             },
 
             streaming: {
