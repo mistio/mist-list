@@ -9,7 +9,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-toolbar/paper-toolbar.html">\
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../paper-styles/shadow.html">
 
 <link rel="import" href="mist-check.html">
@@ -306,7 +306,7 @@
                     <p>Select the list's visible columns.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
-                            <paper-checkbox checked="[[_isColumnVisible(column)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                            <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
                         </paper-item>
                     </template>
                 </paper-dialog-scrollable>
@@ -648,6 +648,7 @@
         },
 
         observers: [
+            '_updateCols(route.*)',
             '_itemsUpdated(items)',
             '_filterItems(items, items.length, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
@@ -719,6 +720,15 @@
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
+        },
+
+        _updateCols: function(route) {
+            console.log('_updateCols',localStorage.getItem('mist-list'+window.location.pathname));
+            if (localStorage.getItem('mist-list'+window.location.pathname)){
+                this.async(function(){
+                    this.set('visible', JSON.parse(localStorage.getItem('mist-list'+window.location.pathname)));
+                }.bind(this), 500);
+            }
         },
 
         _filterItems: function(items, length, filter) {
@@ -873,6 +883,7 @@
             } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
                 this.splice('visible', this.visible.indexOf(e.model.column), 1);
             }
+            localStorage.setItem('mist-list'+window.location.pathname, JSON.stringify(this.visible));
         },
 
         _CSVcheckboxChanged: function(e) {
