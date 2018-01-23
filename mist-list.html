@@ -382,7 +382,7 @@
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
-                <vaadin-grid-column frozen resizable width$="[[frozenWidth]]px">
+                <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: 1">
                         <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" style="z-index: 1 !important" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
@@ -394,7 +394,7 @@
             </template>
 
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
-                <vaadin-grid-column resizable>
+                <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                     <template class="header">
                         <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
@@ -407,7 +407,7 @@
 
             <template is="dom-if" if="[[!visible.length]]" restamp>
                 <template is="dom-repeat" items="[[columns]]" as="column">
-                    <vaadin-grid-column resizable>
+                    <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                         <template class="header">
                             <vaadin-grid-sorter path="[[column]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
@@ -660,7 +660,9 @@
 
         listeners: {
             'receive-log': 'eventReceived',
-            'resize': 'windowResize'
+            'resize': 'windowResize',
+            'column-resizing': 'saveColumnWidth',
+            'sorter-changed': 'saveSort'
         },
 
         ready: function() {},
@@ -720,6 +722,35 @@
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
+        },
+
+        columnWidth: function(column,frozen) {
+            var w = JSON.parse(localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column));
+            if (w && w.width) {
+                return w.width;
+            }
+            else if (frozen) {
+                return this.frozenWidth+'px';
+            }
+        },
+
+        saveColumnWidth: function(e) {
+            var o;
+            if (e.target.innerText.toLowerCase().indexOf('unsorted')>-1)
+                o = '';
+            else if (e.target.innerText.toLowerCase().indexOf('sorted ascending')>-1)
+                o = 'asc';
+            else if (e.target.innerText.toLowerCase().indexOf('sorted descending')>-1)
+                o = 'desc';
+            var colData = {
+                width: e.target.style.width,
+                order: o
+            };
+            localStorage.setItem('mist-list'+window.location.pathname+'/col/'+e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1], JSON.stringify(colData))
+        },
+
+        saveSort: function(e){
+            console.log('saveSort', e);
         },
 
         _updateCols: function(route) {
@@ -919,10 +950,14 @@
         },
 
         _getDirection: function(column) {
-            for (var i = 0; i < this.sortOrder.length; i++) {
-                if (this.sortOrder[i] && this.sortOrder[i].path == column)
-                    return this.sortOrder[i].direction;
-            }
+            // var d = JSON.parse(localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column));
+            // if (d)
+            //     return d.order;
+            // else
+                for (var i = 0; i < this.sortOrder.length; i++) {
+                    if (this.sortOrder[i] && this.sortOrder[i].path == column)
+                        return this.sortOrder[i].direction;
+                }
         },
 
         _getComparisonFunction: function(column){
