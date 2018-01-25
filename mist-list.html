@@ -762,7 +762,6 @@
         },
 
         _sortersChanged: function(s){
-            console.log('_sortersChanged', s, this.sorters);
             // update sorters
             this.sorters.forEach(function(s){
                 localStorage.setItem('mist-list'+window.location.pathname+'/col/'+s.path+'/order', s.direction);
@@ -779,7 +778,6 @@
         },
 
         _updateCols: function(route) {
-            console.log('_updateCols',localStorage.getItem('mist-list'+window.location.pathname));
             if (localStorage.getItem('mist-list'+window.location.pathname)){
                 this.async(function(){
                     this.set('visible', JSON.parse(localStorage.getItem('mist-list'+window.location.pathname)));
@@ -788,7 +786,7 @@
         },
 
         _filterItems: function(items, length, filter) {
-            console.log('filterItems', filter);
+            // console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.fire('mist-list-filtered-items-length-changed', {length:this.filteredItems.length});
             this.$.grid.set('items', this.filteredItems);
