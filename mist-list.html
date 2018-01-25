@@ -644,6 +644,10 @@
                 type: Boolean,
                 computed: '_computeUseDataProvider(apiurl, items)',
                 value: true
+            },
+            sorters: {
+                type: Array,
+                value: []
             }
         },
 
@@ -655,14 +659,15 @@
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)'
+            '_visibleChanged(visible)',
+            '_sortersChanged(sorters)'
         ],
 
         listeners: {
+            'click': '_computeSorters',
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
-            'column-resizing': 'saveColumnWidth',
-            'sorter-changed': 'saveSort'
+            'column-resizing': 'saveColumnWidth'
         },
 
         ready: function() {},
@@ -676,6 +681,25 @@
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+        },
+
+        _computeSorters: function(e) {
+            // if click is on a sorter
+            var p = e.path.find(function(p){
+                return p.tagName == "VAADIN-GRID-SORTER";
+            })
+            if (p){
+                if (this.querySelector("vaadin-grid") && this.querySelector("vaadin-grid")._sorters){
+                    var sorters = this.querySelector("vaadin-grid")._sorters.map(function(s){
+                        return {path: s.path, direction: s.direction}
+                    })
+                    this.set('sorters', sorters);
+                }
+                else {
+                    this.set('sorters',[]);
+                }
+            }
+
         },
 
         detached: function() {
@@ -725,32 +749,33 @@
         },
 
         columnWidth: function(column,frozen) {
-            var w = JSON.parse(localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column));
-            if (w && w.width) {
-                return w.width;
-            }
-            else if (frozen) {
+            var w = localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column+'/width');
+            if (w)
+                return w;
+            else if (frozen)
                 return this.frozenWidth+'px';
-            }
         },
 
         saveColumnWidth: function(e) {
-            var o;
-            if (e.target.innerText.toLowerCase().indexOf('unsorted')>-1)
-                o = '';
-            else if (e.target.innerText.toLowerCase().indexOf('sorted ascending')>-1)
-                o = 'asc';
-            else if (e.target.innerText.toLowerCase().indexOf('sorted descending')>-1)
-                o = 'desc';
-            var colData = {
-                width: e.target.style.width,
-                order: o
-            };
-            localStorage.setItem('mist-list'+window.location.pathname+'/col/'+e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1], JSON.stringify(colData))
+            var column = e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1];
+            localStorage.setItem('mist-list'+window.location.pathname+'/col/'+column+'/width', e.target.style.width);
         },
 
-        saveSort: function(e){
-            console.log('saveSort', e);
+        _sortersChanged: function(s){
+            console.log('_sortersChanged', s, this.sorters);
+            // update sorters
+            this.sorters.forEach(function(s){
+                localStorage.setItem('mist-list'+window.location.pathname+'/col/'+s.path+'/order', s.direction);
+            });
+            //clear sorters
+            var sortersNames = this.sorters.map(function(s){
+                return s.path
+            });
+            this.columns.forEach(function(c){
+                if (sortersNames.indexOf(c) == -1) {
+                    localStorage.removeItem('mist-list'+window.location.pathname+'/col/'+c+'/order');
+                }
+            })
         },
 
         _updateCols: function(route) {
@@ -950,10 +975,10 @@
         },
 
         _getDirection: function(column) {
-            // var d = JSON.parse(localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column));
-            // if (d)
-            //     return d.order;
-            // else
+            var d = localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column+'/order');
+            if (d)
+                return d;
+            else
                 for (var i = 0; i < this.sortOrder.length; i++) {
                     if (this.sortOrder[i] && this.sortOrder[i].path == column)
                         return this.sortOrder[i].direction;
