@@ -773,10 +773,8 @@
             var sortersNames = this.sorters.map(function(s){
                 return s.path;
             });
-            console.log('c', sortersNames);
             var cols = this.columns.concat(this.frozen);
             cols.forEach(function(c){
-                console.log('c', c, sortersNames.indexOf(c))
                 if (sortersNames.indexOf(c) == -1) {
                     localStorage.removeItem('mist-list#'+this.id+'/col/'+c+'/order');
                 }
