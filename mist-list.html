@@ -652,7 +652,6 @@
         },
 
         observers: [
-            '_updateCols(route.*)',
             '_itemsUpdated(items)',
             '_filterItems(items, items.length, combinedFilter)',
             'windowResize(filteredItems.length, route.path)',
@@ -681,6 +680,10 @@
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+
+            this.async(function(){
+                this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
+            }.bind(this), 500);
         },
 
         _computeSorters: function(e) {
