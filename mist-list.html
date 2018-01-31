@@ -685,10 +685,10 @@
 
         _computeSorters: function(e) {
             // if click is on a sorter
-            var p = e.path.find(function(p){
+            var sorterInPath = e.path.find(function(p){
                 return p.tagName == "VAADIN-GRID-SORTER";
             })
-            if (p){
+            if (sorterInPath){
                 if (this.querySelector("vaadin-grid") && this.querySelector("vaadin-grid")._sorters){
                     var sorters = this.querySelector("vaadin-grid")._sorters.map(function(s){
                         return {path: s.path, direction: s.direction}
@@ -749,7 +749,7 @@
         },
 
         columnWidth: function(column,frozen) {
-            var w = localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column+'/width');
+            var w = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/width');
             if (w)
                 return w;
             else if (frozen)
@@ -758,29 +758,29 @@
 
         saveColumnWidth: function(e) {
             var column = e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1];
-            localStorage.setItem('mist-list'+window.location.pathname+'/col/'+column+'/width', e.target.style.width);
+            localStorage.setItem('mist-list#'+this.id+'/col/'+column+'/width', e.target.style.width);
         },
 
         _sortersChanged: function(s){
             // update sorters
             this.sorters.forEach(function(s){
-                localStorage.setItem('mist-list'+window.location.pathname+'/col/'+s.path+'/order', s.direction);
-            });
+                localStorage.setItem('mist-list#'+this.id+'/col/'+s.path+'/order', s.direction);
+            }.bind(this));
             //clear sorters
             var sortersNames = this.sorters.map(function(s){
                 return s.path
             });
             this.columns.forEach(function(c){
                 if (sortersNames.indexOf(c) == -1) {
-                    localStorage.removeItem('mist-list'+window.location.pathname+'/col/'+c+'/order');
+                    localStorage.removeItem('mist-list#'+this.id+'/col/'+c+'/order');
                 }
-            })
+            }.bind(this))
         },
 
         _updateCols: function(route) {
-            if (localStorage.getItem('mist-list'+window.location.pathname)){
+            if (localStorage.getItem('mist-list#'+this.id)){
                 this.async(function(){
-                    this.set('visible', JSON.parse(localStorage.getItem('mist-list'+window.location.pathname)));
+                    this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
                 }.bind(this), 500);
             }
         },
@@ -937,7 +937,7 @@
             } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
                 this.splice('visible', this.visible.indexOf(e.model.column), 1);
             }
-            localStorage.setItem('mist-list'+window.location.pathname, JSON.stringify(this.visible));
+            localStorage.setItem('mist-list#'+this.id, JSON.stringify(this.visible));
         },
 
         _CSVcheckboxChanged: function(e) {
@@ -973,7 +973,7 @@
         },
 
         _getDirection: function(column) {
-            var d = localStorage.getItem('mist-list'+window.location.pathname+'/col/'+column+'/order');
+            var d = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/order');
             if (d)
                 return d;
             else
