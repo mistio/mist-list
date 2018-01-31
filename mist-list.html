@@ -771,21 +771,16 @@
             }.bind(this));
             //clear sorters
             var sortersNames = this.sorters.map(function(s){
-                return s.path
+                return s.path;
             });
-            this.columns.forEach(function(c){
+            console.log('c', sortersNames);
+            var cols = this.columns.concat(this.frozen);
+            cols.forEach(function(c){
+                console.log('c', c, sortersNames.indexOf(c))
                 if (sortersNames.indexOf(c) == -1) {
                     localStorage.removeItem('mist-list#'+this.id+'/col/'+c+'/order');
                 }
-            }.bind(this))
-        },
-
-        _updateCols: function(route) {
-            if (localStorage.getItem('mist-list#'+this.id)){
-                this.async(function(){
-                    this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
-                }.bind(this), 500);
-            }
+            }.bind(this));
         },
 
         _filterItems: function(items, length, filter) {
