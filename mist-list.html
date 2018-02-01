@@ -681,9 +681,8 @@
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
 
-            this.async(function(){
+            if (JSON.parse(localStorage.getItem('mist-list#'+this.id)))
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
-            }.bind(this), 500);
         },
 
         _computeSorters: function(e) {
@@ -769,16 +768,16 @@
             this.sorters.forEach(function(s){
                 localStorage.setItem('mist-list#'+this.id+'/col/'+s.path+'/order', s.direction);
             }.bind(this));
-            //clear sorters
+            // clear sorters
             var sortersNames = this.sorters.map(function(s){
-                return s.path;
+                return s.path
             });
             var cols = this.columns.concat(this.frozen);
             cols.forEach(function(c){
                 if (sortersNames.indexOf(c) == -1) {
                     localStorage.removeItem('mist-list#'+this.id+'/col/'+c+'/order');
                 }
-            }.bind(this));
+            }.bind(this))
         },
 
         _filterItems: function(items, length, filter) {
@@ -969,14 +968,11 @@
         },
 
         _getDirection: function(column) {
-            var d = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/order');
-            if (d)
-                return d;
-            else
-                for (var i = 0; i < this.sortOrder.length; i++) {
-                    if (this.sortOrder[i] && this.sortOrder[i].path == column)
-                        return this.sortOrder[i].direction;
-                }
+            // var d = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/order');
+            // if (d){
+            //     return d;
+            // }
+            return null;
         },
 
         _getComparisonFunction: function(column){
