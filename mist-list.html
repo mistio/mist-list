@@ -821,11 +821,21 @@
                             k = kv[0], v = kv[1];
                         if (item[k] != v)
                             return false;
-                    } else if (JSON.stringify(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
+                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
                         return false;
                     }
             }
             return true;
+        },
+
+        _getRenderedItem: function (item) {
+            var renderedFields = '';
+            if (this.renderers && this.columns) {
+                for (var i=0; i<this.columns.length; i++) {
+                    renderedFields += ' '+this._getBody(this.columns[i], item);
+                }
+            }
+            return renderedFields+' '+JSON.stringify(item);
         },
 
         _itemsUpdated: function(items) {
