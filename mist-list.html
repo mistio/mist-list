@@ -843,7 +843,7 @@
                 this.set('received', this.items.length);
                 this.set('count', this.items.length);
             }
-            if (items.length){
+            if (items && items.length){
                 // update column map using response.items values
                 var _this = this;
                 this.items.forEach(function(i){ // TODO: optimize
