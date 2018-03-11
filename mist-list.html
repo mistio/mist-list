@@ -9,7 +9,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../app-layout/app-layout.html">
 <link rel="import" href="../paper-styles/shadow.html">
 
 <link rel="import" href="mist-check.html">
@@ -205,16 +205,17 @@
                 display: flex;
             }
 
-            paper-toolbar {
+            app-toolbar {
                 --paper-toolbar-background: #fff;
                 border: 1px solid #dbdbdb;
                 border-bottom: 0 none;
                 color: #000;
             }
 
-            paper-toolbar .title {
+            app-toolbar .title {
                 font-size: 18px !important;
                 text-tranform: uppercase;
+                font-weight: 400;
             }
 
             span.title {
@@ -281,7 +282,7 @@
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
-        <paper-toolbar hidden$=[[!toolbar]]>
+        <app-toolbar hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
             <h2 hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
@@ -295,7 +296,7 @@
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown" value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-        </paper-toolbar>
+        </app-toolbar>
 
         <slot name="actions"></slot>
 
