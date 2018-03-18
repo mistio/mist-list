@@ -301,14 +301,16 @@
         <slot name="actions"></slot>
 
         <template is="dom-if" if="[[visible]]" restamp>
-            <paper-dialog id="columnsDialog" with-backdrop>
+            <paper-dialog id="columnsDialog" with-backdrop opened={{columnsDialogOpened}}>
                 <h2>Select columns</h2>
                 <paper-dialog-scrollable>
                     <p>Select the list's visible columns.</p>
-                    <template is="dom-repeat" items="[[columns]]" as="column">
-                        <paper-item label="[[column]]">
-                            <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
-                        </paper-item>
+                    <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
+                        <template is="dom-repeat" items="[[columns]]" as="column">
+                            <paper-item label="[[column]]">
+                                <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                            </paper-item>
+                        </template>
                     </template>
                 </paper-dialog-scrollable>
                 <div class="buttons">
@@ -385,7 +387,7 @@
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: 1">
-                        <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" style="z-index: 1 !important" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" style="z-index: 1 !important" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
@@ -397,11 +399,11 @@
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
                 <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                     <template class="header">
-                        <vaadin-grid-sorter path="[[column]]" direction$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
-                        <div style="margin-left:-16px;padding:16px;" inner-h-t-m-l="[[_getBody(column, item)]]" on-tap="_tapField"></div>
+                        <div style="margin-left:-16px;padding:16px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -658,15 +660,14 @@
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)',
-            '_sortersChanged(sorters)'
+            '_visibleChanged(visible)'
         ],
 
         listeners: {
-            'click': '_computeSorters',
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
-            'column-resizing': 'saveColumnWidth'
+            'column-resizing': 'saveColumnWidth',
+            'sorter-changed': '_onSorterChanged'
         },
 
         ready: function() {},
@@ -681,27 +682,9 @@
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
 
-            if (JSON.parse(localStorage.getItem('mist-list#'+this.id)))
+            if (JSON.parse(localStorage.getItem('mist-list#'+this.id))) {
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
-        },
-
-        _computeSorters: function(e) {
-            // if click is on a sorter
-            var sorterInPath = e.path.find(function(p){
-                return p.tagName == "VAADIN-GRID-SORTER";
-            })
-            if (sorterInPath){
-                if (this.querySelector("vaadin-grid") && this.querySelector("vaadin-grid")._sorters){
-                    var sorters = this.querySelector("vaadin-grid")._sorters.map(function(s){
-                        return {path: s.path, direction: s.direction}
-                    })
-                    this.set('sorters', sorters);
-                }
-                else {
-                    this.set('sorters',[]);
-                }
             }
-
         },
 
         detached: function() {
@@ -763,25 +746,14 @@
             localStorage.setItem('mist-list#'+this.id+'/col/'+column+'/width', e.target.style.width);
         },
 
-        _sortersChanged: function(s){
+        _onSorterChanged: function(s){
             // update sorters
-            this.sorters.forEach(function(s){
-                localStorage.setItem('mist-list#'+this.id+'/col/'+s.path+'/order', s.direction);
-            }.bind(this));
-            // clear sorters
-            var sortersNames = this.sorters.map(function(s){
-                return s.path
-            });
-            var cols = this.columns.concat(this.frozen);
-            cols.forEach(function(c){
-                if (sortersNames.indexOf(c) == -1) {
-                    localStorage.removeItem('mist-list#'+this.id+'/col/'+c+'/order');
-                }
-            }.bind(this))
+            debugger;
+            localStorage.setItem('mist-list#'+this.id+'/sorters', JSON.stringify(this.$.grid._sorters));
         },
 
         _filterItems: function(items, length, filter) {
-            // console.log('filterItems', filter);
+            //console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.fire('mist-list-filtered-items-length-changed', {length:this.filteredItems.length});
             this.$.grid.set('items', this.filteredItems);
@@ -804,10 +776,11 @@
                     }, 100);
                 }, 200);
             } else {
-                this.async(function(){
+                this.debounce('iron-resize', function(){
                     this.$.grid.fire('iron-resize');
                 }, 100);
             }
+
         },
 
         applyFilter: function(item, index) {
@@ -847,12 +820,14 @@
             if (items && items.length){
                 // update column map using response.items values
                 var _this = this;
-                this.items.forEach(function(i){ // TODO: optimize
-                    _this.itemMap[i[_this.primaryFieldName]] = i;
-                    Object.keys(i).forEach(function(k){
-                        _this.colmap[k] = true;
-                    });
-                });
+                for (var i=0; i<this.items.length; i++) {
+                    var item = this.items[i];
+                    this.itemMap[i[_this.primaryFieldName]] = item;
+                    var keys = Object.keys(i);
+                    for (var k=0; k<keys.length; k++){
+                        this.colmap[keys[k]] = true;
+                    }
+                }
                 // Compute columns list from colmap, removing frozen columns
                 var cols = Object.keys(_this.colmap);
                 this.frozen.forEach(function(f){
@@ -977,14 +952,6 @@
                 this.set('selectAll', false);
         },
 
-        _getDirection: function(column) {
-            // var d = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/order');
-            // if (d){
-            //     return d;
-            // }
-            return null;
-        },
-
         _getComparisonFunction: function(column){
             return this.renderers[column] && this.renderers[column].cmp;
         },
@@ -1081,14 +1048,6 @@
             if (this.userFilter)
                 this.set('userFilter', '');
             this.editingFilter = false;
-        },
-
-        _tapField: function(e){
-            console.log('tap pre', e, e.model.column, this.renderers[e.model.column]);
-            if (this.renderers[e.model.column] && this.renderers[e.model.column].tap) {
-                e.preventDefault();
-                this.fire(this.renderers[e.model.column].tap(e.model.column, e.model.item), {item: e.model.item})
-            }
         },
 
         _computeHidden: function(autoHide, count) {
