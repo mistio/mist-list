@@ -666,8 +666,7 @@
         listeners: {
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
-            'column-resizing': 'saveColumnWidth',
-            'sorter-changed': '_onSorterChanged'
+            'column-resizing': 'saveColumnWidth'
         },
 
         ready: function() {},
@@ -746,14 +745,8 @@
             localStorage.setItem('mist-list#'+this.id+'/col/'+column+'/width', e.target.style.width);
         },
 
-        _onSorterChanged: function(s){
-            // update sorters
-            debugger;
-            localStorage.setItem('mist-list#'+this.id+'/sorters', JSON.stringify(this.$.grid._sorters));
-        },
-
         _filterItems: function(items, length, filter) {
-            //console.log('filterItems', filter);
+            // console.log('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.fire('mist-list-filtered-items-length-changed', {length:this.filteredItems.length});
             this.$.grid.set('items', this.filteredItems);
