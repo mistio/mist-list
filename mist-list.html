@@ -676,7 +676,6 @@
             if (this.resizable) {
                 this.resizeHandler = function() { _this.windowResize(); }
                 window.addEventListener("resize", this.resizeHandler);
-                this.async(function(){this.windowResize()}, 500);
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
@@ -717,7 +716,7 @@
         },
 
         windowResize: function() {
-            if (this.resizable)
+            if (this.resizable){
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
@@ -730,6 +729,7 @@
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
+            }
         },
 
         columnWidth: function(column,frozen) {
