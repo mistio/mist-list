@@ -27,7 +27,7 @@
 
             :host[resizable] {
                 padding: 0;
-                width: calc(80% + 120px);
+                width: calc(85% + 119px);
                 margin: auto;
                 max-width: 100%;
             }
@@ -720,12 +720,13 @@
                 this.debounce('windowResize', function() {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
+                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
                         isSmallScreen = window.innerWidth <= 768;
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 80 + 24*isSmallScreen, this.$.grid.items.length*64 + 58);
+                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight + 42);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 24 + 24*isSmallScreen, this.$.grid.items.length*64 + 58);
-                    if (this.$.grid.$.items.scrollWidth > this.$.grid.items.length*64 && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
+                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight + 42);
+                    if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
