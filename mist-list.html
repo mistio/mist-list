@@ -175,6 +175,10 @@
                 font-weight: 400;
             }
 
+            vaadin-grid-sorter {
+                padding: 16px 0;
+            }
+
             paper-input {
                 display: inline-block;
                 margin-left: 16px;
@@ -666,7 +670,8 @@
         listeners: {
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
-            'column-resizing': 'saveColumnWidth'
+            'column-resizing': 'saveColumnWidth',
+            'iron-announce': '_sorterChanged'
         },
 
         ready: function() {},
@@ -676,6 +681,7 @@
             if (this.resizable) {
                 this.resizeHandler = function() { _this.windowResize(); }
                 window.addEventListener("resize", this.resizeHandler);
+                this.async(function(){this.windowResize()}, 500);
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
@@ -721,11 +727,17 @@
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
-                        isSmallScreen = window.innerWidth <= 768;
+                        isSmallScreen = window.innerWidth <= 768,
+                        outerScroller = this.$.grid.$.scroller.$.outerscroller,
+                        hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
+                        heightOffset = 42;
+                    if (hasVerticalScroll) {
+                        heightOffset += 16;
+                    }
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight + 42);
+                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight + heightOffset);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight + 42);
+                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight + heightOffset);
                     if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
                         newHeight += 16;
                     this.style.height = newHeight + "px";
@@ -1098,6 +1110,10 @@
 
         _visibleChanged: function(visible) {
             this.set('CSVvisible', this.CSVvisible || visible);
+        },
+
+        _sorterChanged: function(event) {
+            console.log('sorter changed', this.$.grid._sorters, event);
         }
     });
 </script>
