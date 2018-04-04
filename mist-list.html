@@ -35,7 +35,8 @@
             :host[selectable] vaadin-grid {
                 --vaadin-grid-cell: {
                     cursor: pointer;
-                };
+                }
+                ;
             }
 
             :host[toolbar] vaadin-grid {
@@ -50,41 +51,49 @@
                 --vaadin-grid-cell: {
                     padding: 0 16px;
                     cursor: pointer;
-                };
+                }
+                ;
 
                 --vaadin-grid-body-cell: {
                     height: var(--row-height);
-                };
+                }
+                ;
 
                 --vaadin-grid-header-cell: {
                     background: rgba(240, 240, 240, 1);
                     min-height: 42px;
                     height: calc(var(--row-height) - 8px);
-                };
+                }
+                ;
 
                 --vaadin-grid-body-row-selected-cell: {
                     background-color: rgba(255, 255, 141, 0.9) !important;
                     color: rgba(41, 41, 41, 1);
                     opacity: .8;
-                };
+                }
+                ;
 
                 --vaadin-grid-body-row-odd-cell: {
                     background-color: rgb(251, 251, 251);
-                };
+                }
+                ;
 
                 --vaadin-grid-body-row-hover-cell: {
                     background-color: rgb(245, 245, 245);
                     opacity: 1.0 !important;
                     color: rgba(51, 51, 51, .85);
-                };
+                }
+                ;
 
                 --vaadin-grid-body-row-details-cell: {
                     text-align: center;
-                };
+                }
+                ;
 
                 --vaadin-grid-column-resize-handle: {
                     opacity: 0;
-                };
+                }
+                ;
             }
 
             vaadin-grid::content div#table {
@@ -278,7 +287,6 @@
             paper-menu paper-item {
                 cursor: pointer;
             }
-
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -297,7 +305,8 @@
                     [[name]]
                 </span>
             </h2>
-            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown" value={{userFilter}}>
+            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
+                value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
         </app-toolbar>
@@ -374,7 +383,8 @@
                         <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]" icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
+                        <mist-check selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
+                            icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -431,15 +441,11 @@
             <slot name="no-items-found"></slot>
         </div>
 
-        <iron-ajax id="getCsv"
-            method="GET"
-            loading="{{loadingCSV}}"
-            on-request="_csvRequest"
-            on-response="_csvResponse"
-            on-error="_csvError"
+        <iron-ajax id="getCsv" method="GET" loading="{{loadingCSV}}" on-request="_csvRequest" on-response="_csvResponse" on-error="_csvError"
             handle-as="txt"></iron-ajax>
 
-        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden> Download </a>
+        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden>
+        Download </a>
 
     </template>
 </dom-module>
@@ -479,21 +485,21 @@
 
             columns: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return []
                 }
             },
 
             colmap: {
                 type: Object,
-                value: function() {
+                value: function () {
                     return {}
                 }
             },
 
             frozen: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return []
                 }
             },
@@ -508,14 +514,14 @@
 
             renderers: {
                 type: Object,
-                value: function() {
+                value: function () {
                     return {}
                 }
             },
 
             selectedItems: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return []
                 },
                 notify: true
@@ -532,7 +538,7 @@
 
             sortOrder: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return [];
                 }
             },
@@ -570,7 +576,7 @@
             itemMap: {
                 type: Object,
                 notify: true,
-                value: function() {
+                value: function () {
                     return {}
                 }
             },
@@ -674,34 +680,38 @@
             'iron-announce': '_sorterChanged'
         },
 
-        ready: function() {},
+        ready: function () {},
 
-        attached: function() {
+        attached: function () {
             var _this = this;
             if (this.resizable) {
-                this.resizeHandler = function() { _this.windowResize(); }
+                this.resizeHandler = function () {
+                    _this.windowResize();
+                }
                 window.addEventListener("resize", this.resizeHandler);
-                this.async(function(){this.windowResize()}, 500);
+                this.async(function () {
+                    this.windowResize()
+                }, 500);
             }
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
 
-            if (JSON.parse(localStorage.getItem('mist-list#'+this.id))) {
-                this.set('visible', JSON.parse(localStorage.getItem('mist-list#'+this.id)));
+            if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
+                this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
             }
         },
 
-        detached: function() {
+        detached: function () {
             if (this.resizable) {
                 window.removeEventListener("resize", this.resizeHandler);
             }
         },
 
-        _computeFilteredItemsLength: function(filteredItems){
+        _computeFilteredItemsLength: function (filteredItems) {
             return filteredItems ? filteredItems.length : 0;
         },
 
-        setShowNoData: function(items, filteredItems){
+        setShowNoData: function (items, filteredItems) {
             if (this.items && !this.items.length)
                 this.set('showNoData', true);
             else {
@@ -712,7 +722,7 @@
             }
         },
 
-        _onWheel: function(e){
+        _onWheel: function (e) {
             var t = this.querySelector('vaadin-grid-table');
             if (t._scrollBottom / t._scrollHeight > 0.75 && !this.finished) {
                 var pageno = this.$.grid._getPageForIndex(this.count);
@@ -721,9 +731,9 @@
             }
         },
 
-        windowResize: function() {
+        windowResize: function () {
             if (this.resizable) {
-                this.debounce('windowResize', function() {
+                this.debounce('windowResize', function () {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
@@ -735,41 +745,47 @@
                         heightOffset += 16;
                     }
                     if (this.querySelector('h2[slot="header"]'))
-                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight + heightOffset);
+                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight +
+                            heightOffset);
                     else
-                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight + heightOffset);
-                    if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <= this.scrollHeight)
+                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight +
+                            heightOffset);
+                    if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
+                        this.scrollHeight)
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                 }, 100);
             }
         },
 
-        columnWidth: function(column,frozen) {
-            var w = localStorage.getItem('mist-list#'+this.id+'/col/'+column+'/width');
+        columnWidth: function (column, frozen) {
+            var w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
             if (w)
                 return w;
             else if (frozen)
-                return this.frozenWidth+'px';
+                return this.frozenWidth + 'px';
         },
 
-        saveColumnWidth: function(e) {
+        saveColumnWidth: function (e) {
             var column = e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1];
-            localStorage.setItem('mist-list#'+this.id+'/col/'+column+'/width', e.target.style.width);
+            localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.target.style.width);
         },
 
-        _filterItems: function(items, length, filter) {
-            // console.log('filterItems', filter);
+        _filterItems: function (items, length, filter) {
+            console.warn('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
-            this.fire('mist-list-filtered-items-length-changed', {length:this.filteredItems.length});
+            this.fire('mist-list-filtered-items-length-changed', {
+                length: this.filteredItems.length
+            });
             this.$.grid.set('items', this.filteredItems);
 
             if (this.selectedItems.length) {
-                this.debounce('cleanupSelectedItems', function() {
-                    var newSelectedItems = [], _this = this;
+                this.debounce('cleanupSelectedItems', function () {
+                    var newSelectedItems = [],
+                        _this = this;
                     for (var i = 0; i < _this.selectedItems.length; i++) {
                         var j = this.filteredItems.findIndex(
-                            function(item) {
+                            function (item) {
                                 return item.id === _this.selectedItems[i].id
                             }
                         );
@@ -777,33 +793,36 @@
                             newSelectedItems.push(this.filteredItems[j]);
                     }
                     this.set('selectedItems', newSelectedItems);
-                    this.async(function(){
+                    this.async(function () {
                         this.fire('resize');
                     }, 100);
                 }, 200);
             } else {
-                this.debounce('iron-resize', function(){
+                this.debounce('iron-resize', function () {
                     this.$.grid.fire('iron-resize');
                 }, 100);
             }
 
         },
 
-        applyFilter: function(item, index) {
+        applyFilter: function (item, index) {
             // TODO: properly filter parenthesis
-            var queryTerms = this.combinedFilter.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g, ' ').replace(/ OR /g, ' ').split(' ');
+            var queryTerms = this.combinedFilter.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
+                ' ').replace(/ OR /g, ' ').split(' ');
 
             // Check if all terms exist in item
             for (var i = 0; i < queryTerms.length; i++) {
                 if (queryTerms[i] && queryTerms[i].length)
                     if (queryTerms[i].indexOf(':') > -1) {
                         var kv = queryTerms[i].split(':'),
-                            k = kv[0], v = kv[1];
+                            k = kv[0],
+                            v = kv[1];
                         if (item[k] != v)
                             return false;
-                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) < 0) {
-                        return false;
-                    }
+                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
+                    0) {
+                    return false;
+                }
             }
             return true;
         },
@@ -811,32 +830,31 @@
         _getRenderedItem: function (item) {
             var renderedFields = '';
             if (this.renderers && this.columns) {
-                for (var i=0; i<this.columns.length; i++) {
-                    renderedFields += ' '+this._getBody(this.columns[i], item);
+                for (var i = 0; i < this.columns.length; i++) {
+                    renderedFields += ' ' + this._getBody(this.columns[i], item);
                 }
             }
-            return renderedFields+' '+JSON.stringify(item);
+            return renderedFields + ' ' + JSON.stringify(item);
         },
 
-        _itemsUpdated: function(items) {
+        _itemsUpdated: function (items) {
             if (this.items) {
                 this.set('received', this.items.length);
                 this.set('count', this.items.length);
             }
-            if (items && items.length){
+            if (this.items && this.items.length) {
                 // update column map using response.items values
-                var _this = this;
-                for (var i=0; i<this.items.length; i++) {
+                for (var i = 0; i < this.items.length; i++) {
                     var item = this.items[i];
-                    this.itemMap[i[_this.primaryFieldName]] = item;
-                    var keys = Object.keys(i);
-                    for (var k=0; k<keys.length; k++){
+                    this.itemMap[item[this.primaryFieldName]] = item;
+                    var keys = Object.keys(item);
+                    for (var k = 0; k < keys.length; k++) {
                         this.colmap[keys[k]] = true;
                     }
                 }
                 // Compute columns list from colmap, removing frozen columns
-                var cols = Object.keys(_this.colmap);
-                this.frozen.forEach(function(f){
+                var cols = Object.keys(this.colmap);
+                this.frozen.forEach(function (f) {
                     if (cols.indexOf(f) > -1)
                         cols.splice(cols.indexOf(f), 1);
                 });
@@ -844,7 +862,7 @@
             }
         },
 
-        _activeItemChanged: function(e) {
+        _activeItemChanged: function (e) {
             var grid = e.target;
             this._clickedItem = grid.activeItem ? grid.activeItem : this._clickedItem;
 
@@ -859,12 +877,12 @@
                 }
         },
 
-        _itemKeys: function(item) {
+        _itemKeys: function (item) {
             if (!item) return [];
             return Object.keys(item)
         },
 
-        _getTitle: function(column) {
+        _getTitle: function (column) {
             if (this.renderers[column] && this.renderers[column].title) {
                 if (typeof this.renderers[column].title == 'function')
                     return this.renderers[column].title();
@@ -874,12 +892,12 @@
             return column;
         },
 
-        _getBody: function(column, item) {
+        _getBody: function (column, item) {
             if (item) {
                 if (this.renderers[column])
                     return this.renderers[column].body(item[column], item);
-                if (typeof(item[column]) == 'undefined') return '';
-                if (typeof(item[column]) == 'string')
+                if (typeof (item[column]) == 'undefined') return '';
+                if (typeof (item[column]) == 'string')
                     return item[column];
 
                 var ret = JSON.stringify(item[column]);
@@ -889,21 +907,21 @@
             return '';
         },
 
-        _getRawBody: function(column, item) {
+        _getRawBody: function (column, item) {
             if (item)
                 return JSON.stringify(item[column]);
             return '';
         },
 
-        _isColumnVisible: function(column) {
+        _isColumnVisible: function (column) {
             return this.visible && this.visible.indexOf(column) > -1;
         },
 
-        _isCsvVisible: function(column) {
+        _isCsvVisible: function (column) {
             return this.CSVvisible && this.CSVvisible.indexOf(column) > -1;
         },
 
-        _getSelectedColumnsIndexArray: function(visible) {
+        _getSelectedColumnsIndexArray: function (visible) {
             if (!this.visible) return [];
             var ret = [];
             for (var i = 0; i < this.visible.length; i++)
@@ -912,21 +930,21 @@
             return ret;
         },
 
-        _hasReceivedAll: function(received, count) {
+        _hasReceivedAll: function (received, count) {
             return this.count && this.received == this.count
         },
 
-        _checkboxChanged: function(e) {
+        _checkboxChanged: function (e) {
             // console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
             if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
                 this.push('visible', e.model.column);
             } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
                 this.splice('visible', this.visible.indexOf(e.model.column), 1);
             }
-            localStorage.setItem('mist-list#'+this.id, JSON.stringify(this.visible));
+            localStorage.setItem('mist-list#' + this.id, JSON.stringify(this.visible));
         },
 
-        _CSVcheckboxChanged: function(e) {
+        _CSVcheckboxChanged: function (e) {
             if (e.target.active && this.CSVvisible.indexOf(e.model.column) == -1) {
                 this.push('CSVvisible', e.model.column);
             } else if (!e.target.active && this.CSVvisible.indexOf(e.model.column) > -1) {
@@ -934,69 +952,69 @@
             }
         },
 
-        _toggleDrawer: function() {
+        _toggleDrawer: function () {
             if (document.querySelector('app-drawer'))
                 document.querySelector('app-drawer').toggle();
         },
 
-        _isGridBody: function(detail) {
+        _isGridBody: function (detail) {
             console.warn('_isGridBody', detail);
             //return detail.sourceEvent.target.parentElement.parentElement.tagName === 'TD';
         },
 
-        toggleSelectAll: function(selectAll) {
+        toggleSelectAll: function (selectAll) {
             if (this.selectAll)
                 this.set('selectedItems', this.get('filteredItems').slice());
             else if (!this.selectAll && this.count && this.count == this.selectedItems.length)
                 this.set('selectedItems', []);
         },
 
-        selectedItemsChanged: function(itemslength) {
+        selectedItemsChanged: function (itemslength) {
             if (this.count && this.count == this.selectedItems.length)
                 this.set('selectAll', true);
             else
                 this.set('selectAll', false);
         },
 
-        _getComparisonFunction: function(column){
+        _getComparisonFunction: function (column) {
             return this.renderers[column] && this.renderers[column].cmp;
         },
 
-        _computeIconStyle: function(expanded) {
+        _computeIconStyle: function (expanded) {
             // TODO: animate icon
             if (!expanded) return "transform: rotate(270deg);"
         },
 
-        _computeIndicatorStyle: function(item, indicator) {
+        _computeIndicatorStyle: function (item, indicator) {
             if (!indicator)
                 return '';
             return this._getBody('indicator', item)
         },
 
-        _computeIcon:  function(item, icon) {
+        _computeIcon: function (item, icon) {
             if (!icon || !item || !this.renderers['icon'])
                 return '';
             return this.renderers['icon'].body(item, item) || '';
         },
 
-        _computeId: function(item) {
+        _computeId: function (item) {
             if (!item)
                 return '';
             return item[this.primaryFieldName];
         },
 
-        eventReceived: function(item) {
+        eventReceived: function (item) {
             if (!this.streaming)
                 return;
             console.debug('eventReceived', item, this.applyFilter(item.detail));
             if (this.applyFilter(item.detail))
-                this.async(function() {
+                this.async(function () {
                     this.$.grid.unshift('_cache.0', item.detail);
                     this.$.grid.fire('iron-resize');
                 });
         },
 
-        _computeFilter: function(baseFilter, userFilter) {
+        _computeFilter: function (baseFilter, userFilter) {
             if (!baseFilter)
                 return userFilter;
             if (!userFilter)
@@ -1004,7 +1022,7 @@
             return '(' + baseFilter + ') AND (' + userFilter + ')';
         },
 
-        _computeMenuButtonStyle: function(selectable, expands, columnMenu, selectedItemsLength, count) {
+        _computeMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
             if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
             var left = 0;
@@ -1016,103 +1034,107 @@
             return 'left:' + left + 'px;'
         },
 
-        _or: function(a, b) {
+        _or: function (a, b) {
             return a || b
         },
 
-        _preventDefault: function(e) {
+        _preventDefault: function (e) {
             e.preventDefault();
         },
 
-        _startEditingFilter: function(e) {
+        _startEditingFilter: function (e) {
             if (this.searchable) {
                 this.editingFilter = true;
                 this.$.searchInput.focus();
             }
         },
 
-        _stopEditingFilter: function(f) {
-            this.async(function(){
+        _stopEditingFilter: function (f) {
+            this.async(function () {
                 if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length))
                     this.editingFilter = false;
             }, 100);
         },
 
-        _keyDown: function(e) {
+        _keyDown: function (e) {
             if (e.keyCode == 27) {
                 this._clearFilter(e);
             }
         },
 
-        _clearFilter: function(e) {
+        _clearFilter: function (e) {
             this.userFilter = '';
             this.editingFilter = false;
         },
 
-        _baseFilterUpdated: function() {
+        _baseFilterUpdated: function () {
             // Reset the user defined filter every time the base filter gets updated
             if (this.userFilter)
                 this.set('userFilter', '');
             this.editingFilter = false;
         },
 
-        _computeHidden: function(autoHide, count) {
+        _computeHidden: function (autoHide, count) {
             return autoHide && !count;
         },
 
-        _computeMenuCellWidth: function(expands) {
+        _computeMenuCellWidth: function (expands) {
             return expands && '46px' || '24px';
         },
 
-        _computeUseDataProvider: function(apiurl, items) {
+        _computeUseDataProvider: function (apiurl, items) {
             return this.apiurl && this.apiurl.length && !this.items;
         },
 
-        _openDialogSelectColumns: function(e) {
+        _openDialogSelectColumns: function (e) {
             this.querySelector('#columnsDialog').open();
         },
 
-        _openDialogExportCsv: function(e) {
+        _openDialogExportCsv: function (e) {
             this.querySelector('#csvDialog').open();
         },
 
-        _exportCsv: function(e){
+        _exportCsv: function (e) {
             this.$.getCsv.headers["Csrf-Token"] = CSRF_TOKEN;
             this.$.getCsv.headers["Accept"] = "text/csv";
-            this.$.getCsv.url = this.apiurl+"?columns="+this.frozen.concat(this.CSVvisible).join();
+            this.$.getCsv.url = this.apiurl + "?columns=" + this.frozen.concat(this.CSVvisible).join();
             this.$.getCsv.generateRequest();
         },
 
-        _csvRequest: function(e) {
-            this.fire('export-list-csv', {message: 'Requesting CSV.'});
+        _csvRequest: function (e) {
+            this.fire('export-list-csv', {
+                message: 'Requesting CSV.'
+            });
         },
 
-        _computeCSVname: function(str) {
+        _computeCSVname: function (str) {
             var ch = str.split('/');
-            return ch[ch.length-1]+'-list.csv';
+            return ch[ch.length - 1] + '-list.csv';
         },
 
-        _csvResponse: function(e) {
+        _csvResponse: function (e) {
             this.set('CSVresponse', e.detail.xhr.response);
             this._downloadFile();
         },
 
-        _downloadFile: function(name, data) {
+        _downloadFile: function (name, data) {
             this.querySelector("#downloadCSV").click();
             //clear
             this.set('CSVresponse', '');
         },
 
-        _csvError: function(e) {
-            console.log('_csvError',e);
-            this.fire('export-list-csv', {message: 'Error in CSV.'+e.detail.error});
+        _csvError: function (e) {
+            console.log('_csvError', e);
+            this.fire('export-list-csv', {
+                message: 'Error in CSV.' + e.detail.error
+            });
         },
 
-        _visibleChanged: function(visible) {
+        _visibleChanged: function (visible) {
             this.set('CSVvisible', this.CSVvisible || visible);
         },
 
-        _sorterChanged: function(event) {
+        _sorterChanged: function (event) {
             console.log('sorter changed', this.$.grid._sorters, event);
         }
     });
