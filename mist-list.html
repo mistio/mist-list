@@ -401,7 +401,7 @@
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: 1">
-                        <vaadin-grid-sorter path="[[column]]" style="z-index: 1 !important" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"  hidden$=[[timeseries]] id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
@@ -413,7 +413,7 @@
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
                 <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                     <template class="header">
-                        <vaadin-grid-sorter path="[[column]]" cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]]  cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
@@ -426,7 +426,7 @@
                 <template is="dom-repeat" items="[[columns]]" as="column">
                     <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                         <template class="header">
-                            <vaadin-grid-sorter path="[[column]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                            <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                         </template>
                         <template>
@@ -698,6 +698,9 @@
 
             if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
+                var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
+                if (sorters && sorters.length)
+                    this.set('sorters', sorters);
             }
         },
 
@@ -1135,7 +1138,18 @@
         },
 
         _sorterChanged: function (event) {
-            console.log('sorter changed', this.$.grid._sorters, event);
+            this.debounce('_updateSorters', function() {
+                console.debug('_updateSorters');
+                this.set('sortOrder', this.$.grid._sorters.map(x => [x.path, x.direction]));
+                localStorage.setItem('mist-list#' + this.id + '/sorters', JSON.stringify(this.sortOrder));
+            }, 500);
+        },
+
+        _getDirection: function (column) {
+            for (var i=0; i < this.sorters.length; i++) {
+                if (this.sorters[i][0] == column)
+                    return this.sorters[i][1];
+            }
         }
     });
 </script>
