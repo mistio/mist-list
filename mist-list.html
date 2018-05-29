@@ -1090,6 +1090,12 @@
         },
 
         _clearFilter: function (e) {
+            if (this.autoHide) {
+                this.autoHide = false;
+                this.async(function(){
+                    this.autoHide = true;
+                }.bind(this),1000);
+            }
             this.userFilter = '';
             this.editingFilter = false;
         },
