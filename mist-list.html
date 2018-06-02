@@ -25,6 +25,17 @@
                 --row-height: 64px;
             }
 
+            :host[fullscreen] {
+                position: fixed;
+                top: 64px;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 99999;
+                background-color: #fff;
+                height: 100vh !important;
+            }
+
             :host[resizable] {
                 padding: 0;
                 width: calc(85% + 119px);
@@ -309,6 +320,10 @@
                 value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+            <span hidden$="[[!enableFullscreen]]">
+                <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
+                <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
+            </span>
         </app-toolbar>
 
         <slot name="actions"></slot>
@@ -479,7 +494,7 @@
 
             hidden: {
                 type: Boolean,
-                computed: '_computeHidden(autoHide, count)',
+                computed: '_computeHidden(autoHide, count, editingFilter)',
                 reflectToAttribute: true
             },
 
@@ -660,7 +675,16 @@
             sorters: {
                 type: Array,
                 value: []
-            }
+            },
+            enableFullscreen: {
+                type: Boolean,
+                value: true
+            },
+            fullscreen: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
         },
 
         observers: [
@@ -1066,6 +1090,12 @@
         },
 
         _clearFilter: function (e) {
+            if (this.autoHide) {
+                this.autoHide = false;
+                this.async(function(){
+                    this.autoHide = true;
+                }.bind(this),1000);
+            }
             this.userFilter = '';
             this.editingFilter = false;
         },
@@ -1077,8 +1107,8 @@
             this.editingFilter = false;
         },
 
-        _computeHidden: function (autoHide, count) {
-            return autoHide && !count;
+        _computeHidden: function (autoHide, count, editingFilter) {
+            return autoHide && !count && !editingFilter;
         },
 
         _computeMenuCellWidth: function (expands) {
@@ -1150,6 +1180,12 @@
                 if (this.sorters[i][0] == column)
                     return this.sorters[i][1];
             }
-        }
+        },
+        _enterFullscreen: function (e) {
+            this.set('fullscreen',true);
+        },
+        _exitFullscreen: function (e) {
+            this.set('fullscreen',false);
+        },
     });
 </script>
