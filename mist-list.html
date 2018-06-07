@@ -841,7 +841,7 @@
                 owner = ownerRegex.exec(q) && ownerRegex.exec(q)[1],
                 queryTerms;
 
-                if (filterOwner && owner && owner.length) {
+                if (filterOwner && owner && owner.length && this.user && this.members) {
                     q = q.replace('owner:','').replace(owner+'','');
 
                     if (owner == "$me"){
