@@ -529,6 +529,10 @@
                 type: Array
             },
 
+            filterMethod: {
+                type: Object
+            },
+
             renderers: {
                 type: Object,
                 value: function () {
@@ -835,44 +839,34 @@
         },
 
         applyFilter: function (item, index) {
-            var q = this.combinedFilter || '',
-                filterOwner = q.indexOf('owner:')>-1,
-                ownerRegex = /owner:(\S*)\s?/,
-                owner = ownerRegex.exec(q) && ownerRegex.exec(q)[1],
+            var q = this.combinedFilter ? this.combinedFilter : '',
                 queryTerms;
 
-                if (filterOwner && owner && owner.length && this.user && this.members) {
-                    q = q.replace('owner:','').replace(owner+'','');
-
-                    if (owner == "$me"){
-                        if (!item.owned_by || item.owned_by != this.user)
-                            return false;
-                    }
-                    else {
-                        var ownerObj = this.members.find(function(m){
-                            return [m.name, m.email, m.id].indexOf(owner) > -1;
-                        });
-                        if (!ownerObj || !item.owned_by || item.owned_by != ownerObj.id)
-                            return false;
-                    }
-                }
-
-            // TODO: properly filter parenthesis
-            queryTerms = q.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
-                ' ').replace(/ OR /g, ' ').split(' ');
-
-            // Check if all terms exist in item
-            for (var i = 0; i < queryTerms.length; i++) {
-                if (queryTerms[i] && queryTerms[i].length)
-                    if (queryTerms[i].indexOf(':') > -1) {
-                        var kv = queryTerms[i].split(':'),
-                            k = kv[0],
-                            v = kv[1];
-                        if (item[k] != v)
-                            return false;
-                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
-                    0) {
+            if (this.filterMethod && q.trim().length) {
+                if (!this.filterMethod.apply(item,q))
                     return false;
+                else 
+                    q = this.filterMethod.apply(item,q);
+            }
+
+            if (q.trim().length) {
+                // TODO: properly filter parenthesis
+                queryTerms = q.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
+                    ' ').replace(/ OR /g, ' ').split(' ');
+
+                // Check if all terms exist in item
+                for (var i = 0; i < queryTerms.length; i++) {
+                    if (queryTerms[i] && queryTerms[i].length)
+                        if (queryTerms[i].indexOf(':') > -1) {
+                            var kv = queryTerms[i].split(':'),
+                                k = kv[0],
+                                v = kv[1];
+                            if (item[k] != v)
+                                return false;
+                        } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
+                        0) {
+                        return false;
+                    }
                 }
             }
             return true;
