@@ -530,7 +530,10 @@
             },
 
             filterMethod: {
-                type: Object
+                type: Object,
+                value: function () {
+                    return {}
+                }
             },
 
             renderers: {
@@ -841,7 +844,7 @@
         applyFilter: function (item, index) {
             var q = this.combinedFilter ? this.combinedFilter.slice(0) : '',
                 queryTerms;
-            if (this.filterMethod) {
+            if (this.filterMethod.apply) {
                 var response = this.filterMethod.apply(item,q);
                 // response can be false or a query stripped of owner filter
                 console.log('response',response)
@@ -850,22 +853,24 @@
                 else
                     q = this.filterMethod.apply(item,q);
             }
-            // TODO: properly filter parenthesis
-            queryTerms = q.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
-                ' ').replace(/ OR /g, ' ').split(' ');
+            if (q.length) {
+                // TODO: properly filter parenthesis
+                queryTerms = q.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
+                    ' ').replace(/ OR /g, ' ').split(' ');
 
-            // Check if all terms exist in item
-            for (var i = 0; i < queryTerms.length; i++) {
-                if (queryTerms[i] && queryTerms[i].length)
-                    if (queryTerms[i].indexOf(':') > -1) {
-                        var kv = queryTerms[i].split(':'),
-                            k = kv[0],
-                            v = kv[1];
-                        if (item[k] != v)
-                            return false;
-                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
-                    0) {
-                    return false;
+                // Check if all terms exist in item
+                for (var i = 0; i < queryTerms.length; i++) {
+                    if (queryTerms[i] && queryTerms[i].length)
+                        if (queryTerms[i].indexOf(':') > -1) {
+                            var kv = queryTerms[i].split(':'),
+                                k = kv[0],
+                                v = kv[1];
+                            if (item[k] != v)
+                                return false;
+                        } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
+                        0) {
+                        return false;
+                    }
                 }
             }
             return true;
