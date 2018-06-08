@@ -847,7 +847,6 @@
             if (this.filterMethod.apply) {
                 var response = this.filterMethod.apply(item,q);
                 // response can be false or a query stripped of owner filter
-                console.log('response',response)
                 if (response === false)
                     return false;
                 else
