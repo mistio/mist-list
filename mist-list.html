@@ -469,6 +469,8 @@
     Polymer({
         is: 'mist-list',
         properties: {
+            user: String,
+            members: Array,
             apiurl: {
                 type: String
             },
@@ -525,6 +527,13 @@
 
             CSVvisible: {
                 type: Array
+            },
+
+            filterMethod: {
+                type: Object,
+                value: function () {
+                    return {}
+                }
             },
 
             renderers: {
@@ -689,7 +698,7 @@
 
         observers: [
             '_itemsUpdated(items)',
-            '_filterItems(items, items.length, combinedFilter)',
+            '_filterItems(items, items.length, combinedFilter, filterMethod)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
@@ -798,7 +807,7 @@
             localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.target.style.width);
         },
 
-        _filterItems: function (items, length, filter) {
+        _filterItems: function (items, length, filter, filterMethod) {
             console.warn('filterItems', filter);
             this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
             this.fire('mist-list-filtered-items-length-changed', {
@@ -833,22 +842,34 @@
         },
 
         applyFilter: function (item, index) {
-            // TODO: properly filter parenthesis
-            var queryTerms = this.combinedFilter.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
-                ' ').replace(/ OR /g, ' ').split(' ');
-
-            // Check if all terms exist in item
-            for (var i = 0; i < queryTerms.length; i++) {
-                if (queryTerms[i] && queryTerms[i].length)
-                    if (queryTerms[i].indexOf(':') > -1) {
-                        var kv = queryTerms[i].split(':'),
-                            k = kv[0],
-                            v = kv[1];
-                        if (item[k] != v)
-                            return false;
-                    } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
-                    0) {
+            var q = this.combinedFilter ? this.combinedFilter.slice(0) : '',
+                queryTerms;
+            if (this.filterMethod.apply) {
+                var response = this.filterMethod.apply(item,q);
+                // response can be false or a query stripped of owner filter
+                if (response === false)
                     return false;
+                else
+                    q = this.filterMethod.apply(item,q);
+            }
+            if (q.length) {
+                // TODO: properly filter parenthesis
+                queryTerms = q.replace(/\(/g, '').replace(/\)/g, '').replace(/ AND /g,
+                    ' ').replace(/ OR /g, ' ').split(' ');
+
+                // Check if all terms exist in item
+                for (var i = 0; i < queryTerms.length; i++) {
+                    if (queryTerms[i] && queryTerms[i].length)
+                        if (queryTerms[i].indexOf(':') > -1) {
+                            var kv = queryTerms[i].split(':'),
+                                k = kv[0],
+                                v = kv[1];
+                            if (item[k] != v)
+                                return false;
+                        } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
+                        0) {
+                        return false;
+                    }
                 }
             }
             return true;
