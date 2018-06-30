@@ -254,6 +254,7 @@
                 display: inline-block;
                 text-align: center;
                 opacity: .5;
+                margin-right: 24px;
             }
 
             paper-menu-button.column-menu {
@@ -298,6 +299,10 @@
             paper-menu paper-item {
                 cursor: pointer;
             }
+
+            iron-icon.searchicon {
+                margin-right: 16px;
+            }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -307,8 +312,8 @@
         <slot name="header"></slot>
         <app-toolbar hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
-            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
-            <h2 hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
+            <iron-icon class="searchicon" icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
+            <h2 hidden$=[[editingFilter]] style="width: 100%; margin-top: 16px;" on-tap="_startEditingFilter">
                 <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
