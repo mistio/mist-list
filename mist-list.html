@@ -298,6 +298,33 @@
             paper-menu paper-item {
                 cursor: pointer;
             }
+
+            #presetFilters {
+                display: flex;
+                flex-direction: row;
+            }
+
+            #presetFilters span {
+                flex: 1;
+            }
+
+            paper-icon-button.clear-filter {
+                opacity: .5;
+                transform: scale(.7);
+            }
+
+            app-toolbar:not(.preset-filters-0) {
+                padding: 0 !important;
+            }
+
+            paper-button[suffix] {
+                text-transform: lowercase;
+                padding: 0px 8px;
+                margin: 2px;
+                background-color: #787878;
+                color: rgba(255,255,255,.87);
+                font-size: 13px;
+            }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -305,9 +332,20 @@
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
-        <app-toolbar hidden$=[[!toolbar]]>
+        <app-toolbar class$="preset-filters-[[presetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
-            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
+            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!presetFilters.length]]">
+                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
+                <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
+                    <template is="dom-repeat" items="[[presetFilters]]">
+                        <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
+                            <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_clearPresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                        </paper-item>
+                    </template>
+                </paper-menu>
+            </paper-menu-button>
+            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap=
+            "_startEditingFilter"></iron-icon>
             <h2 hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
                 <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
@@ -318,6 +356,7 @@
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
                 value={{userFilter}}>
+                <paper-button slot="suffix" class="suffix" on-tap="_saveFilter" icon="icons:save" suffix hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters)]]">save filter</paper-button>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
@@ -376,6 +415,18 @@
                     <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
                 </paper-menu>
             </paper-menu-button>
+            <!-- <div hidden$="[[toolbar]]">
+                <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" hidden$="[[!presetFilters]]">
+                    <paper-icon-button icon="icons:arrow-drop-down" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
+                    <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}">
+                        <template is="dom-repeat" items="[[presetFilters]]">
+                            <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
+                                <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_clearPresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                            </paper-item>
+                        </template>
+                    </paper-menu>
+                </paper-menu-button>
+            </div> -->
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
@@ -694,6 +745,14 @@
                 value: false,
                 reflectToAttribute: true
             },
+            presetFilters: {
+                type: Array,
+                value: []
+            },
+            selectedPresetFilters: {
+                type: Array,
+                value: []
+            }
         },
 
         observers: [
@@ -703,7 +762,9 @@
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)'
+            '_visibleChanged(visible)',
+            '_userFilterChanged(userFilter)',
+            '_selectedPresetFiltersChanged(selectedPresetFilters.length)'
         ],
 
         listeners: {
@@ -1208,5 +1269,43 @@
         _exitFullscreen: function (e) {
             this.set('fullscreen',false);
         },
+        _selectedPresetFiltersChanged: function(selected) {
+            this.set('userFilter', this.selectedPresetFilters.join(" "));
+        },
+        _saveFilter: function(e) {
+            console.log('_saveFilter');
+            if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1)
+                    this.push('presetFilters', {
+                            name: this.userFilter,
+                            filter: this.userFilter,
+                            default: false
+                        })
+        },
+        _clearPresetFilter: function(e) {
+            e.stopPropagation();
+            this.splice('presetFilters', this.presetFilters.indexOf(e.model.item), 1);
+            if (this.userFilter.indexOf(e.model.item.filter) > -1)
+                this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
+            if (this.selectedPresetFilters.indexOf(e.model.item.filter) > -1)
+                this.splice('selectedPresetFilters', this.selectedPresetFilters.indexOf(e.model.item.filter), 1);
+        },
+        _userFilterChanged: function (userFilter) {
+            var trimmed = userFilter.trim();
+            if (trimmed.length) {
+                this._startEditingFilter();
+                // close
+                var chunks = trimmed.split(" ");
+                for (var i=0; i<chunks.length;i++) {
+                    if (this.presetFilters.map(function(m){return m.filter}).indexOf(chunks[i]) > -1 && this.selectedPresetFilters.indexOf(chunks[i]) == -1)
+                        this.push("selectedPresetFilters", chunks[i]);
+                }
+            } else {
+                this.set('userFilter', '');
+                this._stopEditingFilter();
+            }
+        },
+        _computeShowSaveSearch: function(userFilter, presetFilters) {
+            return this.userFilter.length && this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
+        }
     });
 </script>
