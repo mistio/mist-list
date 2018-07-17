@@ -1326,14 +1326,16 @@
             localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
         },
         _userFilterChanged: function (userFilter) {
-            var trimmed = userFilter.trim();
-            if (trimmed.length) {
-                this._startEditingFilter();
-            } else {
-                this.set('userFilter', '');
-                this._stopEditingFilter();
+            if (userFilter != undefined) {
+                var trimmed = userFilter.trim();
+                if (trimmed.length) {
+                    this._startEditingFilter();
+                } else {
+                    this.set('userFilter', '');
+                    this._stopEditingFilter();
+                }
+                localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
             }
-            localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
         },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
             return this.userFilter.length && this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
