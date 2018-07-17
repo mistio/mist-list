@@ -2,6 +2,7 @@
 <link rel="import" href="../vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-filter.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../vaadin-combo-box/vaadin-combo-box.html">
 <link rel="import" href="../vaadin-context-menu/vaadin-context-menu.html">
@@ -201,7 +202,6 @@
 
             paper-input {
                 display: inline-block;
-                margin-left: 16px;
                 width: 100%;
             }
 
@@ -317,6 +317,14 @@
                 padding: 0 !important;
             }
 
+            paper-dialog#filterDialog {
+                max-width: 400px;
+            }
+
+            paper-dialog#filterDialog > .buttons {
+                padding: 24px;
+            }
+
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -350,7 +358,7 @@
                 value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-            <paper-icon-button on-tap="_saveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters.length)]]">save filter</paper-icon-button>
+            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters.length)]]">save filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -504,6 +512,18 @@
 
         <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden>
         Download </a>
+
+        <paper-dialog id="filterDialog" with-backdrop>
+            <h2>Save filter</h2>
+            <paper-dialog-scrollable>
+                <span>Optionally choose a filter name.</span>
+                <paper-input value="{{filterName}}" label="Filter name"></paper-input>
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm on-tap="_saveFilter">Save filter</paper-button>
+            </div>
+        </paper-dialog>
 
     </template>
 </dom-module>
@@ -744,7 +764,8 @@
             selectedPresetFilters: {
                 type: Array,
                 value: []
-            }
+            },
+            filterName: String
         },
 
         observers: [
@@ -1264,14 +1285,20 @@
         _selectedPresetFiltersChanged: function(selected) {
             this.set('userFilter', this.selectedPresetFilters.join(" "));
         },
+        _openDialogSaveFilter: function(e) {
+            this.set('filterName', this.userFilter.slice(0));
+            this.querySelector('#filterDialog').open();
+        },
         _saveFilter: function(e) {
             console.log('_saveFilter');
             if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1)
-                    this.push('presetFilters', {
-                            name: this.userFilter,
-                            filter: this.userFilter,
-                            default: false
-                        })
+                this.push('presetFilters', {
+                        name: this.filterName,
+                        filter: this.userFilter,
+                        default: false
+                    });
+            this.querySelector('#filterDialog').close();
+            this.set('filterName','');
         },
         _clearPresetFilter: function(e) {
             e.stopPropagation();
@@ -1297,7 +1324,6 @@
             }
         },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
-            console.log('_computeShowSaveSearch',this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1)
             return this.userFilter.length && this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
         }
     });
