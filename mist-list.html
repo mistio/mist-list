@@ -317,14 +317,6 @@
                 padding: 0 !important;
             }
 
-            paper-button[suffix] {
-                text-transform: lowercase;
-                padding: 0px 8px;
-                margin: 2px;
-                background-color: #787878;
-                color: rgba(255,255,255,.87);
-                font-size: 13px;
-            }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
             <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
@@ -356,9 +348,9 @@
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
                 value={{userFilter}}>
-                <paper-button slot="suffix" class="suffix" on-tap="_saveFilter" icon="icons:save" suffix hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters)]]">save filter</paper-button>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+            <paper-icon-button on-tap="_saveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters.length)]]">save filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -1304,7 +1296,8 @@
                 this._stopEditingFilter();
             }
         },
-        _computeShowSaveSearch: function(userFilter, presetFilters) {
+        _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
+            console.log('_computeShowSaveSearch',this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1)
             return this.userFilter.length && this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
         }
     });
