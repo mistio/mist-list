@@ -1303,38 +1303,32 @@
         },
         _saveFilter: function(e) {
             console.log('_saveFilter');
-            if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1)
+            if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1) {
                 this.push('presetFilters', {
                         name: this.filterName,
                         filter: this.userFilter,
                         default: false
                     });
-            // save to localStorage
+            }
             localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
-
             this.querySelector('#filterDialog').close();
             this.set('filterName','');
         },
         _clearPresetFilter: function(e) {
             e.stopPropagation();
             this.splice('presetFilters', this.presetFilters.indexOf(e.model.item), 1);
-            if (this.userFilter.indexOf(e.model.item.filter) > -1)
+            if (this.userFilter.indexOf(e.model.item.filter) > -1) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
-            if (this.selectedPresetFilters.indexOf(e.model.item.filter) > -1)
+            }
+            if (this.selectedPresetFilters.indexOf(e.model.item.filter) > -1) {
                 this.splice('selectedPresetFilters', this.selectedPresetFilters.indexOf(e.model.item.filter), 1);
-
+            }
             localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
         },
         _userFilterChanged: function (userFilter) {
             var trimmed = userFilter.trim();
             if (trimmed.length) {
                 this._startEditingFilter();
-                // close
-                var chunks = trimmed.split(" ");
-                for (var i=0; i<chunks.length;i++) {
-                    if (this.presetFilters.map(function(m){return m.filter}).indexOf(chunks[i]) > -1 && this.selectedPresetFilters.indexOf(chunks[i]) == -1)
-                        this.push("selectedPresetFilters", chunks[i]);
-                }
             } else {
                 this.set('userFilter', '');
                 this._stopEditingFilter();
