@@ -339,7 +339,7 @@
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
                     <template is="dom-repeat" items="[[presetFilters]]">
                         <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
-                            <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_clearPresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                            <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
                     </template>
                 </paper-menu>
@@ -421,7 +421,7 @@
                     <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}">
                         <template is="dom-repeat" items="[[presetFilters]]">
                             <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
-                                <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_clearPresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                                <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                             </paper-item>
                         </template>
                     </paper-menu>
@@ -1294,6 +1294,23 @@
         _exitFullscreen: function (e) {
             this.set('fullscreen',false);
         },
+        addFilter: function(filter) {
+            this.push('presetFilters', filter);
+            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
+        },
+        deleteFilter: function(index) {
+            this.splice('presetFilters', index, 1);
+            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
+        },
+        useFilter: function(filter) {
+            if (typeof filter == "object" && filter.filter)
+                this.set('userFilter', this.userFilter+" "+filter.filter);
+            if (typeof filter == "string")
+                this.set('userFilter', this.userFilter+" "+filter);
+        },
+        setSelectedPresetFilter: function(filters) {
+            this.set('selectedPresetFilters', filters);
+        },
         _selectedPresetFiltersChanged: function(selected) {
             this.set('userFilter', this.selectedPresetFilters.join(" "));
         },
@@ -1302,28 +1319,26 @@
             this.querySelector('#filterDialog').open();
         },
         _saveFilter: function(e) {
-            console.log('_saveFilter');
             if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1) {
-                this.push('presetFilters', {
-                        name: this.filterName,
-                        filter: this.userFilter,
-                        default: false
-                    });
+                var newfilter  = {
+                    name: this.filterName,
+                    filter: this.userFilter,
+                    default: false
+                };
+                this.addFilter(newfilter);
             }
-            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
             this.querySelector('#filterDialog').close();
             this.set('filterName','');
         },
-        _clearPresetFilter: function(e) {
+        _deletePresetFilter: function(e) {
             e.stopPropagation();
-            this.splice('presetFilters', this.presetFilters.indexOf(e.model.item), 1);
+            this.deleteFilter(this.presetFilters.indexOf(e.model.item))
             if (this.userFilter.indexOf(e.model.item.filter) > -1) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
             }
             if (this.selectedPresetFilters.indexOf(e.model.item.filter) > -1) {
                 this.splice('selectedPresetFilters', this.selectedPresetFilters.indexOf(e.model.item.filter), 1);
             }
-            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
         },
         _userFilterChanged: function (userFilter) {
             if (userFilter != undefined) {
