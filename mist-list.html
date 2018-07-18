@@ -931,10 +931,11 @@
             if (this.filterMethod.apply) {
                 var response = this.filterMethod.apply(item,q);
                 // response can be false or a query stripped of owner filter
-                if (response === false)
+                if (response === false) {
                     return false;
-                else
+                } else {
                     q = this.filterMethod.apply(item,q);
+                }
             }
             if (q.length) {
                 // TODO: properly filter parenthesis
@@ -948,8 +949,14 @@
                             var kv = queryTerms[i].split(':'),
                                 k = kv[0],
                                 v = kv[1];
-                            if (item[k] != v)
+                            if (item[k] != v) {
+                                // check also rendered values
+                                if (this.columns.indexOf(k) > -1 && this._getBody(k, item).toLowerCase()
+                                    .indexOf(v.toLowerCase()) > -1) {
+                                    return true;
+                                }
                                 return false;
+                            }
                         } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
                         0) {
                         return false;
