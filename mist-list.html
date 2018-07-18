@@ -810,15 +810,13 @@
 
             if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
                 this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
-            }
-            else {
+            } else {
                 this.set('userFilter','');
             }
 
             if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/presetFilters'))) {
                 this.set('presetFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/presetFilters')));
-            }
-            else {
+            } else {
                 this.set('presetFilters',[]);
             }
         },
