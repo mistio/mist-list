@@ -332,12 +332,12 @@
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
-        <app-toolbar class$="preset-filters-[[presetFilters.length]]" hidden$=[[!toolbar]]>
+        <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
-            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!presetFilters.length]]">
+            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
                 <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
-                    <template is="dom-repeat" items="[[presetFilters]]">
+                    <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
                             <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
@@ -358,7 +358,7 @@
                 value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,presetFilters.length)]]">save filter</paper-icon-button>
+            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,combinedPresetFilters.length)]]">save filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -757,7 +757,16 @@
                 reflectToAttribute: true
             },
             presetFilters: {
+                type: Array,
+                value: []
+            },
+            userSavedFilters: {
                 type: Array
+            },
+            combinedPresetFilters: {
+                type: Array,
+                value: [],
+                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.*)'
             },
             selectedPresetFilters: {
                 type: Array,
@@ -814,10 +823,11 @@
                 this.set('userFilter','');
             }
 
-            if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/presetFilters'))) {
-                this.set('presetFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/presetFilters')));
+            if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
+                this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters')));
+                this.fire('filter-change');
             } else {
-                this.set('presetFilters',[]);
+                this.set('userSavedFilters', [])
             }
         },
 
@@ -1300,23 +1310,27 @@
             this.set('fullscreen',false);
         },
         addFilter: function(filter) {
-            this.push('presetFilters', filter);
-            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
+            this.push('userSavedFilters', filter);
+            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
         },
         deleteFilter: function(index) {
-            this.splice('presetFilters', index, 1);
-            localStorage.setItem('mist-list#' + this.id + '/presetFilters', JSON.stringify(this.presetFilters));
+            console.log('_deleteFilter IN', index);
+            this.splice('userSavedFilters', index, 1);
+            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
         },
         useFilter: function(filter) {
             if (typeof filter == "object" && filter.filter)
                 this.set('userFilter', this.userFilter+" "+filter.filter);
-            if (typeof filter == "string")
-                this.set('userFilter', this.userFilter+" "+filter);
+            if (filter.clear)
+                this.set('userFilter', this.userFilter.replace(filter.clear, ''));
         },
         setSelectedPresetFilter: function(filters) {
             this.set('selectedPresetFilters', filters);
         },
         _selectedPresetFiltersChanged: function(selected) {
+            // TODO allow items to clear filters
             this.set('userFilter', this.selectedPresetFilters.join(" "));
         },
         _openDialogSaveFilter: function(e) {
@@ -1337,7 +1351,7 @@
         },
         _deletePresetFilter: function(e) {
             e.stopPropagation();
-            this.deleteFilter(this.presetFilters.indexOf(e.model.item))
+            this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
             if (this.userFilter.indexOf(e.model.item.filter) > -1) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
             }
@@ -1358,7 +1372,12 @@
             }
         },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
-            return this.userFilter.length && this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
+            return this.userFilter.length && this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
+        },
+        _computeCombinedPresetFilters: function(presetFilters, userSavedFilters) {
+            var pf = this.presetFilters || [] ,
+                usf = this.userSavedFilters || [];
+            return pf.concat(usf);
         }
     });
 </script>
