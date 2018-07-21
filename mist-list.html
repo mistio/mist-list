@@ -755,7 +755,7 @@
                 this.debounce('updateItemsList', function () {
                     console.log('itemMap updated');
                     this.set('items', this._toArray(this.itemMap));
-                }, 100);
+                }, 300);
         },
 
         _toArray: function (obj) {
@@ -833,36 +833,39 @@
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
-            console.warn('filterItems', filter);
-            this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
-            this.fire('mist-list-filtered-items-length-changed', {
-                length: this.filteredItems.length
-            });
-            this.$.grid.set('items', this.filteredItems);
+            console.warn('filterItems debounce', filter);
+            this.debounce('_filterListItems', function (items) {
+                console.warn('filterItems exec', filter);
+                this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+                this.fire('mist-list-filtered-items-length-changed', {
+                    length: this.filteredItems.length
+                });
+                this.$.grid.set('items', this.filteredItems);
 
-            if (this.selectedItems.length) {
-                this.debounce('cleanupSelectedItems', function () {
-                    var newSelectedItems = [],
-                        _this = this;
-                    for (var i = 0; i < _this.selectedItems.length; i++) {
-                        var j = this.filteredItems.findIndex(
-                            function (item) {
-                                return item.id === _this.selectedItems[i].id
-                            }
-                        );
-                        if (j > -1)
-                            newSelectedItems.push(this.filteredItems[j]);
-                    }
-                    this.set('selectedItems', newSelectedItems);
-                    this.async(function () {
-                        this.fire('resize');
+                if (this.selectedItems.length) {
+                    this.debounce('cleanupSelectedItems', function () {
+                        var newSelectedItems = [],
+                            _this = this;
+                        for (var i = 0; i < _this.selectedItems.length; i++) {
+                            var j = this.filteredItems.findIndex(
+                                function (item) {
+                                    return item.id === _this.selectedItems[i].id
+                                }
+                            );
+                            if (j > -1)
+                                newSelectedItems.push(this.filteredItems[j]);
+                        }
+                        this.set('selectedItems', newSelectedItems);
+                        this.async(function () {
+                            this.fire('resize');
+                        }, 100);
+                    }, 200);
+                } else {
+                    this.debounce('iron-resize', function () {
+                        this.$.grid.fire('iron-resize');
                     }, 100);
-                }, 200);
-            } else {
-                this.debounce('iron-resize', function () {
-                    this.$.grid.fire('iron-resize');
-                }, 50);
-            }
+                }
+            }, 500);
         },
 
         applyFilter: function (item, index) {
