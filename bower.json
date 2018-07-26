@@ -17,7 +17,7 @@
     "paper-menu": "^1.3.0",
     "vaadin-combo-box": "^1.3.3",
     "vaadin-context-menu": "^1.0.1",
-    "vaadin-grid": "mistio/vaadin-grid#master"
+    "vaadin-grid": "^5.0.4"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

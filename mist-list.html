@@ -107,11 +107,13 @@
                 ;
             }
 
-            vaadin-grid::content div#table {
+            vaadin-grid::content div#table,
+            vaadin-grid::slotted(div#table) {
                 outline-width: 0px !important;
             }
 
-            vaadin-grid::content vaadin-grid-table-cell {
+            vaadin-grid::content vaadin-grid-table-cell,
+            vaadin-grid::slotted(vaadin-grid-table-cell) {
                 overflow: hidden;
             }
 
@@ -280,7 +282,8 @@
                 text-align: center;
             }
 
-            paper-dialog ::content #scrollable {
+            paper-dialog ::content #scrollable,
+            paper-dialog ::slotted(#scrollable) {
                 display: flex;
                 flex-wrap: wrap;
                 max-width: 600px;
@@ -765,7 +768,7 @@
 
         _onWheel: function (e) {
             var t = this.querySelector('vaadin-grid-table');
-            if (t._scrollBottom / t._scrollHeight > 0.75 && !this.finished) {
+            if (t && t._scrollBottom / t._scrollHeight > 0.75 && !this.finished) {
                 var pageno = this.$.grid._getPageForIndex(this.count);
                 console.log('request page', pageno);
                 this.$.grid._loadPage(pageno);
