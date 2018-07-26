@@ -814,36 +814,37 @@
 
         _filterItems: function (items, length, filter, filterMethod) {
             console.warn('filterItems', filter);
-            this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
-            this.fire('mist-list-filtered-items-length-changed', {
-                length: this.filteredItems.length
-            });
-            this.$.grid.set('items', this.filteredItems);
+            if (this.items) {
+                this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+                this.fire('mist-list-filtered-items-length-changed', {
+                    length: this.filteredItems.length
+                });
+                this.$.grid.set('items', this.filteredItems);
 
-            if (this.selectedItems.length) {
-                this.debounce('cleanupSelectedItems', function () {
-                    var newSelectedItems = [],
-                        _this = this;
-                    for (var i = 0; i < _this.selectedItems.length; i++) {
-                        var j = this.filteredItems.findIndex(
-                            function (item) {
-                                return item.id === _this.selectedItems[i].id
-                            }
-                        );
-                        if (j > -1)
-                            newSelectedItems.push(this.filteredItems[j]);
-                    }
-                    this.set('selectedItems', newSelectedItems);
-                    this.async(function () {
-                        this.fire('resize');
+                if (this.selectedItems.length) {
+                    this.debounce('cleanupSelectedItems', function () {
+                        var newSelectedItems = [],
+                            _this = this;
+                        for (var i = 0; i < _this.selectedItems.length; i++) {
+                            var j = this.filteredItems.findIndex(
+                                function (item) {
+                                    return item.id === _this.selectedItems[i].id
+                                }
+                            );
+                            if (j > -1)
+                                newSelectedItems.push(this.filteredItems[j]);
+                        }
+                        this.set('selectedItems', newSelectedItems);
+                        this.async(function () {
+                            this.fire('resize');
+                        }, 100);
+                    }, 200);
+                } else {
+                    this.debounce('iron-resize', function () {
+                        this.$.grid.fire('iron-resize');
                     }, 100);
-                }, 200);
-            } else {
-                this.debounce('iron-resize', function () {
-                    this.$.grid.fire('iron-resize');
-                }, 100);
+                }
             }
-
         },
 
         applyFilter: function (item, index) {
@@ -916,18 +917,21 @@
         },
 
         _activeItemChanged: function (e) {
+            console.log('_activeItemChanged',e);
             var grid = e.target;
-            this._clickedItem = grid.activeItem ? grid.activeItem : this._clickedItem;
+            this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
 
             // we should either redirect to the proper route path, or expand the item
-            if (this.route != undefined)
-                this.set('route.path', this._clickedItem[this.primaryFieldName]);
-            else if (this.expands)
-                if (grid.expandedItems.indexOf(this._clickedItem) > -1) {
-                    grid.collapseItem(this._clickedItem);
-                } else {
-                    grid.expandItem(this._clickedItem);
-                }
+            if (this._clickedItem) {
+                if (this.route != undefined)
+                    this.set('route.path', this._clickedItem[this.primaryFieldName]);
+                else if (this.expands)
+                    if (grid.expandedItems.indexOf(this._clickedItem) > -1) {
+                        grid.collapseItem(this._clickedItem);
+                    } else {
+                        grid.expandItem(this._clickedItem);
+                    }
+            }
         },
 
         _itemKeys: function (item) {

@@ -163,7 +163,9 @@
                                         }
                                     }
                                     callback(items);
-                                    _this.parentElement.async(function(){this.fire('resize')}, 1000);
+                                    if (_this.parentElement) {
+                                        _this.parentElement.async(function(){this.fire('resize')}, 1000);
+                                    }
                                 }
                                 _this.loading = false;
                             };
