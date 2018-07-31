@@ -31,7 +31,6 @@
     "iron-resizable-behavior": "^v2.0.0",
     "iron-a11y-announcer": "^v2.0.0",
     "iron-a11y-keys-behavior": "^v2.0.0",
-    "iron-scroll-target-behavior": "^v2.0.0",
-    "vaadin-grid": "master"
+    "iron-scroll-target-behavior": "^v2.0.0"
   }
 }

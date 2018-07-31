@@ -106,6 +106,7 @@ Polymer({
         selected: {
             type: Boolean,
             reflectToAttribute: true,
+            value: false,
             notify: true
         }
     },
@@ -115,10 +116,8 @@ Polymer({
     },
 
     toggle: function(e) {
+        e.stopImmediatePropagation();
         this.set('selected', !this.selected);
-        if (!this.letPropagate) {
-            e.stopImmediatePropagation();
-        }
     }
 });
 </script>

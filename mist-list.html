@@ -366,7 +366,7 @@
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
-                <mist-check selected="{{selectAll}}" let-propagate>[[selectedItems.length]]</mist-check>
+                <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                 <slot name="action-buttons"></slot>
             </div>
             <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
@@ -395,7 +395,7 @@
             <template is="dom-if" if="[[selectable]]" restamp>
                 <vaadin-grid-column width="64px" flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
                     <template class="header">
-                        <mist-check selected="{{selectAll}}" let-propagate></mist-check>
+                        <mist-check selected="{{selectAll}}"></mist-check>
                     </template>
                     <template>
                         <mist-check class="item-check" selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
@@ -552,7 +552,8 @@
             },
 
             selectAll: {
-                type: Boolean
+                type: Boolean,
+                value: false
             },
 
             primaryFieldName: {
@@ -1037,8 +1038,11 @@
 
         toggleSelectAll: function (selectAll) {
             if (selectAll && this.count != this.selectedItems.length) {
-                var itemsToSelect  = this.filteredItems ? this.filteredItems : this.items;
-                this.set('selectedItems', itemsToSelect);
+                if (this.itemMap)
+                    this.set('selectedItems', this._toArray(this.itemMap));
+                else {
+                    this.set('selectedItems', this.filteredItems);
+                }
             } else if (!selectAll && this.count == this.selectedItems.length){
                 this.set('selectedItems', []);
             }
