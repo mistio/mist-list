@@ -207,14 +207,6 @@
                 width: 100%;
             }
 
-            mist-check[let-propagate="true"] {
-                display: inline-block;
-            }
-
-            mist-check[let-propagate="true"]::slotted(iron-icon) {
-                color: inherit;
-            }
-
             mist-check::slotted(iron-icon) {
                 color: #424242;
             }
@@ -344,7 +336,7 @@
                     <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
                         <template is="dom-repeat" items="[[columns]]" as="column">
                             <paper-item label="[[column]]">
-                                <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                                <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
                             </paper-item>
                         </template>
                     </template>
@@ -360,7 +352,7 @@
                     <p>Select columns to download.</p>
                     <template is="dom-repeat" items="[[columns]]" as="column">
                         <paper-item label="[[column]]">
-                            <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged" let-propagate=true>[[column]]</paper-checkbox>
+                            <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged">[[column]]</paper-checkbox>
                         </paper-item>
                     </template>
                 </paper-dialog-scrollable>
@@ -374,7 +366,7 @@
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
             on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
             <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
-                <mist-check selected="{{selectAll}}" let-propagate=true>[[selectedItems.length]]</mist-check>
+                <mist-check selected="{{selectAll}}" let-propagate>[[selectedItems.length]]</mist-check>
                 <slot name="action-buttons"></slot>
             </div>
             <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
@@ -403,11 +395,11 @@
             <template is="dom-if" if="[[selectable]]" restamp>
                 <vaadin-grid-column width="64px" flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
                     <template class="header">
-                        <mist-check selected="{{selectAll}}" let-propagate=true></mist-check>
+                        <mist-check selected="{{selectAll}}" let-propagate></mist-check>
                     </template>
                     <template>
-                        <mist-check selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
-                            icon="[[_computeIcon(item, renderers.icon)]]"></mist-check>
+                        <mist-check class="item-check" selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
+                            icon="[[_computeIcon(item, renderers.icon)]]" item="[[item]]"></mist-check>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -711,7 +703,8 @@
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)'
+            '_visibleChanged(visible)',
+            '_itemMapChanged(itemMap.*)'
         ],
 
         listeners: {
@@ -734,6 +727,7 @@
                     this.windowResize()
                 }, 500);
             }
+
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
 
@@ -749,6 +743,22 @@
             if (this.resizable) {
                 window.removeEventListener("resize", this.resizeHandler);
             }
+        },
+
+        _itemMapChanged: function(itemMap) {
+            if (itemMap){
+                this.set('items', this._toArray(this.itemMap));
+            }
+        },
+
+        _toArray: function(obj) {
+            var arr = [];
+            for (var p in obj) {
+                if (obj[p]) {
+                    arr.push(obj[p]);
+                }
+            }
+            return arr;
         },
 
         _computeFilteredItemsLength: function (filteredItems) {
@@ -804,10 +814,13 @@
 
         columnWidth: function (column, frozen) {
             var w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
-            if (w)
+            if (w) {
                 return w;
-            else if (frozen)
+            } else if (frozen) {
                 return this.frozenWidth + 'px';
+            } else {
+                return '120px'
+            }
         },
 
         saveColumnWidth: function (e) {
@@ -1023,17 +1036,20 @@
         },
 
         toggleSelectAll: function (selectAll) {
-            if (this.selectAll)
-                this.set('selectedItems', this.get('filteredItems').slice());
-            else if (!this.selectAll && this.count && this.count == this.selectedItems.length)
+            if (selectAll && this.count != this.selectedItems.length) {
+                var itemsToSelect  = this.filteredItems ? this.filteredItems : this.items;
+                this.set('selectedItems', itemsToSelect);
+            } else if (!selectAll && this.count == this.selectedItems.length){
                 this.set('selectedItems', []);
+            }
         },
 
         selectedItemsChanged: function (itemslength) {
-            if (this.count && this.count == this.selectedItems.length)
+            if (this.count && this.count == itemslength && !this.selectAll) {
                 this.set('selectAll', true);
-            else
+            } else if (this.count && this.count != itemslength && this.selectAll) {
                 this.set('selectAll', false);
+            }
         },
 
         _getComparisonFunction: function (column) {
@@ -1209,9 +1225,11 @@
         },
 
         _getDirection: function (column) {
-            for (var i=0; i < this.sorters.length; i++) {
-                if (this.sorters[i][0] == column)
-                    return this.sorters[i][1];
+            if (this.sorters) {
+                for (var i=0; i < this.sorters.length; i++) {
+                    if (this.sorters[i][0] == column)
+                        return this.sorters[i][1];
+                }
             }
         },
         _enterFullscreen: function (e) {
