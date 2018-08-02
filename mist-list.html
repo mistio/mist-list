@@ -599,11 +599,7 @@
             },
 
             itemMap: {
-                type: Object,
-                notify: true,
-                value: function () {
-                    return {}
-                }
+                type: Object
             },
 
             timeseries: {
@@ -679,8 +675,8 @@
             },
             useDataProvider: {
                 type: Boolean,
-                computed: '_computeUseDataProvider(apiurl, items)',
-                value: true
+                computed: '_computeUseDataProvider(apiurl, rest)',
+                value: false
             },
             sorters: {
                 type: Array,
@@ -695,17 +691,21 @@
                 value: false,
                 reflectToAttribute: true
             },
+            rest: {
+                type: Boolean,
+                value: false
+            }
         },
 
         observers: [
             '_itemsUpdated(items)',
+            '_itemMapUpdated(itemMap.*)',
             '_filterItems(items, items.length, combinedFilter, filterMethod)',
             'windowResize(filteredItems.length, route.path)',
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
             '_visibleChanged(visible)',
-            '_itemMapChanged(itemMap.*)'
         ],
 
         listeners: {
@@ -746,20 +746,20 @@
             }
         },
 
-        _itemMapChanged: function(itemMap) {
-            if (itemMap){
-                this.set('items', this._toArray(this.itemMap));
+        _itemMapUpdated: function(itemMap) {
+            this.$.grid.clearCache();
+            if (this.itemMap && !this.rest) {
+                this.debounce('updateItemsList', function () {
+                    console.log('itemMap updated');
+                    this.set('items', this._toArray(this.itemMap));
+                }, 300);
             }
         },
 
         _toArray: function(obj) {
-            var arr = [];
-            for (var p in obj) {
-                if (obj[p]) {
-                    arr.push(obj[p]);
-                }
-            }
-            return arr;
+            return Object.keys(obj).map(function(key) {
+                return obj[key]
+            });
         },
 
         _computeFilteredItemsLength: function (filteredItems) {
@@ -832,35 +832,38 @@
         _filterItems: function (items, length, filter, filterMethod) {
             console.warn('filterItems', filter);
             if (this.items) {
-                this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
-                this.fire('mist-list-filtered-items-length-changed', {
-                    length: this.filteredItems.length
-                });
-                this.$.grid.set('items', this.filteredItems);
+                this.debounce('_filterListItems', function (items) {
+                    console.warn('filterItems exec', filter);
+                    this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+                    this.fire('mist-list-filtered-items-length-changed', {
+                        length: this.filteredItems.length
+                    });
+                    this.$.grid.set('items', this.filteredItems);
 
-                if (this.selectedItems.length) {
-                    this.debounce('cleanupSelectedItems', function () {
-                        var newSelectedItems = [],
-                            _this = this;
-                        for (var i = 0; i < _this.selectedItems.length; i++) {
-                            var j = this.filteredItems.findIndex(
-                                function (item) {
-                                    return item.id === _this.selectedItems[i].id
-                                }
-                            );
-                            if (j > -1)
-                                newSelectedItems.push(this.filteredItems[j]);
-                        }
-                        this.set('selectedItems', newSelectedItems);
-                        this.async(function () {
-                            this.fire('resize');
+                    if (this.selectedItems.length) {
+                        this.debounce('cleanupSelectedItems', function () {
+                            var newSelectedItems = [],
+                                _this = this;
+                            for (var i = 0; i < _this.selectedItems.length; i++) {
+                                var j = this.filteredItems.findIndex(
+                                    function (item) {
+                                        return item.id === _this.selectedItems[i].id
+                                    }
+                                );
+                                if (j > -1)
+                                    newSelectedItems.push(this.filteredItems[j]);
+                            }
+                            this.set('selectedItems', newSelectedItems);
+                            this.async(function () {
+                                this.fire('resize');
+                            }, 100);
+                        }, 200);
+                    } else {
+                        this.debounce('iron-resize', function () {
+                            this.$.grid.fire('iron-resize');
                         }, 100);
-                    }, 200);
-                } else {
-                    this.debounce('iron-resize', function () {
-                        this.$.grid.fire('iron-resize');
-                    }, 100);
-                }
+                    }
+                }, 500);
             }
         },
 
@@ -917,7 +920,8 @@
                 // update column map using response.items values
                 for (var i = 0; i < this.items.length; i++) {
                     var item = this.items[i];
-                    this.itemMap[item[this.primaryFieldName]] = item;
+                    if (this.rest)
+                        this.itemMap[item[this.primaryFieldName]] = item;
                     var keys = Object.keys(item);
                     for (var k = 0; k < keys.length; k++) {
                         this.colmap[keys[k]] = true;
@@ -1168,8 +1172,8 @@
             return expands && '46px' || '24px';
         },
 
-        _computeUseDataProvider: function (apiurl, items) {
-            return this.apiurl && this.apiurl.length && !this.items;
+        _computeUseDataProvider: function (apiurl) {
+            return this.apiurl && this.apiurl.length && this.rest;
         },
 
         _openDialogSelectColumns: function (e) {
