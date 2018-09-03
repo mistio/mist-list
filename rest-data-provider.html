@@ -139,7 +139,7 @@
                                             _this.finished = true;
                                     }
                                     _this.received += items.length;
-                                    if (items.length) {
+                                    if (items && items.length) {
                                         // update column map using response.items values
                                         items.forEach(function(i) {
                                             _this.itemMap[i[_this.primaryFieldName]] = i;
@@ -163,7 +163,9 @@
                                         }
                                     }
                                     callback(items);
-                                    _this.parentElement.async(function(){this.fire('resize')}, 1000);
+                                    if (_this.parentElement) {
+                                        _this.parentElement.async(function(){this.fire('resize')}, 1000);
+                                    }
                                 }
                                 _this.loading = false;
                             };

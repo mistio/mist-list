@@ -98,25 +98,22 @@ Polymer({
         item: {
             type: Object
         },
-        letPropagate: Boolean,
         selected: {
             type: Boolean,
             reflectToAttribute: true,
+            value: false,
             notify: true
         }
     },
 
     listeners: {
-        'click': 'toggle'
+        'click': 'toggle',
     },
 
     toggle: function(e) {
+        e.stopImmediatePropagation();
         this.set('selected', !this.selected);
-        if (!this.letPropagate)
-            e.stopImmediatePropagation();
-        return true;
     }
-
 });
 </script>
 </dom-module>
