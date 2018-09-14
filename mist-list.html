@@ -1188,8 +1188,10 @@
             console.debug('eventReceived', item, this.applyFilter(item.detail));
             if (this.applyFilter(item.detail))
                 this.async(function () {
-                    this.$.grid.unshift('_cache.0', item.detail);
-                    this.$.grid.fire('iron-resize');
+                    if (this.$.grid && this.$.grid.get('_cache.0') != undefined) {
+                        this.$.grid.unshift('_cache.0', item.detail);
+                        this.$.grid.fire('iron-resize');
+                    }
                 });
         },
 
