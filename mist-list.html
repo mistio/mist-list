@@ -1232,6 +1232,7 @@
         },
 
         _visibleChanged: function (visible) {
+            console.log('visible changed', this.visible);
             this.set('CSVvisible', this.CSVvisible || visible);
         },
 
