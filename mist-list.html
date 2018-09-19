@@ -734,6 +734,7 @@
 
             if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
+                console.log('get localStorage', this.visible);
                 var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
                 if (sorters && sorters.length)
                     this.set('sorters', sorters);
@@ -927,8 +928,16 @@
                         this.colmap[keys[k]] = true;
                     }
                 }
-                // Compute columns list from colmap, removing frozen columns
                 var cols = Object.keys(this.colmap);
+                // Add the visible columns if any that are not an item property
+                if (this.visible && this.visible.length) {
+                    for (var j = 0; j < this.visible.length; j++) {
+                        if (cols.indexOf(this.visible[j]) == -1) {
+                            cols.push(this.visible[j]);
+                        }
+                    }
+                }
+                // Compute columns list from colmap, removing frozen columns
                 this.frozen.forEach(function (f) {
                     if (cols.indexOf(f) > -1)
                         cols.splice(cols.indexOf(f), 1);
