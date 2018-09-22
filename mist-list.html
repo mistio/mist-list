@@ -734,11 +734,11 @@
 
             if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
-                // console.log('get localStorage', this.visible);
-                var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
-                if (sorters && sorters.length)
-                    this.set('sorters', sorters);
             }
+
+            var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
+            if (sorters && sorters.length)
+                this.set('sorters', sorters);
         },
 
         detached: function () {
