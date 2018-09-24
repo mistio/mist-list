@@ -333,7 +333,7 @@
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
-                            <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                            <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
                     </template>
                 </paper-menu>
