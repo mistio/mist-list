@@ -809,10 +809,6 @@
 
             if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                 this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
-                // console.log('get localStorage', this.visible);
-                var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
-                if (sorters && sorters.length)
-                    this.set('sorters', sorters);
             }
 
             if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
@@ -827,6 +823,10 @@
             } else {
                 this.set('userSavedFilters', [])
             }
+
+            var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
+            if (sorters && sorters.length)
+                this.set('sorters', sorters);
         },
 
         detached: function () {
