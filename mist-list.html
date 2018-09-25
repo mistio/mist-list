@@ -345,7 +345,7 @@
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
                 <span class="title">
-                    [[_displayName(name,selectedPresetFilters,userFilter)]]
+                    [[_displayName(name,selectedPresetFilters.length,userFilter)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
@@ -1378,7 +1378,6 @@
             this.set('selectedPresetFilters', filters);
         },
         _displayName: function(name,selectedPresetFilters,userSavedFilters) {
-            console.log('display name', this.name, this.selectedPresetFilters, this.userSavedFilters, this.userFilter);
             if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
                 return this.name && this.name.length ? this.name : '';
             } else {
@@ -1422,11 +1421,10 @@
         _userFilterChanged: function (userFilter) {
             if (userFilter != undefined) {
                 var trimmed = userFilter.trim();
-                if (trimmed.length) {
-                    if (this.editingFilter) {
-                        this._updateSelectedFilters(userFilter);
-                    }
-                } else {
+                if (this.editingFilter) {
+                    this._updateSelectedFilters(userFilter);
+                }
+                if (!trimmed.length) {
                     this.set('userFilter', '');
                     this._stopEditingFilter();
                 }
