@@ -345,7 +345,7 @@
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
                 <span class="title">
-                    [[name]]
+                    [[_displayName(name,selectedPresetFilters,userFilter)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
@@ -1260,13 +1260,15 @@
                 }.bind(this),1000);
             }
             this.userFilter = '';
+            this.selectedPresetFilters = [];
             this.editingFilter = false;
         },
 
         _baseFilterUpdated: function () {
             // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter)
+            if (this.userFilter) {
                 this.set('userFilter', '');
+            }
             this.editingFilter = false;
         },
 
@@ -1365,13 +1367,27 @@
             this.fire('filter-change');
         },
         useFilter: function(filter) {
-            if (typeof filter == "object" && filter.filter)
+            if (typeof filter == "object" && filter.filter) {
                 this.set('userFilter', this.userFilter+" "+filter.filter);
-            if (filter.clear)
+            }
+            if (filter.clear) {
                 this.set('userFilter', this.userFilter.replace(filter.clear, ''));
+            }
         },
         setSelectedPresetFilter: function(filters) {
             this.set('selectedPresetFilters', filters);
+        },
+        _displayName: function(name,selectedPresetFilters,userSavedFilters) {
+            console.log('display name', this.name, this.selectedPresetFilters, this.userSavedFilters, this.userFilter);
+            if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
+                return this.name && this.name.length ? this.name : '';
+            } else {
+                var that = this,
+                    titles = this.userSavedFilters.filter(function(f){
+                        return that.selectedPresetFilters.indexOf(f.filter) > -1;
+                    });
+                return titles.map(i=>i.name).join(" & ");
+            }
         },
         _selectedPresetFiltersChanged: function(selected) {
             // TODO allow items to clear filters
@@ -1407,7 +1423,9 @@
             if (userFilter != undefined) {
                 var trimmed = userFilter.trim();
                 if (trimmed.length) {
-                    this._startEditingFilter();
+                    if (this.editingFilter) {
+                        this._updateSelectedFilters(userFilter);
+                    }
                 } else {
                     this.set('userFilter', '');
                     this._stopEditingFilter();
@@ -1415,8 +1433,19 @@
                 localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
             }
         },
+        _updateSelectedFilters: function(useFilter) {
+            if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
+                return;
+            } else {
+                for (var i = 0; i<this.selectedPresetFilters.length; i++) {
+                    if (this.userFilter.indexOf(this.selectedPresetFilters[i]) == -1) {
+                        this.splice('selectedPresetFilters',this.selectedPresetFilters.indexOf(this.selectedPresetFilters[i]),1);
+                    }
+                }
+            }
+        },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
-            return this.userFilter.length && this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
+            return this.editingFilter && this.userFilter.length && this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
         },
         _computeCombinedPresetFilters: function(presetFilters, userSavedFilters) {
             var pf = this.presetFilters || [] ,
