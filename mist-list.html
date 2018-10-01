@@ -748,11 +748,11 @@
         },
 
         _itemMapUpdated: function(itemMap) {
-            this.$.grid.clearCache();
             if (this.itemMap && !this.rest) {
                 var that = this;
                 this.debounce('updateItemsList', function () {
                     console.log('itemMap updated');
+                    that.$.grid.clearCache();
                     that.set('items', that._toArray(that.itemMap));
                 }, 300);
             }
