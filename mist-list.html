@@ -409,18 +409,6 @@
                     <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
                 </paper-menu>
             </paper-menu-button>
-            <!-- <div hidden$="[[toolbar]]">
-                <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" hidden$="[[!presetFilters]]">
-                    <paper-icon-button icon="icons:arrow-drop-down" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
-                    <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}">
-                        <template is="dom-repeat" items="[[presetFilters]]">
-                            <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
-                                <paper-icon-button class="clear-filter" icon="icons:clear" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
-                            </paper-item>
-                        </template>
-                    </paper-menu>
-                </paper-menu-button>
-            </div> -->
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
