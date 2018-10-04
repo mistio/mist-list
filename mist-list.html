@@ -824,11 +824,12 @@
         },
 
         _itemMapUpdated: function(itemMap) {
-            this.$.grid.clearCache();
             if (this.itemMap && !this.rest) {
+                var that = this;
                 this.debounce('updateItemsList', function () {
                     console.log('itemMap updated');
-                    this.set('items', this._toArray(this.itemMap));
+                    that.$.grid.clearCache();
+                    that.set('items', that._toArray(that.itemMap));
                 }, 300);
             }
         },
@@ -1134,11 +1135,7 @@
 
         toggleSelectAll: function (selectAll) {
             if (selectAll && this.count != this.selectedItems.length) {
-                if (this.itemMap)
-                    this.set('selectedItems', this._toArray(this.itemMap));
-                else {
-                    this.set('selectedItems', this.filteredItems);
-                }
+                this.set('selectedItems', this.filteredItems);
             } else if (!selectAll && this.count == this.selectedItems.length){
                 this.set('selectedItems', []);
             }
