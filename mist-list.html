@@ -294,6 +294,9 @@
             paper-menu paper-item {
                 cursor: pointer;
             }
+            paper-menu paper-item.filter {
+                padding: 0 0 0 16px !important;
+            }
             #presetFilters {
                 display: flex;
                 flex-direction: row;
@@ -332,7 +335,7 @@
                 <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
-                        <paper-item id$="[[item.filter]]"><span>[[item.name]]</span>
+                        <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
                             <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
                     </template>
