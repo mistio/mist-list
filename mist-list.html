@@ -236,6 +236,10 @@
                 font-weight: 400;
             }
 
+            h2.titleh2 {
+                line-height: 1.1em !important;
+            }
+
             span.title {
                 overflow: visible !important;
                 text-transform: capitalize;
@@ -343,7 +347,7 @@
             </paper-menu-button>
             <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap=
             "_startEditingFilter"></iron-icon>
-            <h2 hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
+            <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
                 <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
@@ -1394,6 +1398,7 @@
                 this.addFilter(newfilter);
             }
             this.querySelector('#filterDialog').close();
+            this._stopEditingFilter();
             this.set('filterName','');
         },
         _deletePresetFilter: function(e) {
