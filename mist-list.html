@@ -336,7 +336,7 @@
         <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
-                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
+                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select preset filters"></paper-icon-button>
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
@@ -1234,7 +1234,7 @@
         _stopEditingFilter: function (f) {
             this.async(function () {
                 if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length))
-                    this.editingFilter = false;
+                    this.set('editingFilter',false);
             }, 100);
         },
 
