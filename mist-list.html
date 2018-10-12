@@ -1354,9 +1354,9 @@
             this.set('fullscreen',false);
         },
         addFilter: function(filter) {
-            if (!this.userSavedFilters.length) {
-                this.push('userSavedFilters', {name: this.name.charAt(0).toUpperCase() + this.name.slice(1), filter: "", default: true});
-            }
+            // if (this.userSavedFilters === []) {
+            //     this.push('userSavedFilters', {name: this.name.charAt(0).toUpperCase() + this.name.slice(1), filter: "", default: true});
+            // }
             this.push('userSavedFilters', filter);
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
@@ -1368,9 +1368,9 @@
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
 
-            if (this.userSavedFilters.length == 1) {
-                this.set('userSavedFilters', []);
-            }
+            // if (this.userSavedFilters.length == 1) {
+            //     this.set('userSavedFilters', []);
+            // }
         },
         useFilter: function(filter) {
             if (typeof filter == "object" && filter.filter) {
@@ -1465,6 +1465,10 @@
             // ENTER
             if (e.keyCode === 13 && this.$.searchInput.focused) {
                 this._forceStopEditingFilter();
+            }
+            // ENTER
+            if (e.keyCode === 13 && this.$.filterDialog.opened) {
+                this._saveFilter();
             }
         }
     });
