@@ -301,6 +301,9 @@
             paper-menu paper-item.filter {
                 padding: 0 0 0 16px !important;
             }
+            paper-menu paper-item.filter.all-items {
+                text-transform: capitalize;
+            }
             #presetFilters {
                 display: flex;
                 flex-direction: row;
@@ -338,6 +341,7 @@
             <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
                 <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select preset filters"></paper-icon-button>
                 <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
+                    <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
                             <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
@@ -506,7 +510,7 @@
             <h2>Save filter</h2>
             <paper-dialog-scrollable>
                 <span>Optionally choose a filter name.</span>
-                <paper-input value="{{filterName}}" label="Filter name"></paper-input>
+                <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1"></paper-input>
             </paper-dialog-scrollable>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
@@ -1385,7 +1389,8 @@
         },
         _displayName: function(name,selectedPresetFilters,userSavedFilters) {
             if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
-                return this.name && this.name.length ? this.name : '';
+                var uf = this.userFilter ? ': '+this.userFilter : '';
+                return this.name && this.name.length ? this.name + uf : uf;
             } else {
                 var that = this,
                     titles = this.userSavedFilters.filter(function(f){
@@ -1405,6 +1410,7 @@
         },
         _openDialogSaveFilter: function(e) {
             this.set('filterName', this.userFilter.slice(0));
+            this.querySelector('#filterName').focus();
             this.querySelector('#filterDialog').open();
         },
         _saveFilter: function(e) {
@@ -1416,6 +1422,7 @@
                 };
                 this.addFilter(newfilter);
             }
+            this.querySelector('#filterName').blur();
             this.querySelector('#filterDialog').close();
             this.set('filterName','');
         },
