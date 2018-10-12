@@ -775,14 +775,15 @@
             'setShowNoData(items, filteredItems.length)',
             '_visibleChanged(visible)',
             '_userFilterChanged(userFilter)',
-            '_selectedPresetFiltersChanged(selectedPresetFilters.length)'
+            '_selectedPresetFiltersChanged(selectedPresetFilters.*)'
         ],
 
         listeners: {
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
             'column-resizing': 'saveColumnWidth',
-            'iron-announce': '_sorterChanged'
+            'iron-announce': '_sorterChanged',
+            'keyup': 'hotkeys',
         },
 
         ready: function () {},
@@ -1393,9 +1394,14 @@
                 return titles.map(i=>i.name).join(" & ");
             }
         },
-        _selectedPresetFiltersChanged: function(selected) {
-            // TODO allow items to clear filters
-            this.set('userFilter', this.selectedPresetFilters.join(" "));
+        _selectedPresetFiltersChanged: function(filters) {
+            // TODO an empty string filter, clears fillters
+            if (this.selectedPresetFilters.indexOf("") == -1) {
+                this.set('userFilter', this.selectedPresetFilters.join(" "));
+            }
+            else {
+                this.set('selectedPresetFilters', []);
+            }
         },
         _openDialogSaveFilter: function(e) {
             this.set('filterName', this.userFilter.slice(0));
@@ -1454,6 +1460,12 @@
             var pf = this.presetFilters || [] ,
                 usf = this.userSavedFilters || [];
             return pf.concat(usf);
+        },
+        hotkeys: function(e) {
+            // ENTER
+            if (e.keyCode === 13 && this.$.searchInput.focused) {
+                this._forceStopEditingFilter();
+            }
         }
     });
 </script>
