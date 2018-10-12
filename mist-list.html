@@ -1358,9 +1358,6 @@
             this.set('fullscreen',false);
         },
         addFilter: function(filter) {
-            // if (this.userSavedFilters === []) {
-            //     this.push('userSavedFilters', {name: this.name.charAt(0).toUpperCase() + this.name.slice(1), filter: "", default: true});
-            // }
             this.push('userSavedFilters', filter);
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
@@ -1371,10 +1368,6 @@
             this.splice('userSavedFilters', index, 1);
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
-
-            // if (this.userSavedFilters.length == 1) {
-            //     this.set('userSavedFilters', []);
-            // }
         },
         useFilter: function(filter) {
             if (typeof filter == "object" && filter.filter) {
