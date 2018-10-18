@@ -340,8 +340,8 @@
         <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
-                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="multi select" title="Select preset filters"></paper-icon-button>
-                <paper-menu class="dropdown-content" attr-for-selected="id" selected-values="{{selectedPresetFilters}}" multi>
+                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
+                <paper-menu class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                     <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
@@ -357,7 +357,7 @@
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
                 <span class="title">
-                    [[_displayName(name,selectedPresetFilters.length,userFilter)]]
+                    [[_displayName(name,selectedPresetFilter,userFilter)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
@@ -757,11 +757,12 @@
             combinedPresetFilters: {
                 type: Array,
                 value: [],
-                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.*)'
+                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.length)'
             },
-            selectedPresetFilters: {
-                type: Array,
-                value: []
+            selectedPresetFilter: {
+                type: String,
+                value: '',
+                observer: '_selectedPresetFilterChanged'
             },
             filterName: String,
             rest: {
@@ -779,8 +780,7 @@
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
             '_visibleChanged(visible)',
-            '_userFilterChanged(userFilter)',
-            '_selectedPresetFiltersChanged(selectedPresetFilters.*)'
+            '_userFilterChanged(userFilter)'
         ],
 
         listeners: {
@@ -1263,7 +1263,7 @@
                 }.bind(this),1000);
             }
             this.userFilter = '';
-            this.selectedPresetFilters = [];
+            this.selectedPresetFilter = '';
             this.editingFilter = false;
         },
 
@@ -1378,36 +1378,22 @@
                 this.set('userFilter', this.userFilter.replace(filter.clear, ''));
             }
         },
-        setSelectedPresetFilter: function(filters) {
-            this.set('selectedPresetFilters', filters);
+        setSelectedPresetFilter: function(filter) {
+            this.set('selectedPresetFilter', filter);
         },
-        _displayName: function(name,selectedPresetFilters,userSavedFilters) {
-            if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
-                var uf = this.userFilter ? ': '+this.userFilter : this.userFilter;
-                return this.name && this.name.length ? this.name + uf : uf;
+        _displayName: function(name,selectedPresetFilter,userSavedFilters) {
+            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
+                return this.name && this.name.length ? this.name : 'All';
             } else {
                 var that = this,
-                    titles = this.userSavedFilters.filter(function(f){
-                        return that.selectedPresetFilters.indexOf(f.filter) > -1;
-                    }),
-                    extra = this.userFilter + "";
-                for (var i = 0; i < this.selectedPresetFilters.length; i++) {
-                    extra = extra.replace(this.selectedPresetFilters[i], '');
-                }
-                if (extra.trim().length) {
-                    extra = ": " + extra;
-                }
-                return titles.map(i=>i.name).join(" & ")+""+extra;
+                    filter = this.userSavedFilters.find(function(f){
+                        return that.selectedPresetFilter == f.filter;
+                    });
+                return filter.name;
             }
         },
-        _selectedPresetFiltersChanged: function(filters) {
-            // TODO an empty string filter, clears fillters
-            if (this.selectedPresetFilters.indexOf("") == -1) {
-                this.set('userFilter', this.selectedPresetFilters.join(" "));
-            }
-            else {
-                this.set('selectedPresetFilters', []);
-            }
+        _selectedPresetFilterChanged: function(filters) {
+            this.set('userFilter', this.selectedPresetFilter);
         },
         _openDialogSaveFilter: function(e) {
             this.set('filterName', this.userFilter.slice(0));
@@ -1433,9 +1419,6 @@
             if (this.userFilter.indexOf(e.model.item.filter) > -1) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
             }
-            if (this.selectedPresetFilters.indexOf(e.model.item.filter) > -1) {
-                this.splice('selectedPresetFilters', this.selectedPresetFilters.indexOf(e.model.item.filter), 1);
-            }
         },
         _userFilterChanged: function (userFilter) {
             if (userFilter != undefined) {
@@ -1451,13 +1434,11 @@
             }
         },
         _updateSelectedFilters: function(useFilter) {
-            if (!this.selectedPresetFilters || !this.selectedPresetFilters.length) {
+            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return;
             } else {
-                for (var i = 0; i<this.selectedPresetFilters.length; i++) {
-                    if (this.userFilter.indexOf(this.selectedPresetFilters[i]) == -1) {
-                        this.splice('selectedPresetFilters',this.selectedPresetFilters.indexOf(this.selectedPresetFilters[i]),1);
-                    }
+                if (this.userFilter.indexOf(this.selectedPresetFilter) == -1) {
+                    this.set('selectedPresetFilters',-1)
                 }
             }
         },
