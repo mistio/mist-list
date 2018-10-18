@@ -833,6 +833,8 @@
             var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
             if (sorters && sorters.length)
                 this.set('sorters', sorters);
+
+            this.fire('list-attached', {id: this.id})
         },
 
         detached: function () {
