@@ -1425,6 +1425,9 @@
         _deletePresetFilter: function(e) {
             e.stopPropagation();
             this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
+            if (this.selectedPresetFilter == e.model.item.filter) {
+                this.useFilter('');
+            }
             if (this.userFilter.indexOf(e.model.item.filter) > -1) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
             }
