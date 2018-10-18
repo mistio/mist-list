@@ -299,6 +299,7 @@
                 cursor: pointer;
             }
             paper-menu paper-item.filter {
+                padding: 0;
                 padding-left: 16px !important;
             }
             paper-menu paper-item.filter.all-items {
@@ -364,7 +365,7 @@
                 value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!_computeShowSaveSearch(userFilter,combinedPresetFilters.length)]]">save filter</paper-icon-button>
+            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -511,7 +512,7 @@
             <h2>Save filter</h2>
             <paper-dialog-scrollable>
                 <span>Optionally choose a filter name.</span>
-                <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1"></paper-input>
+                <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" auto-focus></paper-input>
             </paper-dialog-scrollable>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
@@ -765,6 +766,10 @@
                 observer: '_selectedPresetFilterChanged'
             },
             filterName: String,
+            showSaveSearch: {
+                type: Boolean,
+                computed: '_computeShowSaveSearch(userFilter,combinedPresetFilters.length)'
+            },
             rest: {
                 type: Boolean,
                 value: false
@@ -1237,12 +1242,17 @@
             }
         },
 
-        _stopEditingFilter: function (f) {
+        _stopEditingFilter: function (e) {
             this.async(function () {
-                if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length)) {
+                if (!e.detail.value && this._filterIsAPresetFilter()) {
                     this.set('editingFilter',false);
                 }
+                console.log('_stopEditingFilter',f);
             }, 100);
+        },
+
+        _filterIsAPresetFilter: function() {
+            return this.userFilter.trim() == "" || this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) > -1;
         },
 
         _forceStopEditingFilter: function(f) {
@@ -1372,16 +1382,14 @@
         },
         useFilter: function(filter) {
             if (typeof filter == "object" && filter.filter) {
-                this.set('userFilter', this.userFilter+" "+filter.filter);
+                this.set('userFilter', filter.filter);
+            } 
+            if (typeof filter == "string") {
+                this.set('userFilter', filter);
             }
-            if (filter.clear) {
-                this.set('userFilter', this.userFilter.replace(filter.clear, ''));
-            }
+            this.set('selectedPresetFilter', this.userFilter);
         },
-        setSelectedPresetFilter: function(filter) {
-            this.set('selectedPresetFilter', filter);
-        },
-        _displayName: function(name,selectedPresetFilter,userSavedFilters) {
+        _displayName: function(name,selectedPresetFilter,userFilter) {
             if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return this.name && this.name.length ? this.name : 'All';
             } else {
@@ -1389,7 +1397,7 @@
                     filter = this.userSavedFilters.find(function(f){
                         return that.selectedPresetFilter == f.filter;
                     });
-                return filter.name;
+                return filter ? filter.name : '';
             }
         },
         _selectedPresetFilterChanged: function(filters) {
@@ -1409,6 +1417,7 @@
                 };
                 this.addFilter(newfilter);
             }
+            this.useFilter(newfilter);
             this.querySelector('#filterName').blur();
             this.querySelector('#filterDialog').close();
             this.set('filterName','');
@@ -1424,26 +1433,20 @@
             if (userFilter != undefined) {
                 var trimmed = userFilter.trim();
                 if (this.editingFilter) {
-                    this._updateSelectedFilters(userFilter);
-                }
-                if (!trimmed.length) {
-                    this.set('userFilter', '');
-                    this._stopEditingFilter();
+                    this._updateSelectedFilter(userFilter);
                 }
                 localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
             }
         },
-        _updateSelectedFilters: function(useFilter) {
-            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
-                return;
-            } else {
-                if (this.userFilter.indexOf(this.selectedPresetFilter) == -1) {
-                    this.set('selectedPresetFilters',-1)
-                }
-            }
+        _updateSelectedFilter: function(userFilter) {
+            var that = this,
+                filter = this.userSavedFilters.find(function(f){
+                    return userFilter == f.filter;
+                });
+            this.set('selectedPresetFilters', filter ? this.userFilter : '');
         },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
-            return this.editingFilter && this.userFilter.length && this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1;
+            return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
         },
         _computeCombinedPresetFilters: function(presetFilters, userSavedFilters) {
             var pf = this.presetFilters || [] ,
@@ -1453,8 +1456,11 @@
         hotkeys: function(e) {
             // ENTER
             if (e.keyCode === 13 && this.$.searchInput.focused) {
-                this._updateSelectedFilters(this.userFilter);
-                this._forceStopEditingFilter();
+                this._updateSelectedFilter(this.userFilter);
+                // stop editing only if 
+                if (this.userFilter == this.selectedPresetFilter) {
+                    this._forceStopEditingFilter();
+                }
             }
             // ENTER
             if (e.keyCode === 13 && this.$.filterDialog.opened) {
