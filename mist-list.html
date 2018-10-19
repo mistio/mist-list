@@ -1253,7 +1253,7 @@
         },
 
         _filterIsAPresetFilter: function() {
-            return this.userFilter && this.userFilter.trim() == "" || this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) > -1;
+            return !this.userFilter.trim() || this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) > -1;
         },
 
         _forceStopEditingFilter: function(f) {
