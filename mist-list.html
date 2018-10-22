@@ -1447,7 +1447,9 @@
                 filter = this.userSavedFilters.find(function(f){
                     return userFilter == f.filter;
                 });
-            this.set('selectedPresetFilters', filter ? this.userFilter : '');
+            if (filter) {
+                this.set('selectedPresetFilter', this.userFilter);
+            }
         },
         _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
             return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
