@@ -812,27 +812,30 @@
 
             if (this.infinite)
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+            try {
+                if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
+                    this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
+                }
 
-            if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
-                this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
+                if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
+                    this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
+                } else {
+                    this.set('userFilter','');
+                }
+
+                if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
+                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters')));
+                    this.fire('filter-change');
+                } else {
+                    this.set('userSavedFilters', [])
+                }
+
+                var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
+                if (sorters && sorters.length)
+                    this.set('sorters', sorters);
+            } catch(e) {
+                console.warn('Failed to access localStorage: ', e);
             }
-
-            if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
-                this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
-            } else {
-                this.set('userFilter','');
-            }
-
-            if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
-                this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters')));
-                this.fire('filter-change');
-            } else {
-                this.set('userSavedFilters', [])
-            }
-
-            var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
-            if (sorters && sorters.length)
-                this.set('sorters', sorters);
 
             this.fire('list-attached', {id: this.id})
         },
@@ -912,7 +915,12 @@
         },
 
         columnWidth: function (column, frozen) {
-            var w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
+            var w;
+            try {
+                w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
+            } catch (e) {
+                console.warn(e);
+            }
             if (w) {
                 return w;
             } else if (frozen) {
@@ -1351,7 +1359,9 @@
             this.debounce('_updateSorters', function() {
                 console.debug('_updateSorters');
                 this.set('sortOrder', this.$.grid._sorters.map(x => [x.path, x.direction]));
-                localStorage.setItem('mist-list#' + this.id + '/sorters', JSON.stringify(this.sortOrder));
+                try {
+                    localStorage.setItem('mist-list#' + this.id + '/sorters', JSON.stringify(this.sortOrder));
+                } catch (e) {console.warn(e);}
             }, 500);
         },
 
