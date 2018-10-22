@@ -2,6 +2,7 @@
 <link rel="import" href="../vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-filter.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../vaadin-combo-box/vaadin-combo-box.html">
 <link rel="import" href="../vaadin-context-menu/vaadin-context-menu.html">
@@ -203,7 +204,6 @@
 
             paper-input {
                 display: inline-block;
-                margin-left: 16px;
                 width: 100%;
             }
 
@@ -234,6 +234,10 @@
                 font-size: 18px !important;
                 text-tranform: uppercase;
                 font-weight: 400;
+            }
+
+            h2.titleh2 {
+                line-height: 1.1em !important;
             }
 
             span.title {
@@ -294,9 +298,38 @@
             paper-menu paper-item {
                 cursor: pointer;
             }
+            paper-menu paper-item.filter {
+                padding: 0;
+                padding-left: 16px !important;
+            }
+            paper-menu paper-item.filter.all-items {
+                text-transform: capitalize;
+                padding-right: 16px !important;
+            }
+            #presetFilters {
+                display: flex;
+                flex-direction: row;
+            }
 
-            iron-icon.searchicon {
-                margin-right: 16px;
+            #presetFilters span {
+                flex: 1;
+            }
+
+            paper-icon-button.clear-filter {
+                opacity: .5;
+                transform: scale(.7);
+            }
+
+            app-toolbar:not(.preset-filters-0) {
+                padding: 0 !important;
+            }
+
+            paper-dialog#filterDialog {
+                max-width: 400px;
+            }
+
+            paper-dialog#filterDialog > .buttons {
+                padding: 24px;
             }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
@@ -305,21 +338,34 @@
                 filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
-        <app-toolbar hidden$=[[!toolbar]]>
+        <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
-            <iron-icon class="searchicon" icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
-            <h2 hidden$=[[editingFilter]] style="width: 100%; margin-top: 16px;" on-tap="_startEditingFilter">
+            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
+                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
+                <paper-menu class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
+                    <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
+                    <template is="dom-repeat" items="[[combinedPresetFilters]]">
+                        <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
+                            <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                        </paper-item>
+                    </template>
+                </paper-menu>
+            </paper-menu-button>
+            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap=
+            "_startEditingFilter"></iron-icon>
+            <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
                 <span class="count" hidden$=[[timeseries]]>
                     <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
                 </span>
                 <span class="title">
-                    [[name]]
+                    [[_displayName(name,selectedPresetFilter,userFilter)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
                 value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -461,6 +507,18 @@
 
         <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden>
         Download </a>
+
+        <paper-dialog id="filterDialog" with-backdrop>
+            <h2>Save filter</h2>
+            <paper-dialog-scrollable>
+                <span>Optionally choose a filter name.</span>
+                <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" auto-focus></paper-input>
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm on-tap="_saveFilter">Save filter</paper-button>
+            </div>
+        </paper-dialog>
 
     </template>
 </dom-module>
@@ -634,8 +692,7 @@
             },
 
             userFilter: {
-                type: String,
-                value: ""
+                type: String
             },
 
             combinedFilter: {
@@ -691,6 +748,28 @@
                 value: false,
                 reflectToAttribute: true
             },
+            presetFilters: {
+                type: Array,
+                value: []
+            },
+            userSavedFilters: {
+                type: Array
+            },
+            combinedPresetFilters: {
+                type: Array,
+                value: [],
+                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.length)'
+            },
+            selectedPresetFilter: {
+                type: String,
+                value: '',
+                observer: '_selectedPresetFilterChanged'
+            },
+            filterName: String,
+            showSaveSearch: {
+                type: Boolean,
+                computed: '_computeShowSaveSearch(userFilter,combinedPresetFilters.length)'
+            },
             rest: {
                 type: Boolean,
                 value: false
@@ -705,14 +784,16 @@
             'selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
             'setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)'
+            '_visibleChanged(visible)',
+            '_userFilterChanged(userFilter)'
         ],
 
         listeners: {
             'receive-log': 'eventReceived',
             'resize': 'windowResize',
             'column-resizing': 'saveColumnWidth',
-            'iron-announce': '_sorterChanged'
+            'iron-announce': '_sorterChanged',
+            'keyup': 'hotkeys',
         },
 
         ready: function () {},
@@ -736,12 +817,27 @@
                     this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
                 }
 
+                if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
+                    this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
+                } else {
+                    this.set('userFilter','');
+                }
+
+                if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
+                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters')));
+                    this.fire('filter-change');
+                } else {
+                    this.set('userSavedFilters', [])
+                }
+
                 var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
                 if (sorters && sorters.length)
                     this.set('sorters', sorters);
             } catch(e) {
                 console.warn('Failed to access localStorage: ', e);
             }
+
+            this.fire('list-attached', {id: this.id})
         },
 
         detached: function () {
@@ -883,10 +979,11 @@
             if (this.filterMethod.apply) {
                 var response = this.filterMethod.apply(item,q);
                 // response can be false or a query stripped of owner filter
-                if (response === false)
+                if (response === false) {
                     return false;
-                else
+                } else {
                     q = this.filterMethod.apply(item,q);
+                }
             }
             if (q.length) {
                 // TODO: properly filter parenthesis
@@ -900,8 +997,14 @@
                             var kv = queryTerms[i].split(':'),
                                 k = kv[0],
                                 v = kv[1];
-                            if (item[k] != v)
+                            if (item[k] != v) {
+                                // check also rendered values
+                                if (this.columns.indexOf(k) > -1 && this._getBody(k, item).toLowerCase()
+                                    .indexOf(v.toLowerCase()) > -1) {
+                                    return true;
+                                }
                                 return false;
+                            }
                         } else if (this._getRenderedItem(item).toLowerCase().indexOf(queryTerms[i].toLowerCase()) <
                         0) {
                         return false;
@@ -1149,11 +1252,20 @@
             }
         },
 
-        _stopEditingFilter: function (f) {
+        _stopEditingFilter: function (e) {
             this.async(function () {
-                if (!this.$.searchInput.focused && (!this.userFilter || !this.userFilter.length))
-                    this.editingFilter = false;
+                if (!e.detail.value && this._filterIsAPresetFilter()) {
+                    this.set('editingFilter',false);
+                }
             }, 100);
+        },
+
+        _filterIsAPresetFilter: function() {
+            return !this.userFilter.trim() || this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) > -1;
+        },
+
+        _forceStopEditingFilter: function(f) {
+            this.set('editingFilter',false);
         },
 
         _keyDown: function (e) {
@@ -1170,13 +1282,15 @@
                 }.bind(this),1000);
             }
             this.userFilter = '';
+            this.selectedPresetFilter = '';
             this.editingFilter = false;
         },
 
         _baseFilterUpdated: function () {
             // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter)
+            if (this.userFilter) {
                 this.set('userFilter', '');
+            }
             this.editingFilter = false;
         },
 
@@ -1265,5 +1379,109 @@
         _exitFullscreen: function (e) {
             this.set('fullscreen',false);
         },
+        addFilter: function(filter) {
+            this.push('userSavedFilters', filter);
+            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
+            this._forceStopEditingFilter();
+        },
+        deleteFilter: function(index) {
+            console.log('_deleteFilter IN', index);
+            this.splice('userSavedFilters', index, 1);
+            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
+        },
+        useFilter: function(filter) {
+            if (typeof filter == "object" && filter.filter) {
+                this.set('userFilter', filter.filter);
+            } 
+            if (typeof filter == "string") {
+                this.set('userFilter', filter);
+            }
+            this.set('selectedPresetFilter', this.userFilter);
+        },
+        _displayName: function(name,selectedPresetFilter,userFilter) {
+            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
+                return this.name && this.name.length ? this.name : 'All';
+            } else {
+                var that = this,
+                    filter = this.userSavedFilters.find(function(f){
+                        return that.selectedPresetFilter == f.filter;
+                    });
+                return filter ? filter.name : '';
+            }
+        },
+        _selectedPresetFilterChanged: function(filters) {
+            this.set('userFilter', this.selectedPresetFilter);
+        },
+        _openDialogSaveFilter: function(e) {
+            this.set('filterName', this.userFilter.slice(0));
+            this.querySelector('#filterName').focus();
+            this.querySelector('#filterDialog').open();
+        },
+        _saveFilter: function(e) {
+            if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1) {
+                var newfilter  = {
+                    name: this.filterName,
+                    filter: this.userFilter,
+                    default: false
+                };
+                this.addFilter(newfilter);
+            }
+            this.useFilter(newfilter);
+            this.querySelector('#filterName').blur();
+            this.querySelector('#filterDialog').close();
+            this.set('filterName','');
+        },
+        _deletePresetFilter: function(e) {
+            e.stopPropagation();
+            this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
+            if (this.selectedPresetFilter == e.model.item.filter) {
+                this.useFilter('');
+            }
+            if (this.userFilter.indexOf(e.model.item.filter) > -1) {
+                this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
+            }
+        },
+        _userFilterChanged: function (userFilter) {
+            if (userFilter != undefined) {
+                var trimmed = userFilter.trim();
+                if (this.editingFilter) {
+                    this._updateSelectedFilter(userFilter);
+                }
+                localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
+            }
+        },
+        _updateSelectedFilter: function(userFilter) {
+            var that = this,
+                filter = this.userSavedFilters.find(function(f){
+                    return userFilter == f.filter;
+                });
+            if (filter) {
+                this.set('selectedPresetFilter', this.userFilter);
+            }
+        },
+        _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
+            return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
+        },
+        _computeCombinedPresetFilters: function(presetFilters, userSavedFilters) {
+            var pf = this.presetFilters || [] ,
+                usf = this.userSavedFilters || [];
+            return pf.concat(usf);
+        },
+        hotkeys: function(e) {
+            // ENTER
+            if (e.keyCode === 13 && this.$.searchInput.focused) {
+                this._updateSelectedFilter(this.userFilter);
+                // stop editing only if 
+                if (this.userFilter == this.selectedPresetFilter) {
+                    this._forceStopEditingFilter();
+                }
+            }
+            // ENTER
+            if (e.keyCode === 13 && this.$.filterDialog.opened) {
+                this._saveFilter();
+            }
+        }
     });
 </script>
