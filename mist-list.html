@@ -8,6 +8,8 @@
 <link rel="import" href="../vaadin-context-menu/vaadin-context-menu.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../app-layout/app-layout.html">
@@ -48,7 +50,6 @@
                 --vaadin-grid-cell: {
                     cursor: pointer;
                 }
-                ;
             }
 
             :host[toolbar] vaadin-grid {
@@ -221,6 +222,7 @@
                 margin-bottom: -56px;
                 color: #fff;
                 display: flex;
+                top: 0;
             }
 
             app-toolbar {
@@ -265,6 +267,11 @@
 
             vaadin-grid .cell {
                 padding: 0 !important;
+            }
+
+            paper-input#filterName {
+                max-width: 100%;
+                width: calc(100% - 48px);
             }
 
             paper-input#searchInput {
@@ -341,8 +348,8 @@
         <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
-                <paper-icon-button icon="icons:filter-list" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
-                <paper-menu class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
+                <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
+                <paper-menu slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                     <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>

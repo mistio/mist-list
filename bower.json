@@ -1,6 +1,6 @@
 {
   "name": "mist-list",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "authors": [
     "Dimitris Moraitis <dimo@mist.io>",
     "Christina Papakonstantinou <xristina@mist.io>"
@@ -32,6 +32,6 @@
     "iron-a11y-announcer": "^v2.0.0",
     "iron-a11y-keys-behavior": "^v2.0.0",
     "iron-scroll-target-behavior": "^v2.0.0",
-    "vaadin-grid": "master"
+    "vaadin-grid": "3.0.2"
   }
 }
