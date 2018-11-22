@@ -838,8 +838,9 @@
                 }
 
                 var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
-                if (sorters && sorters.length)
+                if (sorters && sorters.length) {
                     this.set('sorters', sorters);
+                }
             } catch(e) {
                 console.warn('Failed to access localStorage: ', e);
             }
@@ -854,13 +855,10 @@
         },
 
         _itemMapUpdated: function(itemMap) {
-            if (this.itemMap && !this.rest) {
+            if (this.itemMap) {
                 var that = this;
-                this.debounce('updateItemsList', function () {
-                    console.log('itemMap updated');
-                    that.$.grid.clearCache();
-                    that.set('items', that._toArray(that.itemMap));
-                }, 300);
+                console.log('itemMap updated');
+                that.$.grid.clearCache();
             }
         },
 
@@ -943,15 +941,26 @@
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
-            console.warn('filterItems', filter);
-            if (this.items) {
+            console.warn('filterItems', filter, this.items);
+            var items = this.items || this._toArray(this.itemMap);
+            if (items) {
                 this.debounce('_filterListItems', function (items) {
                     console.warn('filterItems exec', filter);
-                    this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+                    this.set('filteredItems', items.filter(this.applyFilter.bind(this)));
+
+                    console.log('_filterItems filteredItems', this.filteredItems);
+
                     this.fire('mist-list-filtered-items-length-changed', {
                         length: this.filteredItems.length
                     });
-                    this.$.grid.set('items', this.filteredItems);
+
+                    // is this necessary?
+                    // this.$.grid.set('items', this.filteredItems);
+
+                    // console.warn('filterItems', filter, this.items && this.items.length, Object.keys(this.itemMap).length, this.filteredItems && this.filteredItems.length);
+
+                    // this.set('selectedItems', []);
+                    // this.set('selectedAll', false);
 
                     if (this.selectedItems.length) {
                         this.debounce('cleanupSelectedItems', function () {
@@ -960,11 +969,12 @@
                             for (var i = 0; i < _this.selectedItems.length; i++) {
                                 var j = this.filteredItems.findIndex(
                                     function (item) {
-                                        return item.id === _this.selectedItems[i].id
+                                        return item.id === _this.selectedItems[i].id;
                                     }
                                 );
-                                if (j > -1)
+                                if (j > -1) {
                                     newSelectedItems.push(this.filteredItems[j]);
+                                }
                             }
                             this.set('selectedItems', newSelectedItems);
                             this.async(function () {
@@ -976,7 +986,7 @@
                             this.$.grid.fire('iron-resize');
                         }, 100);
                     }
-                }, 500);
+                }.bind(this), 500);
             }
         },
 
@@ -1169,15 +1179,18 @@
         },
 
         toggleSelectAll: function (selectAll) {
-            if (selectAll && this.count != this.selectedItems.length) {
-                this.set('selectedItems', this.filteredItems);
+            console.log('toggleSelectAll 1', selectAll, this.count, this.selectedItems, this.filteredItems);
+            if (selectAll) {
+                this.set('selectedItems', this.filteredItems || this.items || this._toArray(this.itemMap));
             } else if (!selectAll && this.count == this.selectedItems.length){
                 this.set('selectedItems', []);
             }
+            console.log('toggleSelectAll 2', this.selectedItems);
         },
 
         selectedItemsChanged: function (itemslength) {
-            if (this.count && this.count == itemslength && !this.selectAll) {
+            console.log('selectedItemsChanged', this.selectAll, itemslength);
+            if (this.count && (this.count == itemslength || this.filteredItems && this.filteredItems.length == itemslength) && !this.selectAll) {
                 this.set('selectAll', true);
             } else if (this.count && this.count != itemslength && this.selectAll) {
                 this.set('selectAll', false);
@@ -1309,7 +1322,7 @@
             return expands && '46px' || '24px';
         },
 
-        _computeUseDataProvider: function (apiurl) {
+        _computeUseDataProvider: function (apiurl, rest) {
             return this.apiurl && this.apiurl.length && this.rest;
         },
 
