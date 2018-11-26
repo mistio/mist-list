@@ -11,7 +11,7 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../app-layout/app-layout.html">
 <link rel="import" href="../paper-styles/shadow.html">
 
@@ -302,14 +302,14 @@
                 cursor: pointer;
             }
 
-            paper-menu paper-item {
+            paper-listbox paper-item {
                 cursor: pointer;
             }
-            paper-menu paper-item.filter {
+            paper-listbox paper-item.filter {
                 padding: 0;
                 padding-left: 16px !important;
             }
-            paper-menu paper-item.filter.all-items {
+            paper-listbox paper-item.filter.all-items {
                 text-transform: capitalize;
                 padding-right: 16px !important;
             }
@@ -349,14 +349,14 @@
             <paper-icon-button icon="menu" drawer-toggle on-tap="_toggleDrawer" hidden$=[[!drawer]]></paper-icon-button>
             <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
                 <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
-                <paper-menu slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
+                <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                     <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
                             <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
                     </template>
-                </paper-menu>
+                </paper-listbox>
             </paper-menu-button>
             <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap=
             "_startEditingFilter"></iron-icon>
@@ -424,10 +424,10 @@
             </div>
             <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
                 <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
-                <paper-menu class="dropdown-content">
+                <paper-listbox class="dropdown-content">
                     <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                     <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
-                </paper-menu>
+                </paper-listbox>
             </paper-menu-button>
             <template class="row-details">
                 <div class="details-cell">
