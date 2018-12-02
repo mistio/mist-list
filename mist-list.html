@@ -1,6 +1,7 @@
 <link rel="import" href="../vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-filter.html">
+<link rel="import" href="../vaadin-grid/vaadin-grid-selection-column.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
@@ -16,6 +17,7 @@
 <link rel="import" href="../paper-styles/shadow.html">
 
 <link rel="import" href="mist-check.html">
+<link rel="import" href="mist-list-actions.html">
 <link rel="import" href="rest-data-provider.html">
 
 <script src="../moment/moment.js"></script>
@@ -23,12 +25,20 @@
 <dom-module id="mist-list">
     <template>
         <style>
-            :host {
-                display: block;
-                --row-height: 64px;
+            [hidden] {
+                display: none!important;
             }
 
-            :host[fullscreen] {
+            :host {
+                display: block;
+                --row-height: 32px;
+            }
+
+            :host([compact]) {
+                --row-height: 32px;
+            }
+
+            :host([fullscreen]) {
                 position: fixed;
                 top: 64px;
                 bottom: 0;
@@ -39,30 +49,29 @@
                 height: 100vh !important;
             }
 
-            :host[resizable] {
+            :host([resizable]) {
                 padding: 0;
-                width: calc(85% + 119px);
                 margin: auto;
                 max-width: 100%;
             }
 
-            :host[selectable] vaadin-grid {
+            :host([selectable]) vaadin-grid {
                 --vaadin-grid-cell: {
                     cursor: pointer;
                 }
             }
 
-            :host[toolbar] vaadin-grid {
+            :host([toolbar]) vaadin-grid {
                 height: calc(100% - 64px);
             }
 
             vaadin-grid {
-                font: 400 14px;
-                color: #424242;
                 height: 100%;
 
+                font: 400 14px;
+                color: #424242;
+
                 --vaadin-grid-cell: {
-                    padding: 0 16px;
                     cursor: pointer;
                 }
                 ;
@@ -144,7 +153,6 @@
                 width: 100%;
                 font-size: 12px;
             }
-
 
             vaadin-grid .details {
                 display: block;
@@ -258,11 +266,10 @@
             }
 
             paper-menu-button.column-menu {
-                position: absolute;
                 z-index: 1;
-                background-color: rgba(240, 240, 240, 0.9);
                 padding: calc(var(--row-height)/2 - 25px) 0;
-                margin: 1px 4px;
+                margin-left: -8px;
+                color: #666;
             }
 
             vaadin-grid .cell {
@@ -417,18 +424,7 @@
         </template>
 
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
-            on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]>
-            <div id="actions" slot="actions" hidden$=[[!selectedItems.length]]>
-                <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
-                <slot name="action-buttons"></slot>
-            </div>
-            <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV"></paper-icon-button>
-                <paper-listbox class="dropdown-content">
-                    <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
-                    <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
-                </paper-listbox>
-            </paper-menu-button>
+            on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]] theme="compact">
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
@@ -446,31 +442,41 @@
                 </div>
             </template>
             <template is="dom-if" if="[[selectable]]" restamp>
-                <vaadin-grid-column width="64px" flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
+                <vaadin-grid-selection-column flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
                     <template class="header">
-                        <mist-check selected="{{selectAll}}"></mist-check>
+                        <mist-check selected="{{selectAll}}" hidden=[[selectedItems.length]] >[[selectedItems.length]]</mist-check>
+                        <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-12px; padding: 12px; z-index: 99999">
+                            <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
+                            <mist-list-actions actions=[[actions]]></mist-list-actions>
+                        </div>
                     </template>
                     <template>
-                        <mist-check class="item-check" selected="{{selected}}" style$="margin-left: -16px; padding: 16px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
+                        <mist-check class="item-check" selected="{{selected}}" style$="margin-left: -8px; padding: 8px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
                             icon="[[_computeIcon(item, renderers.icon)]]" item="[[item]]"></mist-check>
                     </template>
-                </vaadin-grid-column>
+                </vaadin-grid-selection-column>
             </template>
             <template is="dom-if" if="[[_or(expands, columnMenu)]]" restamp>
-                <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen>
-                    <template class="header">
+                <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen style="z-index: -1">
+                    <template class="header" style="z-index: -1">
+                        <paper-menu-button slot="actions" horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV" slot="dropdown-trigger"></paper-icon-button>
+                            <paper-listbox class="dropdown-content" slot="dropdown-content">
+                                <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
+                                <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
+                            </paper-listbox>
+                        </paper-menu-button>
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(expanded)]]; margin-left: -12px;" toggles active="{{expanded}}"
-                            id="btn-[[_computeId(item)]]" hidden$=[[!expands]]></paper-icon-button>
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(item.expanded)]]; margin-left: -8px;" toggles active="{{item.expanded}}"
+                            id="btn-[[_computeId(item)]]" hidden$=[[!expands]] on-active-changed="_toggleItemExpand"></paper-icon-button>
                     </template>
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
-                    <template class="header" style="z-index: 1">
-                        <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"  hidden$=[[timeseries]] id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
-                        <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
+                    <template class="header" style="z-index: -10000" hidden=[[selectedItems.length]]>
+                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[selectedItems.length]] path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"  hidden$=[[timeseries]] id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
                     </template>
                     <template>
                         <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
@@ -655,7 +661,8 @@
 
             toolbar: {
                 type: Boolean,
-                value: false
+                value: false,
+                reflectToAttribute: true
             },
 
             columnMenu: {
@@ -772,7 +779,12 @@
                 value: '',
                 observer: '_selectedPresetFilterChanged'
             },
-            filterName: String,
+            filterName: {
+                type: String
+            },
+            headerWidth: {
+                type: Number
+            },
             showSaveSearch: {
                 type: Boolean,
                 computed: '_computeShowSaveSearch(userFilter,combinedPresetFilters.length)'
@@ -817,8 +829,10 @@
                 }, 500);
             }
 
-            if (this.infinite)
+            if (this.infinite) {
                 this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+            }
+
             try {
                 if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                     this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
@@ -845,12 +859,25 @@
             }
 
             this.fire('list-attached', {id: this.id})
+            this.set('headerWidth', this.$.grid.$.header.clientWidth);
         },
 
         detached: function () {
             if (this.resizable) {
                 window.removeEventListener("resize", this.resizeHandler);
             }
+        },
+
+        _toggleItemExpand: function (e) {
+            if (e.target.active) {
+                this.$.grid.openItemDetails(e.target.__dataHost.item)
+            } else {
+                this.$.grid.closeItemDetails(e.target.__dataHost.item)
+            }
+        },
+
+        _computeGridWidth: function () {
+            return this.$.grid.$.header.clientWidth + 'px';
         },
 
         _itemMapUpdated: function(itemMap) {
@@ -897,11 +924,11 @@
         windowResize: function () {
             if (this.resizable) {
                 this.debounce('windowResize', function () {
-                    var top = this.getBoundingClientRect().top;
+                    /*var top = this.getBoundingClientRect().top;
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
                         isSmallScreen = window.innerWidth <= 768,
-                        outerScroller = this.$.grid.$.scroller.$.outerscroller,
+                        outerScroller = this.$.grid.$.scroller,
                         hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
                         heightOffset = 42;
                     if (hasVerticalScroll) {
@@ -916,8 +943,9 @@
                     if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
                         this.scrollHeight)
                         newHeight += 16;
-                    this.style.height = newHeight + "px";
-                }, 100);
+                    this.style.height = newHeight + "px";*/
+                    this.set('headerWidth', this.$.grid.$.header.clientWidth);
+                }, 50);
             }
         },
 
@@ -1069,17 +1097,10 @@
             console.log('_activeItemChanged',e);
             var grid = e.target;
             this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
-
             // we should either redirect to the proper route path, or expand the item
             if (this._clickedItem) {
                 if (this.route != undefined)
                     this.set('route.path', this._clickedItem[this.primaryFieldName]);
-                else if (this.expands)
-                    if (grid.expandedItems.indexOf(this._clickedItem) > -1) {
-                        grid.collapseItem(this._clickedItem);
-                    } else {
-                        grid.expandItem(this._clickedItem);
-                    }
             }
         },
 
@@ -1233,6 +1254,7 @@
         },
 
         _computeMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
+            return 'margin-left: -8px';
             if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
             var left = 0;
@@ -1381,10 +1403,10 @@
             }
         },
         _enterFullscreen: function (e) {
-            this.set('fullscreen',true);
+            this.set('fullscreen', true);
         },
         _exitFullscreen: function (e) {
-            this.set('fullscreen',false);
+            this.set('fullscreen', false);
         },
         addFilter: function(filter) {
             this.push('userSavedFilters', filter);
