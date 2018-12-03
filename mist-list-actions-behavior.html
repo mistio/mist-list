@@ -49,15 +49,15 @@
       // of the available actions of the selected items
       this.debounce('_updateActions', function() {
         var actions = [];
-        if (this.items.length > 0) {
+        if (this.items && this.items.length > 0) {
           actions = this.computeItemActions(this.items[0]);
           if (actions.length) {
             // Calculate the intersection of each item's actions
             for (var i = 1; i < this.items.length; i++) {
               var itemActions = this.computeItemActions(this.items[i]);
-              for (action in actions) {
-                if (itemActions.indexOf(action) == -1) {
-                  actions.splice(actions.indexOf(action), 1);
+              for (a in actions) {
+                if (itemActions.indexOf(actions[a]) == -1) {
+                  actions.splice(a, 1);
                 }
               }
             }
@@ -99,13 +99,13 @@
     },
 
     _dismissDialog: function (event) {
-      dialogs = this.shadowRoot.querySelectorAll('vaadin-dialog') || [];
+      var dialogs = this.shadowRoot.querySelectorAll('vaadin-dialog') || [];
       for (var i=0; i<dialogs.length; i++) {
         if (dialogs[i].opened) {
           dialogs[i].opened = false;
           return;
         }
       }
-    },
+    }
   }];
 </script>
