@@ -32,6 +32,7 @@
             :host {
                 display: block;
                 --row-height: 32px;
+                font-family: inherit;
             }
 
             :host([compact]) {
@@ -250,6 +251,40 @@
                 line-height: 1.1em !important;
             }
 
+            vaadin-dialog {
+                width: 400px;
+                max-width: 100%;
+                font-family: inherit;
+            }
+
+            h2:not(.titleh2) {
+                font-weight: normal;
+                margin: 0;
+            }
+            .vaadin-dialog-scrollable p {
+                display: block;
+                width: 100%;
+            }
+
+            .vaadin-dialog-scrollable {
+                display: flex;
+                overflow-y: scroll;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                width: 500px;
+                padding: 0;
+            }
+
+            .vaadin-dialog-scrollable paper-item {
+                max-width: 200px;
+                width: 50%;
+            }
+
+            .buttons {
+                display: flex;
+                justify-content: flex-end;
+            }
+
             span.title {
                 overflow: visible !important;
                 text-transform: capitalize;
@@ -370,10 +405,10 @@
         <slot name="actions"></slot>
 
         <template is="dom-if" if="{{visible}}" restamp>
-            <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}}>
+            <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}} aria-label="styled">
                 <template>
                     <h2>Select columns</h2>
-                    <paper-dialog-scrollable>
+                    <div class='vaadin-dialog-scrollable'>
                         <p>Select the list's visible columns.</p>
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
                             <template is="dom-repeat" items="[[columns]]" as="column">
@@ -382,24 +417,24 @@
                                 </paper-item>
                             </template>
                         </template>
-                    </paper-dialog-scrollable>
+                    </div>
                     <div class="buttons">
                         <paper-button on-tap="_dismissDialog">Close</paper-button>
                     </div>
                 </template>
             </vaadin-dialog>
 
-            <vaadin-dialog id="csvDialog">
+            <vaadin-dialog id="csvDialog" aria-label="styled">
                 <template>
                     <h2>Download list data in CSV</h2>
-                    <paper-dialog-scrollable>
+                    <div class='vaadin-dialog-scrollable'>
                         <p>Select columns to download.</p>
                         <template is="dom-repeat" items="[[columns]]" as="column">
                             <paper-item label="[[column]]">
                                 <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged">[[column]]</paper-checkbox>
                             </paper-item>
                         </template>
-                    </paper-dialog-scrollable>
+                    </div>
                     <div class="buttons">
                         <paper-button on-tap="_dismissDialog">Cancel</paper-button>
                         <paper-button dialog-confirm autofocus on-tap="_exportCsv">Download CSV</paper-button>
@@ -506,13 +541,13 @@
         <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden>
         Download </a>
 
-        <vaadin-dialog id="filterDialog">
+        <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
                 <h2>Save filter</h2>
-                <paper-dialog-scrollable>
+                <div class='vaadin-dialog-scrollable'>
                     <span>Optionally choose a filter name.</span>
                     <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" auto-focus></paper-input>
-                </paper-dialog-scrollable>
+                </div>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Cancel</paper-button>
                     <paper-button dialog-confirm on-tap="_saveFilter">Save filter</paper-button>
