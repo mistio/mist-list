@@ -33,6 +33,7 @@
                 display: block;
                 --row-height: 32px;
                 font-family: inherit;
+                font: 400 14px;
             }
 
             :host([compact]) {
@@ -66,10 +67,16 @@
                 height: calc(100% - 64px);
             }
 
+            .header {
+                background: rgba(240, 240, 240, 1);
+                min-height: 42px;
+            }
+
             vaadin-grid {
                 height: 100%;
-
-                font: 400 14px;
+                font-family: inherit;
+                font-weight: 400;
+                font-size: 14px;
                 color: #424242;
 
                 --vaadin-grid-cell: {
@@ -260,13 +267,16 @@
             h2:not(.titleh2) {
                 font-weight: normal;
                 margin: 0;
+                font-family: inherit;
             }
+
             .vaadin-dialog-scrollable p {
                 display: block;
                 width: 100%;
             }
 
             .vaadin-dialog-scrollable {
+                font-family: inherit;
                 display: flex;
                 overflow-y: scroll;
                 flex-wrap: wrap;
