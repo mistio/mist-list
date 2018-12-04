@@ -920,7 +920,7 @@
         windowResize: function () {
             if (this.resizable) {
                 this.debounce('windowResize', function () {
-                    /*var top = this.getBoundingClientRect().top;
+                    var top = this.getBoundingClientRect().top;
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
                         isSmallScreen = window.innerWidth <= 768,
@@ -939,7 +939,7 @@
                     if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
                         this.scrollHeight)
                         newHeight += 16;
-                    this.style.height = newHeight + "px";*/
+                    this.style.height = newHeight + "px";
                     this.set('headerWidth', this.$.grid.$.header.clientWidth);
                 }, 50);
             }
