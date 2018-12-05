@@ -1,20 +1,15 @@
 <link rel="import" href="../vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-sorter.html">
-<link rel="import" href="../vaadin-grid/vaadin-grid-filter.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-selection-column.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../vaadin-dialog/vaadin-dialog.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../vaadin-combo-box/vaadin-combo-box.html">
-<link rel="import" href="../vaadin-context-menu/vaadin-context-menu.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../app-layout/app-layout.html">
-<link rel="import" href="../paper-styles/shadow.html">
 
 <link rel="import" href="mist-check.html">
 <link rel="import" href="mist-list-actions.html">
@@ -36,13 +31,9 @@
                 font: 400 14px;
             }
 
-            :host([compact]) {
-                --row-height: 32px;
-            }
-
             :host([fullscreen]) {
                 position: fixed;
-                top: 64px;
+                top: 0px;
                 bottom: 0;
                 left: 0;
                 right: 0;
@@ -68,7 +59,7 @@
             }
 
             .header {
-                background: rgba(240, 240, 240, 1);
+                background: transparent;
                 min-height: 42px;
             }
 
@@ -82,18 +73,21 @@
                 --vaadin-grid-cell: {
                     cursor: pointer;
                 }
+
                 ;
 
                 --vaadin-grid-body-cell: {
                     height: var(--row-height);
                 }
+
                 ;
 
                 --vaadin-grid-header-cell: {
                     background: rgba(240, 240, 240, 1);
-                    min-height: 42px;
+                    min-height: 32px;
                     height: calc(var(--row-height) - 8px);
                 }
+
                 ;
 
                 --vaadin-grid-body-row-selected-cell: {
@@ -101,11 +95,13 @@
                     color: rgba(41, 41, 41, 1);
                     opacity: .8;
                 }
+
                 ;
 
                 --vaadin-grid-body-row-odd-cell: {
                     background-color: rgb(251, 251, 251);
                 }
+
                 ;
 
                 --vaadin-grid-body-row-hover-cell: {
@@ -113,16 +109,19 @@
                     opacity: 1.0 !important;
                     color: rgba(51, 51, 51, .85);
                 }
+
                 ;
 
                 --vaadin-grid-body-row-details-cell: {
                     text-align: center;
                 }
+
                 ;
 
                 --vaadin-grid-column-resize-handle: {
                     opacity: 0;
                 }
+
                 ;
             }
 
@@ -215,13 +214,14 @@
                 font-weight: 400;
             }
 
-            vaadin-grid-sorter {
-                padding: 16px 0;
-            }
-
             paper-input {
                 display: inline-block;
                 width: 100%;
+            }
+
+            mist-check {
+                margin-left: -8px;
+                padding: 6px 0px 6px 8px;
             }
 
             mist-check::slotted(iron-icon) {
@@ -234,11 +234,15 @@
                 position: fixed;
                 padding: 10px 16px;
                 width: calc(100% - 32px);
-                height: 36px;
+                height: 28px;
                 margin-bottom: -56px;
                 color: #fff;
                 display: flex;
                 top: 0;
+            }
+
+            div#actions mist-check {
+                padding-top: 0px;
             }
 
             app-toolbar {
@@ -250,7 +254,7 @@
 
             app-toolbar .title {
                 font-size: 18px !important;
-                text-tranform: uppercase;
+                text-transform: uppercase;
                 font-weight: 400;
             }
 
@@ -283,6 +287,7 @@
                 justify-content: flex-start;
                 width: 500px;
                 padding: 0;
+                max-height: 500px;
             }
 
             .vaadin-dialog-scrollable paper-item {
@@ -340,14 +345,17 @@
             paper-listbox paper-item {
                 cursor: pointer;
             }
+
             paper-listbox paper-item.filter {
                 padding: 0;
                 padding-left: 16px !important;
             }
+
             paper-listbox paper-item.filter.all-items {
                 text-transform: capitalize;
                 padding-right: 16px !important;
             }
+
             #presetFilters {
                 display: flex;
                 flex-direction: row;
@@ -366,28 +374,32 @@
                 padding: 0 !important;
             }
 
-            paper-dialog#filterDialog {
-                max-width: 400px;
+            vaadin-dialog>.buttons {
+                padding: 24px;
             }
 
-            paper-dialog#filterDialog > .buttons {
-                padding: 24px;
+            mist-list-actions {
+                margin-top: 8px;
+                margin-left: 2px;
             }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
-            <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}} received={{received}}
-                columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]" timeseries=[[timeseries]]
-                filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
+            <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
+                received={{received}} columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]"
+                timeseries=[[timeseries]] filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
         <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
-            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
-                <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter" title="Select preset filters"></paper-icon-button>
+            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40"
+                hidden$="[[!combinedPresetFilters.length]]">
+                <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
+                    title="Select preset filters"></paper-icon-button>
                 <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                     <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                     <template is="dom-repeat" items="[[combinedPresetFilters]]">
                         <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
-                            <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter" hidden$="[[item.default]]"></paper-icon-button>
+                            <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter"
+                                hidden$="[[item.default]]"></paper-icon-button>
                         </paper-item>
                     </template>
                 </paper-listbox>
@@ -401,25 +413,24 @@
                     [[_displayName(name,selectedPresetFilter,userFilter)]]
                 </span>
             </h2>
-            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus on-keydown="_keyDown"
-                value={{userFilter}}>
+            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus
+                on-keydown="_keyDown" value={{userFilter}}>
             </paper-input>
             <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save filter</paper-icon-button>
+            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save
+                filter</paper-icon-button>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
             </span>
         </app-toolbar>
 
-        <slot name="actions"></slot>
-
         <template is="dom-if" if="{{visible}}" restamp>
             <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}} aria-label="styled">
                 <template>
                     <h2>Select columns</h2>
+                    <p>Select the list's visible columns.</p>
                     <div class='vaadin-dialog-scrollable'>
-                        <p>Select the list's visible columns.</p>
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
                             <template is="dom-repeat" items="[[columns]]" as="column">
                                 <paper-item label="[[column]]">
@@ -437,8 +448,8 @@
             <vaadin-dialog id="csvDialog" aria-label="styled">
                 <template>
                     <h2>Download list data in CSV</h2>
+                    <p>Select columns to download.</p>
                     <div class='vaadin-dialog-scrollable'>
-                        <p>Select columns to download.</p>
                         <template is="dom-repeat" items="[[columns]]" as="column">
                             <paper-item label="[[column]]">
                                 <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged">[[column]]</paper-checkbox>
@@ -453,11 +464,13 @@
             </vaadin-dialog>
         </template>
 
-        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]] loading$="[[_loading]]"
-            on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]] theme="material">
+        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]]
+            loading$="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]
+            theme="compact no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
-                    <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
+                    <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault"
+                        on-mouseup="_preventDefault">
                         <table>
                             <tbody>
                                 <template is="dom-repeat" items="{{_itemKeys(item)}}" as="i">
@@ -472,16 +485,17 @@
                 </div>
             </template>
             <template is="dom-if" if="[[selectable]]" restamp>
-                <vaadin-grid-selection-column flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important">
+                <vaadin-grid-selection-column flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important"
+                    width="50px">
                     <template class="header">
-                        <mist-check selected="{{selectAll}}" hidden=[[selectedItems.length]] >[[selectedItems.length]]</mist-check>
-                        <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-12px; padding: 12px; z-index: 99999">
+                        <mist-check selected="{{selectAll}}" hidden=[[selectedItems.length]]>[[selectedItems.length]]</mist-check>
+                        <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 10px 8px 18px; z-index: 99999">
                             <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions=[[actions]]></mist-list-actions>
                         </div>
                     </template>
                     <template>
-                        <mist-check class="item-check" selected="{{selected}}" style$="margin-left: -8px; padding: 8px; [[_computeIndicatorStyle(item,renderers.indicator)]]"
+                        <mist-check class="item-check" selected="{{selected}}" style$="[[_computeIndicatorStyle(item,renderers.indicator)]]"
                             icon="[[_computeIcon(item, renderers.icon)]]" item="[[item]]"></mist-check>
                     </template>
                 </vaadin-grid-selection-column>
@@ -489,8 +503,10 @@
             <template is="dom-if" if="[[_or(expands, columnMenu)]]" restamp>
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen style="z-index: -1">
                     <template class="header" style="z-index: -1">
-                        <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu" style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns & export CSV" slot="dropdown-trigger"></paper-icon-button>
+                        <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu"
+                            style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select"
+                                title="Select columns & export CSV" slot="dropdown-trigger"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
@@ -498,15 +514,18 @@
                         </paper-menu-button>
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(item.expanded)]]; margin-left: -8px;" toggles active="{{item.expanded}}"
-                            id="btn-[[_computeId(item)]]" hidden$=[[!expands]] on-active-changed="_toggleItemExpand"></paper-icon-button>
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(item.expanded)]]; margin-left: -4px; padding: 5px; width: 32px; height: 32px;"
+                            toggles active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden$=[[!expands]]
+                            on-active-changed="_toggleItemExpand"></paper-icon-button>
                     </template>
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden=[[selectedItems.length]]>
-                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[selectedItems.length]] path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"  hidden$=[[timeseries]] id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[selectedItems.length]] path="[[column]]"
+                            direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]]
+                            id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
                     </template>
                     <template>
                         <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
@@ -517,11 +536,12 @@
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
                 <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                     <template class="header">
-                        <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]]  cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
+                            hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
-                        <div style="margin-left:-16px;padding:16px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                        <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -530,7 +550,8 @@
                 <template is="dom-repeat" items="[[columns]]" as="column">
                     <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                         <template class="header">
-                            <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
+                            <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
+                                hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                         </template>
                         <template>
@@ -545,11 +566,11 @@
             <slot name="no-items-found"></slot>
         </div>
 
-        <iron-ajax id="getCsv" method="GET" loading="{{loadingCSV}}" on-request="_csvRequest" on-response="_csvResponse" on-error="_csvError"
-            handle-as="txt"></iron-ajax>
+        <iron-ajax id="getCsv" method="GET" loading="{{loadingCSV}}" on-request="_csvRequest" on-response="_csvResponse"
+            on-error="_csvError" handle-as="txt"></iron-ajax>
 
-        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]" hidden>
-        Download </a>
+        <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]"
+            hidden>Download</a>
 
         <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
@@ -572,8 +593,6 @@
     Polymer({
         is: 'mist-list',
         properties: {
-            user: String,
-            members: Array,
             apiurl: {
                 type: String
             },
@@ -841,9 +860,9 @@
             '_itemMapUpdated(itemMap.*)',
             '_filterItems(items, items.length, combinedFilter, filterMethod)',
             'windowResize(filteredItems.length, route.path)',
-            'selectedItemsChanged(selectedItems.length)',
+            '_selectedItemsChanged(selectedItems.length)',
             'toggleSelectAll(selectAll)',
-            'setShowNoData(items, filteredItems.length)',
+            '_setShowNoData(items, filteredItems.length)',
             '_visibleChanged(visible)',
             '_userFilterChanged(userFilter)'
         ],
@@ -882,11 +901,12 @@
                 if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
                     this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
                 } else {
-                    this.set('userFilter','');
+                    this.set('userFilter', '');
                 }
 
                 if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
-                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters')));
+                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id +
+                        '/userSavedFilters')));
                     this.fire('filter-change');
                 } else {
                     this.set('userSavedFilters', [])
@@ -895,11 +915,13 @@
                 var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
                 if (sorters && sorters.length)
                     this.set('sorters', sorters);
-            } catch(e) {
+            } catch (e) {
                 console.warn('Failed to access localStorage: ', e);
             }
 
-            this.fire('list-attached', {id: this.id})
+            this.fire('list-attached', {
+                id: this.id
+            })
             this.set('headerWidth', this.$.grid.$.header.clientWidth);
         },
 
@@ -921,7 +943,7 @@
             return this.$.grid.$.header.clientWidth + 'px';
         },
 
-        _itemMapUpdated: function(itemMap) {
+        _itemMapUpdated: function (itemMap) {
             if (this.itemMap && !this.rest) {
                 var that = this;
                 this.debounce('updateItemsList', function () {
@@ -932,8 +954,8 @@
             }
         },
 
-        _toArray: function(obj) {
-            return Object.keys(obj).map(function(key) {
+        _toArray: function (obj) {
+            return Object.keys(obj).map(function (key) {
                 return obj[key]
             });
         },
@@ -942,27 +964,25 @@
             return filteredItems ? filteredItems.length : 0;
         },
 
-        setShowNoData: function (items, filteredItems) {
-            if (this.items && !this.items.length)
+        _setShowNoData: function (items, filteredItems) {
+            if ((this.items && !this.items.length) ||
+                (this.filteredItems && !this.filteredItems.length))
                 this.set('showNoData', true);
-            else {
-                if (this.filteredItems && !this.filteredItems.length)
-                    this.set('showNoData', true);
-                else
-                    this.set('showNoData', false);
-            }
+            else
+                this.set('showNoData', false);
         },
 
         _onWheel: function (e) {
-            var t = this.querySelector('vaadin-grid-table');
-            if (t && t._scrollBottom / t._scrollHeight > 0.75 && !this.finished) {
+            var t = this.$.grid.scrollTarget;
+            if (t && (t.scrollTop + t.clientHeight) / t.scrollHeight > 0.75 && !this.finished) {
                 var pageno = this.$.grid._getPageForIndex(this.count);
                 console.log('request page', pageno);
-                this.$.grid._loadPage(pageno);
+                this.$.grid._loadPage(pageno, this.$.grid._cache);
             }
         },
 
         windowResize: function () {
+            return;
             if (this.resizable) {
                 this.debounce('windowResize', function () {
                     var top = this.getBoundingClientRect().top;
@@ -986,7 +1006,7 @@
                         newHeight += 16;
                     this.style.height = newHeight + "px";
                     this.set('headerWidth', this.$.grid.$.header.clientWidth);
-                }, 50);
+                }, 500);
             }
         },
 
@@ -1016,7 +1036,7 @@
             if (this.items) {
                 this.debounce('_filterListItems', function (items) {
                     console.warn('filterItems exec', filter);
-                    this.set('filteredItems', this.items.filter(this.applyFilter.bind(this)));
+                    this.set('filteredItems', this.items.filter(this._applyFilter.bind(this)));
                     this.fire('mist-list-filtered-items-length-changed', {
                         length: this.filteredItems.length
                     });
@@ -1049,16 +1069,16 @@
             }
         },
 
-        applyFilter: function (item, index) {
+        _applyFilter: function (item, index) {
             var q = this.combinedFilter ? this.combinedFilter.slice(0) : '',
                 queryTerms;
             if (this.filterMethod.apply) {
-                var response = this.filterMethod.apply(item,q);
+                var response = this.filterMethod.apply(item, q);
                 // response can be false or a query stripped of owner filter
                 if (response === false) {
                     return false;
                 } else {
-                    q = this.filterMethod.apply(item,q);
+                    q = this.filterMethod.apply(item, q);
                 }
             }
             if (q.length) {
@@ -1135,7 +1155,7 @@
         },
 
         _activeItemChanged: function (e) {
-            console.log('_activeItemChanged',e);
+            console.log('_activeItemChanged', e);
             var grid = e.target;
             this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
             // we should either redirect to the proper route path, or expand the item
@@ -1223,12 +1243,12 @@
         toggleSelectAll: function (selectAll) {
             if (selectAll && this.count != this.selectedItems.length) {
                 this.set('selectedItems', this.filteredItems);
-            } else if (!selectAll && this.count == this.selectedItems.length){
+            } else if (!selectAll && this.count == this.selectedItems.length) {
                 this.set('selectedItems', []);
             }
         },
 
-        selectedItemsChanged: function (itemslength) {
+        _selectedItemsChanged: function (itemslength) {
             if (this.count && this.count == itemslength && !this.selectAll) {
                 this.set('selectAll', true);
             } else if (this.count && this.count != itemslength && this.selectAll) {
@@ -1266,8 +1286,8 @@
         eventReceived: function (item) {
             if (!this.streaming)
                 return;
-            console.debug('eventReceived', item, this.applyFilter(item.detail));
-            if (this.applyFilter(item.detail))
+            console.debug('eventReceived', item, this._applyFilter(item.detail));
+            if (this._applyFilter(item.detail))
                 this.async(function () {
                     if (this.$.grid && this.$.grid.get('_cache.0') != undefined) {
                         this.$.grid.unshift('_cache.0', item.detail);
@@ -1315,17 +1335,19 @@
         _stopEditingFilter: function (e) {
             this.async(function () {
                 if (!e.detail.value && this._filterIsAPresetFilter()) {
-                    this.set('editingFilter',false);
+                    this.set('editingFilter', false);
                 }
             }, 100);
         },
 
-        _filterIsAPresetFilter: function() {
-            return !this.userFilter.trim() || this.combinedPresetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) > -1;
+        _filterIsAPresetFilter: function () {
+            return !this.userFilter.trim() || this.combinedPresetFilters.map(function (m) {
+                return m.filter;
+            }).indexOf(this.userFilter.trim()) > -1;
         },
 
-        _forceStopEditingFilter: function(f) {
-            this.set('editingFilter',false);
+        _forceStopEditingFilter: function (f) {
+            this.set('editingFilter', false);
         },
 
         _keyDown: function (e) {
@@ -1337,9 +1359,9 @@
         _clearFilter: function (e) {
             if (this.autoHide) {
                 this.autoHide = false;
-                this.async(function(){
+                this.async(function () {
                     this.autoHide = true;
-                }.bind(this),1000);
+                }.bind(this), 1000);
             }
             this.userFilter = '';
             this.selectedPresetFilter = '';
@@ -1416,18 +1438,20 @@
         },
 
         _sorterChanged: function (event) {
-            this.debounce('_updateSorters', function() {
+            this.debounce('_updateSorters', function () {
                 console.debug('_updateSorters');
                 this.set('sortOrder', this.$.grid._sorters.map(x => [x.path, x.direction]));
                 try {
                     localStorage.setItem('mist-list#' + this.id + '/sorters', JSON.stringify(this.sortOrder));
-                } catch (e) {console.warn(e);}
+                } catch (e) {
+                    console.warn(e);
+                }
             }, 500);
         },
 
         _getDirection: function (column) {
             if (this.sorters) {
-                for (var i=0; i < this.sorters.length; i++) {
+                for (var i = 0; i < this.sorters.length; i++) {
                     if (this.sorters[i][0] == column)
                         return this.sorters[i][1];
                 }
@@ -1436,61 +1460,65 @@
 
         _enterFullscreen: function (e) {
             this.set('fullscreen', true);
+            this.fire('enter-fullscreen');
         },
 
         _exitFullscreen: function (e) {
             this.set('fullscreen', false);
+            this.fire('exit-fullscreen');
         },
 
-        addFilter: function(filter) {
+        addFilter: function (filter) {
             this.push('userSavedFilters', filter);
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
             this._forceStopEditingFilter();
         },
 
-        deleteFilter: function(index) {
+        deleteFilter: function (index) {
             console.log('_deleteFilter IN', index);
             this.splice('userSavedFilters', index, 1);
             localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
             this.fire('filter-change');
         },
 
-        useFilter: function(filter) {
+        useFilter: function (filter) {
             if (typeof filter == "object" && filter.filter) {
                 this.set('userFilter', filter.filter);
-            } 
+            }
             if (typeof filter == "string") {
                 this.set('userFilter', filter);
             }
             this.set('selectedPresetFilter', this.userFilter);
         },
 
-        _displayName: function(name,selectedPresetFilter,userFilter) {
+        _displayName: function (name, selectedPresetFilter, userFilter) {
             if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return this.name && this.name.length ? this.name : 'All';
             } else {
                 var that = this,
-                    filter = this.userSavedFilters.find(function(f){
+                    filter = this.userSavedFilters.find(function (f) {
                         return that.selectedPresetFilter == f.filter;
                     });
                 return filter ? filter.name : '';
             }
         },
 
-        _selectedPresetFilterChanged: function(filters) {
+        _selectedPresetFilterChanged: function (filters) {
             this.set('userFilter', this.selectedPresetFilter);
         },
 
-        _openDialogSaveFilter: function(e) {
+        _openDialogSaveFilter: function (e) {
             this.set('filterName', this.userFilter.slice(0));
             this.querySelector('#filterName').focus();
             this.querySelector('#filterDialog').open();
         },
 
-        _saveFilter: function(e) {
-            if (this.presetFilters.map(function(m){return m.filter;}).indexOf(this.userFilter.trim()) == -1) {
-                var newfilter  = {
+        _saveFilter: function (e) {
+            if (this.presetFilters.map(function (m) {
+                    return m.filter;
+                }).indexOf(this.userFilter.trim()) == -1) {
+                var newfilter = {
                     name: this.filterName,
                     filter: this.userFilter,
                     default: false
@@ -1500,10 +1528,10 @@
             this.useFilter(newfilter);
             this.querySelector('#filterName').blur();
             this.querySelector('#filterDialog').close();
-            this.set('filterName','');
+            this.set('filterName', '');
         },
 
-        _deletePresetFilter: function(e) {
+        _deletePresetFilter: function (e) {
             e.stopPropagation();
             this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
             if (this.selectedPresetFilter == e.model.item.filter) {
@@ -1524,9 +1552,9 @@
             }
         },
 
-        _updateSelectedFilter: function(userFilter) {
+        _updateSelectedFilter: function (userFilter) {
             var that = this,
-                filter = this.userSavedFilters.find(function(f){
+                filter = this.userSavedFilters.find(function (f) {
                     return userFilter == f.filter;
                 });
             if (filter) {
@@ -1534,17 +1562,17 @@
             }
         },
 
-        _computeShowSaveSearch: function(userFilter, presetFiltersLength) {
+        _computeShowSaveSearch: function (userFilter, presetFiltersLength) {
             return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
         },
 
-        _computeCombinedPresetFilters: function(presetFilters, userSavedFilters) {
-            var pf = this.presetFilters || [] ,
+        _computeCombinedPresetFilters: function (presetFilters, userSavedFilters) {
+            var pf = this.presetFilters || [],
                 usf = this.userSavedFilters || [];
             return pf.concat(usf);
         },
 
-        hotkeys: function(e) {
+        hotkeys: function (e) {
             // ENTER
             if (e.keyCode === 13 && this.$.searchInput.focused) {
                 this._updateSelectedFilter(this.userFilter);
@@ -1561,12 +1589,12 @@
 
         _dismissDialog: function (event) {
             var dialogs = this.shadowRoot.querySelectorAll('vaadin-dialog') || [];
-                for (var i=0; i<dialogs.length; i++) {
-                    if (dialogs[i].opened) {
+            for (var i = 0; i < dialogs.length; i++) {
+                if (dialogs[i].opened) {
                     dialogs[i].opened = false;
                     return;
-                    }
                 }
             }
+        }
     });
 </script>
