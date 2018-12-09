@@ -18,6 +18,7 @@
             :host {
                 display: inherit;
             }
+
             span.title {
                 font-size: 18px !important;
                 text-transform: uppercase;
@@ -34,15 +35,14 @@
                 top: -13px;
                 position: relative;
             }
+
             paper-input#searchInput {
                 --paper-input-container-input: {
                     font-size: 16px;
                 }
             }
-            
         </style>
-        <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40"
-            hidden$="[[!combinedPresetFilters.length]]">
+        <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
             <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
                 title="Select preset filters" style="margin-left: -18px; margin-right: 4px"></paper-icon-button>
             <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
@@ -63,20 +63,21 @@
                     [[_displayName(name,selectedPresetFilter,userFilter)]]
                 </span>
             </h2>
-            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_searchInputFocusedChanged" on-keydown="_keyDownSearchInput"
-                tabindex="1" value="{{userFilter}}">
+            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_searchInputFocusedChanged"
+                on-keydown="_keyDownSearchInput" tabindex="1" value="{{userFilter}}">
             </paper-input>
         </div>
         <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
         <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save
             filter</paper-icon-button>
-        
+
         <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
                 <h2>Save filter</h2>
                 <div class='vaadin-dialog-scrollable'>
                     <span>Optionally choose a filter name.</span>
-                    <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" autofocus on-keydown="_keyDownFilterName"></paper-input>
+                    <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" autofocus
+                        on-keydown="_keyDownFilterName"></paper-input>
                 </div>
                 <div class="buttons">
                     <paper-button on-tap="_dismissFilterDialog">Cancel</paper-button>
@@ -84,7 +85,7 @@
                 </div>
             </template>
         </vaadin-dialog>
-    
+
     </template>
 </dom-module>
 <script>
@@ -142,7 +143,7 @@
             filterName: {
                 type: String
             },
-            
+
             searchable: {
                 type: Boolean,
                 value: true
@@ -311,7 +312,7 @@
             if (e.keyCode == 27) {
                 this._clearFilter(e);
             }
-                        // ENTER
+            // ENTER
             if (e.keyCode === 13 && this.$.searchInput.focused) {
                 this._updateSelectedFilter(this.userFilter);
                 // stop editing only if 
@@ -350,12 +351,12 @@
 
         _editingFilterChanged: function (editingFilter) {
             console.log('_editingFilterChanged', editingFilter, this.editingFilter);
-            this.async(function(){
-                        console.log('async', this.$.searchInput.focused);
-                    }, 100);
+            this.async(function () {
+                console.log('async', this.$.searchInput.focused);
+            }, 100);
             if (this.editingFilter) {
                 if (this.$.searchInput.focused) {
-                //    this.$.searchInput.focus();
+                    // this.$.searchInput.focus();
                 }
                 this.$.searchInput.shadowRoot.querySelector('input').focus()
                 console.log('focus', this.$.searchInput.focused);

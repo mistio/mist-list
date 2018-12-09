@@ -346,7 +346,7 @@
                 transform: scale(.7);
             }
 
-            vaadin-dialog > .buttons {
+            vaadin-dialog>.buttons {
                 padding: 24px;
             }
 
@@ -362,8 +362,8 @@
         </template>
         <slot name="header"></slot>
         <app-toolbar hidden$=[[!toolbar]]>
-            <mist-filter id$="mist-list-[[id]]-filter" name=[[name]] searchable=[[searchable]]
-                base-filter=[[baseFilter]] user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
+            <mist-filter id$="mist-list-[[id]]-filter" name=[[name]] searchable=[[searchable]] base-filter=[[baseFilter]]
+                user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
                 preset-filters=[[presetFilters]]>
                 <span class="count" hidden$=[[timeseries]] slot="count">
                     <sub><template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]</sub>
@@ -435,8 +435,7 @@
                 </div>
             </template>
             <template is="dom-if" if="[[selectable]]" restamp>
-                <vaadin-grid-selection-column flex-grow="0" frozen style="overflow: visible;"
-                    width="50px" z-index="5">
+                <vaadin-grid-selection-column flex-grow="0" frozen style="overflow: visible;" width="50px" z-index="5">
                     <template class="header">
                         <mist-check selected="{{selectAll}}" hidden=[[selectedItems.length]]>[[selectedItems.length]]</mist-check>
                         <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999">
@@ -473,10 +472,9 @@
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden=[[selectedItems.length]]>
-                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[timeseries]] path="[[column]]"
-                            direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
-                            id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
-                            <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
+                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[timeseries]] path="[[column]]" direction$=[[_getDirection(column)]]
+                            cmp="[[_getComparisonFunction(column)]]" id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
+                        <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
                         <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
@@ -764,7 +762,9 @@
 
             presetFilters: {
                 type: Array,
-                value: function () {return [];}
+                value: function () {
+                    return [];
+                }
             },
 
             headerWidth: {
@@ -831,10 +831,15 @@
             this.set('headerWidth', this.$.grid.$.header.clientWidth);
 
             // patch vaadin-grid style to remove padding in selection column to prevent clicks around the checkbox to activate the item
-            this.$.grid.shadowRoot.styleSheets[0].insertRule(':host([theme~="compact"]) td[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}', 0);
-            this.$.grid.shadowRoot.styleSheets[0].insertRule(':host([theme~="compact"]) th[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}', 0);
+            this.$.grid.shadowRoot.styleSheets[0].insertRule(
+                ':host([theme~="compact"]) td[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}',
+                0);
+            this.$.grid.shadowRoot.styleSheets[0].insertRule(
+                ':host([theme~="compact"]) th[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}',
+                0);
             // patch vaadin-grid style to make sure actions appear be on top of column headers
-            this.$.grid.shadowRoot.styleSheets[0].insertRule('thead th:first-child {z-index: 3 !important;}', 0);
+            this.$.grid.shadowRoot.styleSheets[0].insertRule(
+                'thead th:first-child {z-index: 3 !important;}', 0);
         },
 
         detached: function () {
