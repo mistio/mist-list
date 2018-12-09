@@ -86,7 +86,8 @@
 
                 finished: {
                     type: Boolean,
-                    value: false
+                    value: false,
+                    notify: true
                 }
             },
 
@@ -98,9 +99,13 @@
                 if (this.url && this.url.length)
                     this.debounce('_computeDataProvider', function() {
                         this.stop = 0;
+                        this.count = 0;
+                        this.received = 0;
                         this.finished = false;
                         var _this = this;
                         this.set('provider', function(opts, callback) {
+                            if (_this.finished)
+                                return;
                             if (!opts.page) {
                                 _this.count = 0;
                                 _this.received = 0;
@@ -136,7 +141,7 @@
                                         items = response;
                                         _this.count += items.length;
                                         if (items.length < opts.pageSize)
-                                            _this.finished = true;
+                                            _this.set('finished', true);
                                     }
                                     _this.received += items.length;
                                     if (items && items.length) {

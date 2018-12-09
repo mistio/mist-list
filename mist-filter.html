@@ -1,0 +1,377 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../vaadin-dialog/vaadin-dialog.html">
+
+
+<dom-module id="mist-filter">
+    <template>
+        <style>
+            [hidden] {
+                display: none !important;
+            }
+
+            :host {
+                display: inherit;
+            }
+            span.title {
+                font-size: 18px !important;
+                text-transform: uppercase;
+                font-weight: 400;
+            }
+
+            h2.titleh2 {
+                line-height: 1.1em !important;
+            }
+
+            paper-input {
+                width: 100%;
+                padding-left: 8px;
+                top: -13px;
+                position: relative;
+            }
+            paper-input#searchInput {
+                --paper-input-container-input: {
+                    font-size: 16px;
+                }
+            }
+            
+        </style>
+        <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40"
+            hidden$="[[!combinedPresetFilters.length]]">
+            <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
+                title="Select preset filters" style="margin-left: -18px; margin-right: 4px"></paper-icon-button>
+            <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
+                <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
+                <template is="dom-repeat" items="[[combinedPresetFilters]]">
+                    <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
+                        <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter"
+                            hidden$="[[item.default]]"></paper-icon-button>
+                    </paper-item>
+                </template>
+            </paper-listbox>
+        </paper-menu-button>
+        <div on-tap="_startEditingFilter" style="display: inherit">
+            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5; margin-left: -2px"></iron-icon>
+            <slot name="count"></slot>
+            <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 16px; width: 100%">
+                <span class="title">
+                    [[_displayName(name,selectedPresetFilter,userFilter)]]
+                </span>
+            </h2>
+            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_searchInputFocusedChanged" on-keydown="_keyDownSearchInput"
+                tabindex="1" value="{{userFilter}}">
+            </paper-input>
+        </div>
+        <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+        <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save
+            filter</paper-icon-button>
+        
+        <vaadin-dialog id="filterDialog" aria-label="styled">
+            <template>
+                <h2>Save filter</h2>
+                <div class='vaadin-dialog-scrollable'>
+                    <span>Optionally choose a filter name.</span>
+                    <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" autofocus on-keydown="_keyDownFilterName"></paper-input>
+                </div>
+                <div class="buttons">
+                    <paper-button on-tap="_dismissFilterDialog">Cancel</paper-button>
+                    <paper-button dialog-confirm on-tap="_saveFilter">Save</paper-button>
+                </div>
+            </template>
+        </vaadin-dialog>
+    
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'mist-filter',
+        properties: {
+            name: {
+                type: String,
+                reflectToAttribute: true
+            },
+
+            editingFilter: {
+                type: Boolean,
+                value: false
+            },
+
+            baseFilter: {
+                type: String,
+                value: "",
+                observer: '_baseFilterUpdated'
+            },
+
+            userFilter: {
+                type: String,
+                notify: true
+            },
+
+            combinedFilter: {
+                type: String,
+                computed: '_computeFilter(baseFilter, userFilter)',
+                notify: true
+            },
+
+            presetFilters: {
+                type: Array,
+                value: []
+            },
+
+            userSavedFilters: {
+                type: Array
+            },
+
+            combinedPresetFilters: {
+                type: Array,
+                value: [],
+                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.length)'
+            },
+
+            selectedPresetFilter: {
+                type: String,
+                value: '',
+                observer: '_selectedPresetFilterChanged'
+            },
+
+            filterName: {
+                type: String
+            },
+            
+            searchable: {
+                type: Boolean,
+                value: true
+            },
+
+            showSaveSearch: {
+                type: Boolean,
+                computed: '_computeShowSaveSearch(userFilter,combinedPresetFilters.length)'
+            }
+        },
+
+        observers: [
+            '_userFilterChanged(userFilter)',
+            '_editingFilterChanged(editingFilter)'
+        ],
+
+        attached: function () {
+            try {
+                if (localStorage.getItem('mist-filter#' + this.id + '/userFilter')) {
+                    this.set('userFilter', localStorage.getItem('mist-filter#' + this.id + '/userFilter'));
+                } else {
+                    this.set('userFilter', '');
+                }
+
+                if (JSON.parse(localStorage.getItem('mist-filter#' + this.id + '/userSavedFilters'))) {
+                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-filter#' + this.id +
+                        '/userSavedFilters')));
+                    this.fire('filter-change');
+                } else {
+                    this.set('userSavedFilters', [])
+                }
+            } catch (e) {
+                console.warn('Failed to access localStorage: ', e);
+            }
+        },
+
+        _selectedPresetFilterChanged: function (filters) {
+            this.set('userFilter', this.selectedPresetFilter);
+        },
+
+        addFilter: function (filter) {
+            this.push('userSavedFilters', filter);
+            localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
+            this.set('editingFilter', false);
+        },
+
+        deleteFilter: function (index) {
+            console.log('_deleteFilter IN', index);
+            this.splice('userSavedFilters', index, 1);
+            localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            this.fire('filter-change');
+        },
+
+        useFilter: function (filter) {
+            if (typeof filter == "object" && filter.filter) {
+                this.set('userFilter', filter.filter);
+            }
+            if (typeof filter == "string") {
+                this.set('userFilter', filter);
+            }
+            this.set('selectedPresetFilter', this.userFilter);
+        },
+
+        _displayName: function (name, selectedPresetFilter, userFilter) {
+            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
+                return this.name && this.name.length ? this.name : 'All';
+            } else {
+                var that = this,
+                    filter = this.userSavedFilters.find(function (f) {
+                        return that.selectedPresetFilter == f.filter;
+                    });
+                return filter ? filter.name : '';
+            }
+        },
+
+        _openDialogSaveFilter: function (e) {
+            this.set('filterName', this.userFilter.slice(0));
+            this.$.filterDialog.opened = true;
+        },
+
+        _dismissFilterDialog: function (e) {
+            this.$.filterDialog.opened = false;
+        },
+
+        _saveFilter: function (e) {
+            if (this.presetFilters.map(function (m) {
+                    return m.filter;
+                }).indexOf(this.userFilter.trim()) == -1) {
+                var newfilter = {
+                    name: this.filterName,
+                    filter: this.userFilter,
+                    default: false
+                };
+                this.addFilter(newfilter);
+            }
+            this.useFilter(newfilter);
+            this.$.filterDialog.opened = false;
+            this.set('filterName', '');
+        },
+
+        _deletePresetFilter: function (e) {
+            e.stopPropagation();
+            this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
+            if (this.selectedPresetFilter == e.model.item.filter) {
+                this.useFilter('');
+            }
+            if (this.userFilter.indexOf(e.model.item.filter) > -1) {
+                this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
+            }
+        },
+
+        _userFilterChanged: function (userFilter) {
+            if (userFilter != undefined) {
+                var trimmed = userFilter.trim();
+                if (this.editingFilter) {
+                    this._updateSelectedFilter(userFilter);
+                }
+                localStorage.setItem('mist-filter#' + this.id + '/userFilter', this.userFilter);
+            }
+        },
+
+        _updateSelectedFilter: function (userFilter) {
+            var that = this,
+                filter = this.userSavedFilters.find(function (f) {
+                    return userFilter == f.filter;
+                });
+            if (filter) {
+                this.set('selectedPresetFilter', this.userFilter);
+            }
+        },
+
+        _computeShowSaveSearch: function (userFilter, presetFiltersLength) {
+            return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
+        },
+
+        _computeCombinedPresetFilters: function (presetFilters, userSavedFilters) {
+            var pf = this.presetFilters || [],
+                usf = this.userSavedFilters || [];
+            return pf.concat(usf);
+        },
+
+        _startEditingFilter: function (e) {
+            if (this.searchable) {
+                this.editingFilter = true;
+            }
+        },
+
+        _searchInputFocusedChanged: function (e) {
+            console.log('focus changed', e);
+            if (e.target.focused) return;
+            this.async(function () {
+                if (!e.detail.value && this._filterIsAPresetFilter()) {
+                    this.set('editingFilter', false);
+                }
+            }, 100);
+        },
+
+        _filterIsAPresetFilter: function () {
+            return !this.userFilter.trim() || this.combinedPresetFilters.map(function (m) {
+                return m.filter;
+            }).indexOf(this.userFilter.trim()) > -1;
+        },
+
+        _keyDownSearchInput: function (e) {
+            if (e.keyCode == 27) {
+                this._clearFilter(e);
+            }
+                        // ENTER
+            if (e.keyCode === 13 && this.$.searchInput.focused) {
+                this._updateSelectedFilter(this.userFilter);
+                // stop editing only if 
+                if (this.userFilter == this.selectedPresetFilter) {
+                    this.set('editingFilter', false);
+                }
+            }
+        },
+
+        _keyDownFilterName: function (e) {
+            // ENTER
+            if (e.keyCode === 13 && this.$.filterDialog.opened) {
+                this._saveFilter();
+            }
+        },
+
+        _clearFilter: function (e) {
+            if (this.autoHide) {
+                this.autoHide = false;
+                this.async(function () {
+                    this.autoHide = true;
+                }.bind(this), 1000);
+            }
+            this.userFilter = '';
+            this.selectedPresetFilter = '';
+            this.editingFilter = false;
+        },
+
+        _baseFilterUpdated: function () {
+            // Reset the user defined filter every time the base filter gets updated
+            if (this.userFilter) {
+                this.set('userFilter', '');
+            }
+            this.editingFilter = false;
+        },
+
+        _editingFilterChanged: function (editingFilter) {
+            console.log('_editingFilterChanged', editingFilter, this.editingFilter);
+            this.async(function(){
+                        console.log('async', this.$.searchInput.focused);
+                    }, 100);
+            if (this.editingFilter) {
+                if (this.$.searchInput.focused) {
+                //    this.$.searchInput.focus();
+                }
+                this.$.searchInput.shadowRoot.querySelector('input').focus()
+                console.log('focus', this.$.searchInput.focused);
+            } else {
+                if (this.$.searchInput.focused) {
+                    this.$.searchInput.blur();
+                }
+            }
+        },
+
+        _computeFilter: function (baseFilter, userFilter) {
+            if (!baseFilter)
+                return userFilter;
+            if (!userFilter)
+                return baseFilter;
+            return '(' + baseFilter + ') AND (' + userFilter + ')';
+        },
+    })
+</script>

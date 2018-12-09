@@ -1,3 +1,4 @@
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-sorter.html">
 <link rel="import" href="../vaadin-grid/vaadin-grid-selection-column.html">
@@ -12,6 +13,7 @@
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 
 <link rel="import" href="mist-check.html">
+<link rel="import" href="mist-filter.html">
 <link rel="import" href="mist-list-actions.html">
 <link rel="import" href="rest-data-provider.html">
 
@@ -130,11 +132,6 @@
                 outline-width: 0px !important;
             }
 
-            vaadin-grid::content vaadin-grid-table-cell,
-            vaadin-grid::slotted(vaadin-grid-table-cell) {
-                overflow: hidden;
-            }
-
             vaadin-grid input[type=checkbox] {
                 height: 16px;
                 width: 16px;
@@ -220,7 +217,6 @@
             }
 
             mist-check {
-                margin-left: -8px;
                 padding: 6px 0px 6px 8px;
             }
 
@@ -252,25 +248,9 @@
                 color: #000;
             }
 
-            app-toolbar .title {
-                font-size: 18px !important;
-                text-transform: uppercase;
-                font-weight: 400;
-            }
-
-            h2.titleh2 {
-                line-height: 1.1em !important;
-            }
-
             vaadin-dialog {
                 width: 400px;
                 max-width: 100%;
-                font-family: inherit;
-            }
-
-            h2:not(.titleh2) {
-                font-weight: normal;
-                margin: 0;
                 font-family: inherit;
             }
 
@@ -307,12 +287,13 @@
             }
 
             span.count {
-                font-size: 16px;
-                width: 68px;
+                font-size: 14px;
                 display: inline-block;
                 text-align: center;
                 opacity: .5;
-                margin-right: 24px;
+                margin-left: -38px;
+                margin-top: 38px;
+                width: 60px;
             }
 
             paper-menu-button.column-menu {
@@ -324,11 +305,6 @@
 
             vaadin-grid .cell {
                 padding: 0 !important;
-            }
-
-            paper-input#filterName {
-                max-width: 100%;
-                width: calc(100% - 48px);
             }
 
             paper-input#searchInput {
@@ -370,11 +346,7 @@
                 transform: scale(.7);
             }
 
-            app-toolbar:not(.preset-filters-0) {
-                padding: 0 !important;
-            }
-
-            vaadin-dialog>.buttons {
+            vaadin-dialog > .buttons {
                 padding: 24px;
             }
 
@@ -389,36 +361,14 @@
                 timeseries=[[timeseries]] filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
         <slot name="header"></slot>
-        <app-toolbar class$="preset-filters-[[combinedPresetFilters.length]]" hidden$=[[!toolbar]]>
-            <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40"
-                hidden$="[[!combinedPresetFilters.length]]">
-                <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
-                    title="Select preset filters"></paper-icon-button>
-                <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
-                    <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
-                    <template is="dom-repeat" items="[[combinedPresetFilters]]">
-                        <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
-                            <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter"
-                                hidden$="[[item.default]]"></paper-icon-button>
-                        </paper-item>
-                    </template>
-                </paper-listbox>
-            </paper-menu-button>
-            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5" on-tap="_startEditingFilter"></iron-icon>
-            <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 22px; width: 100%" on-tap="_startEditingFilter">
-                <span class="count" hidden$=[[timeseries]]>
-                    <template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]
+        <app-toolbar hidden$=[[!toolbar]]>
+            <mist-filter id$="mist-list-[[id]]-filter" name=[[name]] searchable=[[searchable]]
+                base-filter=[[baseFilter]] user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
+                preset-filters=[[presetFilters]]>
+                <span class="count" hidden$=[[timeseries]] slot="count">
+                    <sub><template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]</sub>
                 </span>
-                <span class="title">
-                    [[_displayName(name,selectedPresetFilter,userFilter)]]
-                </span>
-            </h2>
-            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_stopEditingFilter" autofocus
-                on-keydown="_keyDown" value={{userFilter}}>
-            </paper-input>
-            <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-            <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save
-                filter</paper-icon-button>
+            </mist-filter>
             <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden$=[[fullscreen]] on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden$=[[!fullscreen]] on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
@@ -473,7 +423,7 @@
                         on-mouseup="_preventDefault">
                         <table>
                             <tbody>
-                                <template is="dom-repeat" items="{{_itemKeys(item)}}" as="i">
+                                <template is="dom-repeat" items="{{_computeItemKeys(item)}}" as="i">
                                     <tr class$="[[i.key]]">
                                         <td class="key">[[i]]</td>
                                         <td class="value">[[_getRawBody(i, item)]]</td>
@@ -485,11 +435,11 @@
                 </div>
             </template>
             <template is="dom-if" if="[[selectable]]" restamp>
-                <vaadin-grid-selection-column flex-grow="0" frozen on-click="_alertAndPreventDefault" style="overflow: visible; padding: 0 !important"
-                    width="50px">
+                <vaadin-grid-selection-column flex-grow="0" frozen style="overflow: visible;"
+                    width="50px" z-index="5">
                     <template class="header">
                         <mist-check selected="{{selectAll}}" hidden=[[selectedItems.length]]>[[selectedItems.length]]</mist-check>
-                        <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 10px 8px 18px; z-index: 99999">
+                        <div id="actions" hidden=[[!selectedItems.length]] style$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999">
                             <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions=[[actions]]></mist-list-actions>
                         </div>
@@ -504,7 +454,7 @@
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen style="z-index: -1">
                     <template class="header" style="z-index: -1">
                         <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu"
-                            style$="[[_computeMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+                            style$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
                             <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select"
                                 title="Select columns & export CSV" slot="dropdown-trigger"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
@@ -514,7 +464,7 @@
                         </paper-menu-button>
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeIconStyle(item.expanded)]]; margin-left: -4px; padding: 5px; width: 32px; height: 32px;"
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;"
                             toggles active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden$=[[!expands]]
                             on-active-changed="_toggleItemExpand"></paper-icon-button>
                     </template>
@@ -523,9 +473,10 @@
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden=[[selectedItems.length]]>
-                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[selectedItems.length]] path="[[column]]"
-                            direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]" hidden$=[[timeseries]]
+                        <vaadin-grid-sorter style="z-index: -10000" hidden=[[timeseries]] path="[[column]]"
+                            direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
                             id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
+                            <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
                         <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
@@ -572,20 +523,6 @@
         <a id="downloadCSV" href="data:application/octet-stream;[[CSVresponse]]" download$="[[_computeCSVname(apiurl)]]"
             hidden>Download</a>
 
-        <vaadin-dialog id="filterDialog" aria-label="styled">
-            <template>
-                <h2>Save filter</h2>
-                <div class='vaadin-dialog-scrollable'>
-                    <span>Optionally choose a filter name.</span>
-                    <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" auto-focus></paper-input>
-                </div>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm on-tap="_saveFilter">Save filter</paper-button>
-                </div>
-            </template>
-        </vaadin-dialog>
-
     </template>
 </dom-module>
 
@@ -593,6 +530,16 @@
     Polymer({
         is: 'mist-list',
         properties: {
+            id: {
+                type: String,
+                reflectToAttribute: true
+            },
+
+            name: {
+                type: String,
+                reflectToAttribute: true
+            },
+
             apiurl: {
                 type: String
             },
@@ -602,7 +549,10 @@
             },
 
             filteredItems: {
-                type: Array
+                type: Array,
+                value: function () {
+                    return []
+                }
             },
 
             count: {
@@ -748,7 +698,6 @@
             baseFilter: {
                 type: String,
                 value: "",
-                observer: '_baseFilterUpdated'
             },
 
             userFilter: {
@@ -756,9 +705,7 @@
             },
 
             combinedFilter: {
-                type: String,
-                computed: '_computeFilter(baseFilter, userFilter)',
-                notify: true
+                type: String
             },
 
             streaming: {
@@ -817,36 +764,11 @@
 
             presetFilters: {
                 type: Array,
-                value: []
-            },
-
-            userSavedFilters: {
-                type: Array
-            },
-
-            combinedPresetFilters: {
-                type: Array,
-                value: [],
-                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.length)'
-            },
-
-            selectedPresetFilter: {
-                type: String,
-                value: '',
-                observer: '_selectedPresetFilterChanged'
-            },
-
-            filterName: {
-                type: String
+                value: function () {return [];}
             },
 
             headerWidth: {
                 type: Number
-            },
-
-            showSaveSearch: {
-                type: Boolean,
-                computed: '_computeShowSaveSearch(userFilter,combinedPresetFilters.length)'
             },
 
             rest: {
@@ -859,20 +781,18 @@
             '_itemsUpdated(items)',
             '_itemMapUpdated(itemMap.*)',
             '_filterItems(items, items.length, combinedFilter, filterMethod)',
-            'windowResize(filteredItems.length, route.path)',
+            '_windowResize(filteredItems.length, route.path)',
             '_selectedItemsChanged(selectedItems.length)',
-            'toggleSelectAll(selectAll)',
+            '_selectAllToggled(selectAll)',
             '_setShowNoData(items, filteredItems.length)',
             '_visibleChanged(visible)',
-            '_userFilterChanged(userFilter)'
         ],
 
         listeners: {
             'receive-log': 'eventReceived',
-            'resize': 'windowResize',
-            'column-resizing': 'saveColumnWidth',
-            'iron-announce': '_sorterChanged',
-            'keyup': 'hotkeys',
+            'resize': '_windowResize',
+            'column-resizing': '_saveColumnWidth',
+            'iron-announce': '_sorterChanged'
         },
 
         ready: function () {},
@@ -881,35 +801,21 @@
             var _this = this;
             if (this.resizable) {
                 this.resizeHandler = function () {
-                    _this.windowResize();
+                    _this._windowResize();
                 }
                 window.addEventListener("resize", this.resizeHandler);
                 this.async(function () {
-                    this.windowResize()
+                    this._windowResize();
                 }, 500);
             }
 
             if (this.infinite) {
-                this.listen(this.querySelector('vaadin-grid-table'), 'wheel', '_onWheel');
+                this.listen(this.querySelector('vaadin-grid'), 'wheel', '_onWheel');
             }
 
             try {
                 if (JSON.parse(localStorage.getItem('mist-list#' + this.id))) {
                     this.set('visible', JSON.parse(localStorage.getItem('mist-list#' + this.id)));
-                }
-
-                if (localStorage.getItem('mist-list#' + this.id + '/userFilter')) {
-                    this.set('userFilter', localStorage.getItem('mist-list#' + this.id + '/userFilter'));
-                } else {
-                    this.set('userFilter', '');
-                }
-
-                if (JSON.parse(localStorage.getItem('mist-list#' + this.id + '/userSavedFilters'))) {
-                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-list#' + this.id +
-                        '/userSavedFilters')));
-                    this.fire('filter-change');
-                } else {
-                    this.set('userSavedFilters', [])
                 }
 
                 var sorters = JSON.parse(localStorage.getItem('mist-list#' + this.id + '/sorters'));
@@ -921,8 +827,14 @@
 
             this.fire('list-attached', {
                 id: this.id
-            })
+            });
             this.set('headerWidth', this.$.grid.$.header.clientWidth);
+
+            // patch vaadin-grid style to remove padding in selection column to prevent clicks around the checkbox to activate the item
+            this.$.grid.shadowRoot.styleSheets[0].insertRule(':host([theme~="compact"]) td[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}', 0);
+            this.$.grid.shadowRoot.styleSheets[0].insertRule(':host([theme~="compact"]) th[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}', 0);
+            // patch vaadin-grid style to make sure actions appear be on top of column headers
+            this.$.grid.shadowRoot.styleSheets[0].insertRule('thead th:first-child {z-index: 3 !important;}', 0);
         },
 
         detached: function () {
@@ -974,17 +886,16 @@
 
         _onWheel: function (e) {
             var t = this.$.grid.scrollTarget;
-            if (t && (t.scrollTop + t.clientHeight) / t.scrollHeight > 0.75 && !this.finished) {
+            if (t && (t.scrollTop + t.clientHeight) / t.scrollHeight > 0.8 && !this.finished) {
                 var pageno = this.$.grid._getPageForIndex(this.count);
                 console.log('request page', pageno);
                 this.$.grid._loadPage(pageno, this.$.grid._cache);
             }
         },
 
-        windowResize: function () {
-            return;
+        _windowResize: function () {
             if (this.resizable) {
-                this.debounce('windowResize', function () {
+                this.debounce('_windowResize', function () {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
@@ -1026,7 +937,7 @@
             }
         },
 
-        saveColumnWidth: function (e) {
+        _saveColumnWidth: function (e) {
             var column = e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1];
             localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.target.style.width);
         },
@@ -1165,7 +1076,7 @@
             }
         },
 
-        _itemKeys: function (item) {
+        _computeItemKeys: function (item) {
             if (!item) return [];
             return Object.keys(item)
         },
@@ -1240,7 +1151,7 @@
             }
         },
 
-        toggleSelectAll: function (selectAll) {
+        _selectAllToggled: function (selectAll) {
             if (selectAll && this.count != this.selectedItems.length) {
                 this.set('selectedItems', this.filteredItems);
             } else if (!selectAll && this.count == this.selectedItems.length) {
@@ -1260,9 +1171,13 @@
             return this.renderers[column] && this.renderers[column].cmp;
         },
 
-        _computeIconStyle: function (expanded) {
+        _computeExpandIconStyle: function (expanded, selectable) {
             // TODO: animate icon
-            if (!expanded) return "transform: rotate(270deg);"
+            var ret = '';
+            if (selectable) ret += "margin-left: -8px;";
+            else ret += "margin-left: 4px;";
+            if (!expanded) ret += "transform: rotate(270deg);";
+            return ret
         },
 
         _computeIndicatorStyle: function (item, indicator) {
@@ -1296,25 +1211,11 @@
                 });
         },
 
-        _computeFilter: function (baseFilter, userFilter) {
-            if (!baseFilter)
-                return userFilter;
-            if (!userFilter)
-                return baseFilter;
-            return '(' + baseFilter + ') AND (' + userFilter + ')';
-        },
-
-        _computeMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
-            return 'margin-left: -8px';
+        _computeColumnMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
             if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
-            var left = 0;
-            if (selectable) {
-                left += 52;
-                if (expands)
-                    left += 12;
-            }
-            return 'left:' + left + 'px;'
+            if (selectable) return 'margin-left: -8px;';
+            return 'margin-left: 0px;';
         },
 
         _or: function (a, b) {
@@ -1323,57 +1224,6 @@
 
         _preventDefault: function (e) {
             e.preventDefault();
-        },
-
-        _startEditingFilter: function (e) {
-            if (this.searchable) {
-                this.editingFilter = true;
-                this.$.searchInput.focus();
-            }
-        },
-
-        _stopEditingFilter: function (e) {
-            this.async(function () {
-                if (!e.detail.value && this._filterIsAPresetFilter()) {
-                    this.set('editingFilter', false);
-                }
-            }, 100);
-        },
-
-        _filterIsAPresetFilter: function () {
-            return !this.userFilter.trim() || this.combinedPresetFilters.map(function (m) {
-                return m.filter;
-            }).indexOf(this.userFilter.trim()) > -1;
-        },
-
-        _forceStopEditingFilter: function (f) {
-            this.set('editingFilter', false);
-        },
-
-        _keyDown: function (e) {
-            if (e.keyCode == 27) {
-                this._clearFilter(e);
-            }
-        },
-
-        _clearFilter: function (e) {
-            if (this.autoHide) {
-                this.autoHide = false;
-                this.async(function () {
-                    this.autoHide = true;
-                }.bind(this), 1000);
-            }
-            this.userFilter = '';
-            this.selectedPresetFilter = '';
-            this.editingFilter = false;
-        },
-
-        _baseFilterUpdated: function () {
-            // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter) {
-                this.set('userFilter', '');
-            }
-            this.editingFilter = false;
         },
 
         _computeHidden: function (autoHide, count, editingFilter) {
@@ -1466,125 +1316,6 @@
         _exitFullscreen: function (e) {
             this.set('fullscreen', false);
             this.fire('exit-fullscreen');
-        },
-
-        addFilter: function (filter) {
-            this.push('userSavedFilters', filter);
-            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
-            this.fire('filter-change');
-            this._forceStopEditingFilter();
-        },
-
-        deleteFilter: function (index) {
-            console.log('_deleteFilter IN', index);
-            this.splice('userSavedFilters', index, 1);
-            localStorage.setItem('mist-list#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
-            this.fire('filter-change');
-        },
-
-        useFilter: function (filter) {
-            if (typeof filter == "object" && filter.filter) {
-                this.set('userFilter', filter.filter);
-            }
-            if (typeof filter == "string") {
-                this.set('userFilter', filter);
-            }
-            this.set('selectedPresetFilter', this.userFilter);
-        },
-
-        _displayName: function (name, selectedPresetFilter, userFilter) {
-            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
-                return this.name && this.name.length ? this.name : 'All';
-            } else {
-                var that = this,
-                    filter = this.userSavedFilters.find(function (f) {
-                        return that.selectedPresetFilter == f.filter;
-                    });
-                return filter ? filter.name : '';
-            }
-        },
-
-        _selectedPresetFilterChanged: function (filters) {
-            this.set('userFilter', this.selectedPresetFilter);
-        },
-
-        _openDialogSaveFilter: function (e) {
-            this.set('filterName', this.userFilter.slice(0));
-            this.querySelector('#filterName').focus();
-            this.querySelector('#filterDialog').open();
-        },
-
-        _saveFilter: function (e) {
-            if (this.presetFilters.map(function (m) {
-                    return m.filter;
-                }).indexOf(this.userFilter.trim()) == -1) {
-                var newfilter = {
-                    name: this.filterName,
-                    filter: this.userFilter,
-                    default: false
-                };
-                this.addFilter(newfilter);
-            }
-            this.useFilter(newfilter);
-            this.querySelector('#filterName').blur();
-            this.querySelector('#filterDialog').close();
-            this.set('filterName', '');
-        },
-
-        _deletePresetFilter: function (e) {
-            e.stopPropagation();
-            this.deleteFilter(this.userSavedFilters.indexOf(e.model.item))
-            if (this.selectedPresetFilter == e.model.item.filter) {
-                this.useFilter('');
-            }
-            if (this.userFilter.indexOf(e.model.item.filter) > -1) {
-                this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
-            }
-        },
-
-        _userFilterChanged: function (userFilter) {
-            if (userFilter != undefined) {
-                var trimmed = userFilter.trim();
-                if (this.editingFilter) {
-                    this._updateSelectedFilter(userFilter);
-                }
-                localStorage.setItem('mist-list#' + this.id + '/userFilter', this.userFilter);
-            }
-        },
-
-        _updateSelectedFilter: function (userFilter) {
-            var that = this,
-                filter = this.userSavedFilters.find(function (f) {
-                    return userFilter == f.filter;
-                });
-            if (filter) {
-                this.set('selectedPresetFilter', this.userFilter);
-            }
-        },
-
-        _computeShowSaveSearch: function (userFilter, presetFiltersLength) {
-            return this.editingFilter && this.userFilter.length && !this._filterIsAPresetFilter();
-        },
-
-        _computeCombinedPresetFilters: function (presetFilters, userSavedFilters) {
-            var pf = this.presetFilters || [],
-                usf = this.userSavedFilters || [];
-            return pf.concat(usf);
-        },
-
-        hotkeys: function (e) {
-            // ENTER
-            if (e.keyCode === 13 && this.$.searchInput.focused) {
-                this._updateSelectedFilter(this.userFilter);
-                // stop editing only if 
-                if (this.userFilter == this.selectedPresetFilter) {
-                    this._forceStopEditingFilter();
-                }
-            }
-            // ENTER
-            if (e.keyCode === 13 && this.$.filterDialog.opened) {
-                this._saveFilter();
-            }
         },
 
         _dismissDialog: function (event) {
