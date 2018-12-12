@@ -28,7 +28,6 @@
 
             :host {
                 display: block;
-                --row-height: 32px;
                 font-family: inherit;
                 font: 400 14px;
             }
@@ -313,7 +312,7 @@
                 user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
                 preset-filters=[[presetFilters]]>
                 <span class="count" hidden$=[[timeseries]] slot="count">
-                    <sub><template is="dom-if" if="[[!_hasReceivedAll(count)]]">[[received]]/</template>[[count]]</sub>
+                    <sub hidden=[[!count]]><template is="dom-if" if="[[!_hasReceivedAll(received,count)]]" restamp>[[received]]/</template>[[count]]</sub>
                 </span>
             </mist-filter>
             <span hidden$="[[!enableFullscreen]]">
@@ -782,11 +781,18 @@
                 id: this.id
             });
             this.set('headerWidth', this.$.grid.$.header.clientWidth);
+
+            if (this.streaming) {
+                this.fire('streaming-list-attached', this);
+            }
         },
 
         detached: function () {
             if (this.resizable) {
                 window.removeEventListener("resize", this.resizeHandler);
+            }
+            if (this.streaming) {
+                this.fire('streaming-list-detached', this);
             }
         },
 
@@ -1077,7 +1083,7 @@
         },
 
         _hasReceivedAll: function (received, count) {
-            return this.count && this.received == this.count
+            return this.received >= this.count
         },
 
         _checkboxChanged: function (e) {
@@ -1151,8 +1157,13 @@
             console.debug('eventReceived', item, this._applyFilter(item.detail));
             if (this._applyFilter(item.detail))
                 this.async(function () {
-                    if (this.$.grid && this.$.grid.get('_cache.0') != undefined) {
-                        this.$.grid.unshift('_cache.0', item.detail);
+                    if (this.$.grid && this.$.grid.get('_cache.items') != undefined) {
+                        this.$.grid._cache.size += 1;
+                        this.$.grid._cache.effectiveSize += 1;
+                        for (var i=Object.keys(this.$.grid._cache.items).length; i > 0 ; i--) {
+                            this.$.grid._cache.items[i] = this.$.grid._cache.items[i-1];
+                        }
+                        this.$.grid._cache.items[0] = item.detail;
                         this.$.grid.fire('iron-resize');
                     }
                 });
@@ -1283,6 +1294,7 @@
             /* patch vaadin-grid style to remove padding in selection column to prevent clicks around the checkbox to activate the item */
             [part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}
             [part~="row"]:hover > [part~="body-cell"] {background-color: #eee !important}
+            [part~="header-cell"] {background-color: #f2f2f2 !important;}
             /* patch vaadin-grid style to make sure actions appear be on top of column headers */
             thead th:first-child {z-index: 3 !important;}
 
@@ -1301,6 +1313,10 @@
 
             [part~="body-cell"] {
                 /* Styles that only affect all body cells */
+            }
+
+            :host([theme~="compact"]) [part="row"]:only-child [part~="header-cell"] {
+                min-height: 49px;
             }
         </style>
     </template>
