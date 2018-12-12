@@ -71,60 +71,6 @@
                 font-weight: 400;
                 font-size: 14px;
                 color: #424242;
-
-                --vaadin-grid-cell: {
-                    cursor: pointer;
-                }
-
-                ;
-
-                --vaadin-grid-body-cell: {
-                    height: var(--row-height);
-                }
-
-                ;
-
-                --vaadin-grid-header-cell: {
-                    background: rgba(240, 240, 240, 1);
-                    min-height: 32px;
-                    height: calc(var(--row-height) - 8px);
-                }
-
-                ;
-
-                --vaadin-grid-body-row-selected-cell: {
-                    background-color: rgba(255, 255, 141, 0.9) !important;
-                    color: rgba(41, 41, 41, 1);
-                    opacity: .8;
-                }
-
-                ;
-
-                --vaadin-grid-body-row-odd-cell: {
-                    background-color: rgb(251, 251, 251);
-                }
-
-                ;
-
-                --vaadin-grid-body-row-hover-cell: {
-                    background-color: rgb(245, 245, 245);
-                    opacity: 1.0 !important;
-                    color: rgba(51, 51, 51, .85);
-                }
-
-                ;
-
-                --vaadin-grid-body-row-details-cell: {
-                    text-align: center;
-                }
-
-                ;
-
-                --vaadin-grid-column-resize-handle: {
-                    opacity: 0;
-                }
-
-                ;
             }
 
             vaadin-grid::content div#table,
@@ -353,6 +299,7 @@
             mist-list-actions {
                 margin-top: 8px;
                 margin-left: 2px;
+                fill: #fff;
             }
         </style>
         <template is="dom-if" restamp if="[[useDataProvider]]">
@@ -416,7 +363,7 @@
 
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]]
             loading$="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]
-            theme="compact no-row-borders row-stripes">
+            theme$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault"
@@ -477,7 +424,7 @@
                         <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                     </template>
                     <template>
-                        <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                        <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -504,7 +451,7 @@
                             <span class="header" hidden$=[[!timeseries]]>[[_getTitle(column)]]</span>
                         </template>
                         <template>
-                            <div inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+                            <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
                         </template>
                     </vaadin-grid-column>
                 </template>
@@ -774,6 +721,12 @@
             rest: {
                 type: Boolean,
                 value: false
+            },
+
+            theme: {
+                type: String,
+                reflectToAttribute: true,
+                value: 'compact'
             }
         },
 
@@ -829,17 +782,6 @@
                 id: this.id
             });
             this.set('headerWidth', this.$.grid.$.header.clientWidth);
-
-            // patch vaadin-grid style to remove padding in selection column to prevent clicks around the checkbox to activate the item
-            this.$.grid.shadowRoot.styleSheets[0].insertRule(
-                ':host([theme~="compact"]) td[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}',
-                0);
-            this.$.grid.shadowRoot.styleSheets[0].insertRule(
-                ':host([theme~="compact"]) th[part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}',
-                0);
-            // patch vaadin-grid style to make sure actions appear be on top of column headers
-            this.$.grid.shadowRoot.styleSheets[0].insertRule(
-                'thead th:first-child {z-index: 3 !important;}', 0);
         },
 
         detached: function () {
@@ -903,7 +845,7 @@
                 this.debounce('_windowResize', function () {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
-                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 64,
+                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 44,
                         isSmallScreen = window.innerWidth <= 768,
                         outerScroller = this.$.grid.$.scroller,
                         hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -1100,7 +1042,7 @@
             if (item) {
                 if (this.renderers[column])
                     return this.renderers[column].body(item[column], item);
-                if (typeof (item[column]) == 'undefined') return '';
+                if (typeof (item[column]) == 'undefined') return '&nbsp;';
                 if (typeof (item[column]) == 'string')
                     return item[column];
 
@@ -1108,7 +1050,7 @@
                 if (['undefined', '[]', '{}'].indexOf(ret) == -1)
                     return ret;
             }
-            return '';
+            return '&nbsp;';
         },
 
         _getRawBody: function (column, item) {
@@ -1334,3 +1276,32 @@
         }
     });
 </script>
+
+<dom-module id="mist-list-grid" theme-for="vaadin-grid">
+    <template>
+        <style>
+            /* patch vaadin-grid style to remove padding in selection column to prevent clicks around the checkbox to activate the item */
+            [part~="cell"]:first-child ::slotted(vaadin-grid-cell-content) {padding: 0 !important;}
+            [part~="row"]:hover > [part~="body-cell"] {background-color: #eee !important}
+            /* patch vaadin-grid style to make sure actions appear be on top of column headers */
+            thead th:first-child {z-index: 3 !important;}
+
+            :host([theme~="row-stripes"]) [part~="row"]:not([odd]) [part~="body-cell"] {
+                background-color: rgb(249, 249, 249);
+                background-image: none; /*linear-gradient(rgb(249, 249, 249), rgb(249, 249, 249));*/
+            }
+
+            [part~="row"][selected] > [part~="body-cell"] {
+                /*background-color: rgba(255, 255, 141, 0.9) !important;*/
+                background-image: linear-gradient(rgba(255, 255, 141, 0.8), rgba(255, 255, 141, .7)) !important;
+            }
+            [part~="cell"] {
+                /* Styles that affect all grid cells, including header, body and footer cells */
+            }
+
+            [part~="body-cell"] {
+                /* Styles that only affect all body cells */
+            }
+        </style>
+    </template>
+</dom-module>

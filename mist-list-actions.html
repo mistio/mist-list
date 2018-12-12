@@ -4,81 +4,83 @@
 <dom-module id="mist-list-actions">
     <template>
         <style include="shared-styles">
-        :host {
-            display: flex;
-            color: rgba(255, 255, 255, 0.87);
-            align-items: center;
-            justify-content: flex-end;
-            flex-wrap: nowrap;
-        }
+            :host {
+                display: flex;
+                color: inherit;
+                align-items: center;
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+                fill: inherit;
+            }
 
-        paper-button.actions {
-            display: inline-block;
-            flex-wrap: nowrap;
-            white-space: nowrap;
-            width: auto;
-            min-width: auto;
-            padding: 0.8em 1.57em 0.7em .57em;
-        }
+            paper-button.actions {
+                display: inline-block;
+                flex-wrap: nowrap;
+                white-space: nowrap;
+                width: auto;
+                min-width: auto;
+                padding: 0.8em 1.57em 0.7em .57em;
+                fill: inherit;
+            }
 
-        paper-button.more.actions {
-            display: block;
-            width: 100%;
-            margin-left: 0 !important;
-        }
+            paper-button.more.actions {
+                display: block;
+                width: 100%;
+                margin-left: 0 !important;
+            }
 
-        paper-button.actions iron-icon {
-            fill: #fff;
-        }
+            paper-button.actions iron-icon {
+                fill: inherit;
+            }
 
-        paper-button.more.actions iron-icon {
-            fill: rgba(0, 0, 0, 0.54);
-        }
+            paper-button.more.actions iron-icon {
+                fill: rgba(0, 0, 0, 0.54);
+            }
 
-        paper-menu-button {
-            padding: 0;
-        }
+            paper-menu-button {
+                padding: 0;
+            }
 
-        iron-icon {
-            color: inherit;
-            margin-top: -2px;
-            min-width: 24px;
-            padding-right: 8px;
-        }
+            iron-icon {
+                color: inherit;
+                margin-top: -2px;
+                min-width: 24px;
+                padding-right: 8px;
+            }
 
-        paper-dialog-scrollable ul {
-            padding-left: 18px;
-            color: rgba(0, 0, 0, 0.54);
-            font-size: 16px;
-        }
+            paper-dialog-scrollable ul {
+                padding-left: 18px;
+                color: rgba(0, 0, 0, 0.54);
+                font-size: 16px;
+            }
 
-        div.dropdown-content {
-            color: rgba(0, 0, 0, 0.87);
-        }
+            div.dropdown-content {
+                color: rgba(0, 0, 0, 0.87);
+            }
 
-        div.dropdown-content paper-button {
-            text-align: left;
-            white-space: nowrap;
-            padding: 16px 16px;
-            margin-left: 16px;
-        }
-
-        paper-button.dropdown-trigger {
-            min-width: auto !important;
-            padding: .8em;
-        }
-
-        @media screen and (max-width: 600px) {
-
-            paper-button#actionmenu ::content iron-icon,
-            paper-button#actionmenu ::slotted(iron-icon) {
-                margin: 0 !important;
+            div.dropdown-content paper-button {
+                text-align: left;
+                white-space: nowrap;
+                padding: 16px 16px;
+                margin-left: 16px;
             }
 
             paper-button.dropdown-trigger {
-                padding: 8px !important;
+                min-width: auto !important;
+                padding: .8em;
             }
-        }
+
+            @media screen and (max-width: 600px) {
+
+                paper-button#actionmenu ::content iron-icon,
+                paper-button#actionmenu ::slotted(iron-icon) {
+                    margin: 0 !important;
+                }
+
+                paper-button.dropdown-trigger {
+                    padding: 8px !important;
+                }
+            }
         </style>
         <template is="dom-if" if="[[topActions.length]]" restamp>
             <template is="dom-repeat" items="[[topActions]]" as="action">
@@ -103,78 +105,80 @@
         </template>
     </template>
     <script>
-    Polymer({
-        is: 'mist-list-actions',
-        behaviors: [
-            Polymer.IronResizableBehavior
-        ],
-        properties: {
-            actions: {
-                type: Array
-            },
-            selectedAction: {
-                type: Object
-            },
-            visibleActions: {
-                type: Number,
-                value: 3
-            },
-            topActions: {
-                type: Array,
-                computed: "_computeTopActions(actions, visibleActions)",
-                value: function() {
-                    return []
+        Polymer({
+            is: 'mist-list-actions',
+            behaviors: [
+                Polymer.IronResizableBehavior
+            ],
+            properties: {
+                actions: {
+                    type: Array
+                },
+                selectedAction: {
+                    type: Object
+                },
+                visibleActions: {
+                    type: Number,
+                    value: 3
+                },
+                topActions: {
+                    type: Array,
+                    computed: "_computeTopActions(actions, visibleActions)",
+                    value: function () {
+                        return []
+                    }
+                },
+                moreActions: {
+                    type: Array,
+                    computed: "_computeMoreActions(actions, visibleActions)",
+                    value: function () {
+                        return []
+                    }
+                },
+                useHalfWidth: {
+                    type: Boolean,
+                    reflectToAttribute: true
                 }
             },
-            moreActions: {
-                type: Array,
-                computed: "_computeMoreActions(actions, visibleActions)",
-                value: function() {
-                    return []
-                }
+            observers: [
+                '_actionsChanged(actions)'
+            ],
+            listeners: {
+                'iron-resize': '_updateVisibleActions'
             },
-            useHalfWidth: {
-                type: Boolean,
-                reflectToAttribute: true
-            }
-        },
-        observers: [
-            '_actionsChanged(actions)'
-        ],
-        listeners: {
-            'iron-resize': '_updateVisibleActions'
-        },
-        attached: function() {
-            this._updateVisibleActions();
-        },
-        _selectAction: function(e) {
-            if (this.shadowRoot.querySelector('paper-menu-button#actionmenu'))
-                this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
-            this.set('selectedAction', e.model.action);
-            this.fire('select-action', { action: e.model.action })
-        },
-        _actionsChanged: function(actions) {
-            if (actions) {
+            attached: function () {
                 this._updateVisibleActions();
+            },
+            _selectAction: function (e) {
+                if (this.shadowRoot.querySelector('paper-menu-button#actionmenu'))
+                    this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
+                this.set('selectedAction', e.model.action);
+                this.fire('select-action', {
+                    action: e.model.action
+                })
+            },
+            _actionsChanged: function (actions) {
+                if (actions) {
+                    this._updateVisibleActions();
+                }
+            },
+            _computeTopActions: function (actions, visibleActions) {
+                if (this.actions)
+                    return this.actions.slice(0, this.visibleActions);
+            },
+            _computeMoreActions: function (actions, visbleActions) {
+                if (this.actions)
+                    return this.actions.slice(this.visibleActions);
+            },
+            _updateVisibleActions: function (e) {
+                var offsetWidth = this.parentNode.offsetWidth || this.offsetWidth;
+                if (offsetWidth > 0) {
+                    if (this.useHalfWidth)
+                        this.set('visibleActions', Math.floor(offsetWidth - 50) / 400);
+                    else
+                        this.set('visibleActions', Math.floor(offsetWidth - 50) / 200);
+                }
             }
-        },
-        _computeTopActions: function(actions, visibleActions) {
-            if (this.actions)
-                return this.actions.slice(0, this.visibleActions);
-        },
-        _computeMoreActions: function(actions, visbleActions) {
-            if (this.actions)
-                return this.actions.slice(this.visibleActions);
-        },
-        _updateVisibleActions: function(e) {
-            var offsetWidth = this.parentNode.offsetWidth || this.offsetWidth;
-            if (offsetWidth > 0) {
-                if (this.useHalfWidth)
-                    this.set('visibleActions', Math.floor(offsetWidth - 50) / 400);
-                else
-                    this.set('visibleActions', Math.floor(offsetWidth - 50) / 200);
-            }
-        }
-    });
+        });
     </script>
 </dom-module>
