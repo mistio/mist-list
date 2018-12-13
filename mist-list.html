@@ -64,6 +64,10 @@
                 min-height: 42px;
             }
 
+            mist-list-actions {
+                width: 100%;
+            }
+
             vaadin-grid {
                 height: 100%;
                 font-family: inherit;
@@ -742,6 +746,7 @@
         ],
 
         listeners: {
+            'action-finished': '_clearSelection',
             'receive-log': 'eventReceived',
             'resize': '_windowResize',
             'column-resizing': '_saveColumnWidth',
@@ -1285,7 +1290,12 @@
                     return;
                 }
             }
+        },
+
+        _clearSelection: function () {
+            this.selectedItems = [];
         }
+
     });
 </script>
 

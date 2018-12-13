@@ -171,13 +171,8 @@
                     return this.actions.slice(this.visibleActions);
             },
             _updateVisibleActions: function (e) {
-                var offsetWidth = this.parentNode.offsetWidth || this.offsetWidth;
-                if (offsetWidth > 0) {
-                    if (this.useHalfWidth)
-                        this.set('visibleActions', Math.floor(offsetWidth - 50) / 400);
-                    else
-                        this.set('visibleActions', Math.floor(offsetWidth - 50) / 200);
-                }
+                var offsetWidth = this.offsetWidth;
+                this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
             }
         });
     </script>
