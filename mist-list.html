@@ -41,12 +41,12 @@
                 z-index: 99999;
                 background-color: #fff;
                 height: 100vh !important;
+                max-width: 100%;
             }
 
             :host([resizable]) {
                 padding: 0;
                 margin: auto;
-                max-width: 100%;
             }
 
             :host([selectable]) vaadin-grid {
@@ -188,6 +188,7 @@
 
             app-toolbar {
                 --paper-toolbar-background: #fff;
+                background-color: #fff;
                 border: 1px solid #dbdbdb;
                 border-bottom: 0 none;
                 color: #000;
@@ -401,7 +402,7 @@
                         <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="40" class="column-menu"
                             style$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
                             <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select"
-                                title="Select columns & export CSV" slot="dropdown-trigger"></paper-icon-button>
+                                title="Select columns & export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
@@ -851,15 +852,15 @@
                 this.debounce('_windowResize', function () {
                     var top = this.getBoundingClientRect().top;
                     var newHeight,
-                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 44,
+                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 45,
                         isSmallScreen = window.innerWidth <= 768,
                         outerScroller = this.$.grid.$.scroller,
                         hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
-                        heightOffset = 42;
+                        heightOffset = 50;
                     if (hasVerticalScroll) {
                         heightOffset += 16;
                     }
-                    if (this.querySelector('h2[slot="header"]'))
+                    if (this.toolbar)
                         newHeight = Math.min(window.innerHeight - top - 80, itemsHeight +
                             heightOffset);
                     else
@@ -1173,7 +1174,7 @@
             if (!columnMenu || selectedItemsLength || !count)
                 return 'display: none';
             if (selectable) return 'margin-left: -8px;';
-            return 'margin-left: 0px;';
+            return 'margin-left: 4px;';
         },
 
         _or: function (a, b) {
@@ -1189,7 +1190,7 @@
         },
 
         _computeMenuCellWidth: function (expands) {
-            return expands && '46px' || '24px';
+            return expands && '46px' || '36px';
         },
 
         _computeUseDataProvider: function (apiurl) {
