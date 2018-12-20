@@ -151,12 +151,15 @@
                 this._updateVisibleActions();
             },
             _selectAction: function (e) {
-                if (this.shadowRoot.querySelector('paper-menu-button#actionmenu'))
+                if (this.shadowRoot.querySelector('paper-menu-button#actionmenu')) {
                     this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
-                this.set('selectedAction', e.model.action);
-                this.fire('select-action', {
-                    action: e.model.action
-                })
+                }
+                if (e.model.action) {
+                    this.set('selectedAction', e.model.action);
+                    this.fire('select-action', {
+                        action: e.model.action
+                    })
+                }
             },
             _actionsChanged: function (actions) {
                 if (actions) {
