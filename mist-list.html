@@ -66,6 +66,7 @@
 
             mist-list-actions {
                 width: 100%;
+                justify-content: flex-start;
             }
 
             vaadin-grid {
@@ -859,9 +860,9 @@
                     var newHeight,
                         itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 45,
                         isSmallScreen = window.innerWidth <= 768,
-                        outerScroller = this.$.grid.$.scroller,
+                        outerScroller = this.$.grid.$.outerscroller,
                         hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
-                        heightOffset = 50;
+                        heightOffset = 36;
                     if (hasVerticalScroll) {
                         heightOffset += 16;
                     }
