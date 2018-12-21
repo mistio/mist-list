@@ -1315,12 +1315,17 @@
                 background-image: none; /*linear-gradient(rgb(249, 249, 249), rgb(249, 249, 249));*/
             }
 
+            [part~="row"] {
+                border-bottom: 1px solid #dbdbdb;
+            }
+
             [part~="row"][selected] > [part~="body-cell"] {
                 /*background-color: rgba(255, 255, 141, 0.9) !important;*/
                 background-image: linear-gradient(rgba(255, 255, 141, 0.8), rgba(255, 255, 141, .7)) !important;
             }
             [part~="cell"] {
                 /* Styles that affect all grid cells, including header, body and footer cells */
+                
             }
 
             [part~="body-cell"] {
@@ -1330,6 +1335,7 @@
             :host([theme~="compact"]) [part="row"]:only-child [part~="header-cell"] {
                 min-height: 49px;
             }
+
         </style>
     </template>
 </dom-module>
