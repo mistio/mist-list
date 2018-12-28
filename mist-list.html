@@ -820,7 +820,6 @@
                 var that = this;
                 this.debounce('updateItemsList', function () {
                     console.log('itemMap updated');
-                    that.$.grid.clearCache();
                     that.set('items', that._toArray(that.itemMap));
                 }, 300);
             }
@@ -903,11 +902,16 @@
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
-            console.warn('filterItems', filter);
+            console.log('filterItems', filter, this.id);
             if (this.items) {
                 this.debounce('_filterListItems', function (items) {
-                    console.warn('filterItems exec', filter);
-                    this.set('filteredItems', this.items.filter(this._applyFilter.bind(this)));
+                    console.log('filterItems exec', filter, this.id);
+                    var newItems = this.items.filter(this._applyFilter.bind(this));
+                    if (JSON.stringify(newItems) == JSON.stringify(this.filteredItems)) {
+                        console.log('filterItems skipped', filter, this.id);
+                        return;
+                    }
+                    this.set('filteredItems', newItems);
                     this.fire('mist-list-filtered-items-length-changed', {
                         length: this.filteredItems.length
                     });
@@ -1192,7 +1196,7 @@
         },
 
         _computeHidden: function (autoHide, count, editingFilter) {
-            return autoHide && !count && !editingFilter;
+            return autoHide && !count && !editingFilter && !this.userFilter;
         },
 
         _computeMenuCellWidth: function (expands) {
