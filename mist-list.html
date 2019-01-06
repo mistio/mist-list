@@ -307,8 +307,8 @@
                 fill: #fff;
             }
         </style>
-        <template is="dom-if" restamp if="[[useDataProvider]]">
-            <rest-data-provider url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
+        <template is="dom-if" restamp if="[[rest]]">
+            <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
                 received={{received}} columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]"
                 timeseries=[[timeseries]] filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
@@ -366,7 +366,7 @@
             </vaadin-dialog>
         </template>
 
-        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}} size=[[count]]
+        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}}
             loading$="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]
             theme$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
@@ -690,15 +690,9 @@
                 notify: true
             },
 
-            useDataProvider: {
-                type: Boolean,
-                computed: '_computeUseDataProvider(apiurl, rest)',
-                value: false
-            },
-
             sorters: {
                 type: Array,
-                value: []
+                value: function () { return []; }
             },
 
             enableFullscreen: {
@@ -820,15 +814,9 @@
                 var that = this;
                 this.debounce('updateItemsList', function () {
                     console.log('itemMap updated');
-                    that.set('items', that._toArray(that.itemMap));
+                    that.set('items', Object.values(that.itemMap));
                 }, 300);
             }
-        },
-
-        _toArray: function (obj) {
-            return Object.keys(obj).map(function (key) {
-                return obj[key]
-            });
         },
 
         _computeFilteredItemsLength: function (filteredItems) {
@@ -1201,10 +1189,6 @@
 
         _computeMenuCellWidth: function (expands) {
             return expands && '46px' || '36px';
-        },
-
-        _computeUseDataProvider: function (apiurl) {
-            return this.apiurl && this.apiurl.length && this.rest;
         },
 
         _openDialogSelectColumns: function (e) {

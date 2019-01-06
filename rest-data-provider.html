@@ -172,7 +172,7 @@
                                             _this.count = _this.received;
                                         }
                                     }
-                                    callback(items);
+                                    callback(items, _this.count);
                                     if (_this.parentElement) {
                                         _this.parentElement.async(function () {
                                             this.fire('resize')
