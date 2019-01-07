@@ -733,7 +733,6 @@
             '_itemsUpdated(items)',
             '_itemMapUpdated(itemMap.*)',
             '_filterItems(items, items.length, combinedFilter, filterMethod)',
-            '_windowResize(filteredItems.length, route.path)',
             '_selectedItemsChanged(selectedItems.length)',
             '_selectAllToggled(selectAll)',
             '_setShowNoData(items, filteredItems.length)',
@@ -748,18 +747,15 @@
             'iron-announce': '_sorterChanged'
         },
 
-        ready: function () {},
-
         attached: function () {
             var _this = this;
             if (this.resizable) {
                 this.resizeHandler = function () {
-                    _this._windowResize();
+                    _this._debounceResize();
                 }
                 window.addEventListener("resize", this.resizeHandler);
-                this.async(function () {
-                    this._windowResize();
-                }, 500);
+                this._debounceResize();
+                this.async(function(){this.fire('resize')}, 1000);
             }
 
             if (this.infinite) {
@@ -840,32 +836,35 @@
             }
         },
 
+        _debounceResize: function () {
+            this.debounce('resize', function () { this.fire('resize'); }, 500);
+        },
+
         _windowResize: function () {
-            if (this.resizable) {
-                this.debounce('_windowResize', function () {
-                    var top = this.getBoundingClientRect().top;
-                    var newHeight,
-                        itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 45,
-                        isSmallScreen = window.innerWidth <= 768,
-                        outerScroller = this.$.grid.$.outerscroller,
-                        hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
-                        heightOffset = 36;
-                    if (hasVerticalScroll) {
-                        heightOffset += 16;
-                    }
-                    if (this.toolbar)
-                        newHeight = Math.min(window.innerHeight - top - 80, itemsHeight +
-                            heightOffset);
-                    else
-                        newHeight = Math.min(window.innerHeight - top - 24, itemsHeight +
-                            heightOffset);
-                    if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
-                        this.scrollHeight)
-                        newHeight += 16;
-                    this.style.height = newHeight + "px";
-                    this.set('headerWidth', this.$.grid.$.header.clientWidth);
-                }, 500);
+            if (!this.resizable) {
+                return;
             }
+            var top = this.getBoundingClientRect().top,
+                newHeight,
+                itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 45,
+                isSmallScreen = window.innerWidth <= 768,
+                outerScroller = this.$.grid.$.outerscroller,
+                hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
+                heightOffset = 36;
+            if (hasVerticalScroll) {
+                heightOffset += 19;
+            }
+            if (this.toolbar)
+                newHeight = Math.min(window.innerHeight - top - 80, itemsHeight +
+                    heightOffset);
+            else
+                newHeight = Math.min(window.innerHeight - top - 36, itemsHeight +
+                    heightOffset);
+            if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
+                this.scrollHeight)
+                newHeight += 16;
+            this.style.height = newHeight + "px";
+            this.set('headerWidth', this.$.grid.$.header.clientWidth);
         },
 
         columnWidth: function (column, frozen) {
@@ -904,6 +903,9 @@
                         length: this.filteredItems.length
                     });
                     this.$.grid.set('items', this.filteredItems);
+                    this.async(function () {
+                        this.fire('resize');
+                    }, 200);
 
                     if (this.selectedItems.length) {
                         this.debounce('cleanupSelectedItems', function () {
