@@ -83,14 +83,14 @@
                 }
             }
         </style>
-        <template is="dom-if" if="[[topActions.length]]" restamp>
+        <template is="dom-if" if="[[_hasActions(topActions.length)]]" restamp>
             <template is="dom-repeat" items="[[topActions]]" as="action">
                 <paper-button on-tap="_selectAction" class="visible actions">
                     <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
                 </paper-button>
             </template>
         </template>
-        <template is="dom-if" if="[[moreActions.length]]" restamp>
+        <template is="dom-if" if="[[_hasActions(moreActions.length)]]" restamp>
             <paper-menu-button id="actionmenu" horizontal-align="right" vertical-offset="40">
                 <paper-button class="dropdown-trigger" slot="dropdown-trigger">
                     <iron-icon icon="more-vert"></iron-icon>
@@ -177,6 +177,9 @@
             _updateVisibleActions: function (e) {
                 var offsetWidth = this.offsetWidth;
                 this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
+            },
+            _hasActions: function (length) {
+                return length > 0
             }
         });
     </script>
