@@ -327,7 +327,7 @@
             </span>
         </app-toolbar>
 
-        <template is="dom-if" if="{{visible}}" restamp>
+        <template is="dom-if" if="[[hasVisibleColumns]]" restamp>
             <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}} aria-label="styled">
                 <template>
                     <h2>Select columns</h2>
@@ -447,7 +447,7 @@
                 </vaadin-grid-column>
             </template>
 
-            <template is="dom-if" if="[[!visible.length]]" restamp>
+            <template is="dom-if" if="[[!hasVisibleColumns]]" restamp>
                 <template is="dom-repeat" items="[[columns]]" as="column">
                     <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
                         <template class="header">
@@ -545,6 +545,11 @@
 
             visible: {
                 type: Array
+            },
+
+            hasVisibleColumns: {
+                type: Boolean,
+                computed: '_hasVisibleColumns(visible.length)'
             },
 
             CSVvisible: {
@@ -1285,6 +1290,12 @@
 
         _clearSelection: function () {
             this.selectedItems = [];
+        },
+
+        _hasVisibleColumns: function (length) {
+            if (this.visible && this.visible.length > 0)
+                return true;
+            return false;
         }
 
     });
