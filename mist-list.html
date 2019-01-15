@@ -306,6 +306,35 @@
                 margin-left: 2px;
                 fill: #fff;
             }
+
+            .error {
+                color: var(--red-color);
+            }
+
+            .orange {
+                color: var(--orange-color);
+            }
+
+            .green {
+                color: var(--green-color);
+            }
+
+            .tag {
+                display: inline-block;
+                background-color: #888;
+                color: #fff;
+                font-size: 14px;
+                padding: 0 0.5em;
+                margin: 0 1px;
+                border-radius: 2px;
+                letter-spacing: .4px;
+                font-weight: 500 !important;
+                word-break: break-all;
+                max-width: 250px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         </style>
         <template is="dom-if" restamp if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
@@ -1336,7 +1365,6 @@
             :host([theme~="compact"]) [part="row"]:only-child [part~="header-cell"] {
                 min-height: 49px;
             }
-
         </style>
     </template>
 </dom-module>
