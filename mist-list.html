@@ -308,32 +308,19 @@
             }
 
             .error {
-                color: var(--red-color);
+                color: var(--mist-list-error-color);
             }
 
             .orange {
-                color: var(--orange-color);
+                color: var(--mist-list-orange-color);
             }
 
             .green {
-                color: var(--green-color);
+                color: var(--mist-list-green-color);
             }
 
             .tag {
-                display: inline-block;
-                background-color: #888;
-                color: #fff;
-                font-size: 14px;
-                padding: 0 0.5em;
-                margin: 0 1px;
-                border-radius: 2px;
-                letter-spacing: .4px;
-                font-weight: 500 !important;
-                word-break: break-all;
-                max-width: 250px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                @apply --mist-list-tag-mixin;
             }
         </style>
         <template is="dom-if" restamp if="[[rest]]">
