@@ -915,10 +915,6 @@
                 this.debounce('_filterListItems', function (items) {
                     console.log('filterItems exec', filter, this.id);
                     var newItems = this.items.filter(this._applyFilter.bind(this));
-                    if (JSON.stringify(newItems) == JSON.stringify(this.filteredItems)) {
-                        console.log('filterItems skipped', filter, this.id);
-                        return;
-                    }
                     this.set('filteredItems', newItems);
                     this.fire('mist-list-filtered-items-length-changed', {
                         length: this.filteredItems.length
@@ -1017,7 +1013,7 @@
                     var item = this.items[i];
                     if (this.rest)
                         this.itemMap[item[this.primaryFieldName]] = item;
-                    var keys = Object.keys(item);
+                    var keys = item ? Object.keys(item) : [];
                     for (var k = 0; k < keys.length; k++) {
                         this.colmap[keys[k]] = true;
                     }
