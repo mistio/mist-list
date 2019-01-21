@@ -765,7 +765,7 @@
             'receive-log': 'eventReceived',
             'resize': '_windowResize',
             'column-resizing': '_saveColumnWidth',
-            'iron-announce': '_sorterChanged'
+            'sorter-changed': '_sorterChanged'
         },
 
         attached: function () {
@@ -1269,6 +1269,7 @@
                     console.warn(e);
                 }
             }, 500);
+            event.stopPropagation();
         },
 
         _getDirection: function (column) {
