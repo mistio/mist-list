@@ -36,7 +36,7 @@
                 box-sizing: border-box;
                 text-align: center;
                 font-size: 13px;
-                line-height: 48px;
+                line-height: 30px;
             }
 
             .unchecked {
@@ -52,9 +52,10 @@
                 transition: transform 300ms ease-in-out 100ms;
                 will-change: opacity;
                 transform: rotate3d(0, 1, 0, -180deg) scale(0);
-                position: absolute !important;
-                top: 15%;
-                left: 15%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 4px;
                 opacity: 0;
                 color: inherit;
             }
