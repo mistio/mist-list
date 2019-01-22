@@ -434,7 +434,7 @@
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
-                <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]">
+                <vaadin-grid-column frozen resizable width$="[[columnWidth(column,frozenWidth)]]" on-column-width-changed="_saveColumnWidth">
                     <template class="header" style="z-index: -10000" hidden=[[selectedItems.length]]>
                         <vaadin-grid-sorter style="z-index: -10000" hidden=[[timeseries]] path="[[column]]" direction$=[[_getDirection(column)]]
                             cmp="[[_getComparisonFunction(column)]]" id$="sorter-column-[[column]]" style="z-index: 1 !important">[[_getTitle(column)]]</vaadin-grid-sorter>
@@ -447,7 +447,7 @@
             </template>
 
             <template is="dom-repeat" items="{{visible}}" as="column" restamp>
-                <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
+                <vaadin-grid-column resizable width$="[[columnWidth(column)]]" on-column-width-changed="_saveColumnWidth">
                     <template class="header">
                         <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
                             hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
@@ -461,7 +461,7 @@
 
             <template is="dom-if" if="[[!hasVisibleColumns]]" restamp>
                 <template is="dom-repeat" items="[[columns]]" as="column">
-                    <vaadin-grid-column resizable width$="[[columnWidth(column)]]">
+                    <vaadin-grid-column resizable width$="[[columnWidth(column)]]" on-column-width-changed="_saveColumnWidth">
                         <template class="header">
                             <vaadin-grid-sorter path="[[column]]" direction$=[[_getDirection(column)]] cmp="[[_getComparisonFunction(column)]]"
                                 hidden$=[[timeseries]] id$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
@@ -760,7 +760,7 @@
             'action-finished': '_clearSelection',
             'receive-log': 'eventReceived',
             'resize': '_windowResize',
-            'column-resizing-width': '_saveColumnWidth',
+            'column-width-changed': '_saveColumnWidth',
             'sorter-changed': '_sorterChanged'
         },
 
@@ -887,7 +887,7 @@
         columnWidth: function (column, frozen) {
             var w;
             try {
-                w = localStorage.getItem('mist-list#' + this.id + '/col/' + this._getTitle(column) + '/width');
+                w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
             } catch (e) {
                 console.warn(e);
             }
@@ -902,12 +902,8 @@
 
         _saveColumnWidth: function (e) {
             this.debounce('debounceWidthChanges',function(){
-                console.log('_saveColumnWidth', e.detail);
-                var column = e.detail.target;
-                if (column) {
-                    localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.detail.width);
-                }
-            }, 100);
+                localStorage.setItem('mist-list#' + this.id + '/col/' + e.model.column + '/width', e.detail.width);
+            }, 500);
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
