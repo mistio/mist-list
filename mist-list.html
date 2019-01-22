@@ -760,7 +760,7 @@
             'action-finished': '_clearSelection',
             'receive-log': 'eventReceived',
             'resize': '_windowResize',
-            'column-resizing': '_saveColumnWidth',
+            'column-resizing-width': '_saveColumnWidth',
             'sorter-changed': '_sorterChanged'
         },
 
@@ -887,7 +887,7 @@
         columnWidth: function (column, frozen) {
             var w;
             try {
-                w = localStorage.getItem('mist-list#' + this.id + '/col/' + column + '/width');
+                w = localStorage.getItem('mist-list#' + this.id + '/col/' + this._getTitle(column) + '/width');
             } catch (e) {
                 console.warn(e);
             }
@@ -901,12 +901,17 @@
         },
 
         _saveColumnWidth: function (e) {
-            var column = e.target.childNodes[1].childNodes[1].id.split('sorter-column-')[1];
-            localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.target.style.width);
+            this.debounce('debounceWidthChanges',function(){
+                console.log('_saveColumnWidth', e.detail);
+                var column = e.detail.target;
+                if (column) {
+                    localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.detail.width);
+                }
+            }, 100);
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
-            console.log('filterItems', filter, this.id);
+            // console.log('filterItems', filter, this.id);
             if (this.items) {
                 this.debounce('_filterListItems', function (items) {
                     console.log('filterItems exec', filter, this.id);
