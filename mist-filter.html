@@ -2,6 +2,7 @@
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-icon-item/paper-icon-item.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -41,6 +42,19 @@
                     font-size: 16px;
                 }
             }
+
+            paper-item {
+                /*display: flex;*/
+            }
+
+            paper-item span {
+                /*flex: 1;*/
+            }
+
+            paper-item paper-icon-button {
+                transform: scale(0.7);
+                opacity: 0.54;
+            }
         </style>
         <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
             <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
@@ -48,7 +62,8 @@
             <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                 <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                 <template is="dom-repeat" items="[[combinedPresetFilters]]">
-                    <paper-item id$="[[item.filter]]" class="filter"><span>[[item.name]]</span>
+                    <paper-item id$="[[item.filter]]" class="filter">
+                        <paper-item-body>[[item.name]]</paper-item-body>
                         <paper-icon-button class="clear-filter" icon="icons:delete" title="Delete filter" on-tap="_deletePresetFilter"
                             hidden$="[[item.default]]"></paper-icon-button>
                     </paper-item>
