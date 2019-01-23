@@ -11,6 +11,7 @@
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../sortable-list/sortable-list.html">
 
 <link rel="import" href="mist-check.html">
 <link rel="import" href="mist-filter.html">
@@ -279,6 +280,10 @@
                 padding-right: 16px !important;
             }
 
+            paper-item.column-item {
+                cursor: grab;
+            }
+
             #presetFilters {
                 display: flex;
                 flex-direction: row;
@@ -342,15 +347,17 @@
         <template is="dom-if" if="[[hasVisibleColumns]]" restamp>
             <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}} aria-label="styled">
                 <template>
-                    <h2>Select columns</h2>
-                    <p>Select the list's visible columns.</p>
+                    <h2>Select columns and order</h2>
+                    <p>Select the list's visible columns. Drag to arrange their order.</p>
                     <div class='vaadin-dialog-scrollable'>
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
-                            <template is="dom-repeat" items="[[columns]]" as="column">
-                                <paper-item label="[[column]]">
-                                    <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
-                                </paper-item>
-                            </template>
+                            <sortable-list id="columnsSortable" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
+                                <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
+                                    <paper-item label="[[column]]" class="column-item">
+                                        <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
+                                    </paper-item>
+                                </template>
+                            </sortable-list>
                         </template>
                     </div>
                     <div class="buttons">
@@ -1108,13 +1115,40 @@
             return this.received >= this.count
         },
 
+        _onSortStart: function(e) {
+            // this.shadowRoot.querySelector('vaadin-dialog-scrollable')
+        },
+
+        _onSortFinish: function(e) {
+            var newOrder = [];
+            var overlay = document.getElementById('overlay');
+            var content = overlay.shadowRoot.querySelector('div[part="content"]');
+            var list = content.shadowRoot.querySelector('sortable-list');
+            var elements = list.querySelectorAll('paper-item');
+
+            elements.forEach(function(el){
+                if (el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]').textContent) {
+                    newOrder.push(el.querySelector('paper-checkbox').textContent.trim());
+                }
+            });
+
+            this.set('visible', newOrder);
+            this._saveVisibleColumns();
+        },
+
         _checkboxChanged: function (e) {
             // console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
             if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
                 this.push('visible', e.model.column);
+                // let the saving be order dependent
+                this._onSortFinish();
             } else if (!e.target.active && this.visible.indexOf(e.model.column) > -1) {
                 this.splice('visible', this.visible.indexOf(e.model.column), 1);
+                this._saveVisibleColumns();
             }
+        },
+
+        _saveVisibleColumns: function() {
             localStorage.setItem('mist-list#' + this.id, JSON.stringify(this.visible));
         },
 
