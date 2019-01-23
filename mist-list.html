@@ -901,9 +901,16 @@
         },
 
         _saveColumnWidth: function (e) {
-            this.debounce('debounceWidthChanges',function(){
-                localStorage.setItem('mist-list#' + this.id + '/col/' + e.model.column + '/width', e.detail.width);
+            this.debounce('debounceWidthChanges', function(){
+                var column = e.model ? e.model.column : null;
+                if (column) {
+                    localStorage.setItem('mist-list#' + this.id + '/col/' + e.model.column + '/width', e.detail.width);
+                }
             }, 500);
+        },
+
+        _saveColumnOrder: function (e) {
+            localStorage.setItem('mist-list#' + this.id + '/column-order', this.visible.reverse());
         },
 
         _filterItems: function (items, length, filter, filterMethod) {
