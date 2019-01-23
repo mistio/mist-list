@@ -331,7 +331,7 @@
         </template>
         <slot name="header"></slot>
         <app-toolbar hidden$=[[!toolbar]]>
-            <mist-filter id$="mist-list-[[id]]-filter" name=[[name]] searchable=[[searchable]] base-filter=[[baseFilter]]
+            <mist-filter id$="[[id]]" name=[[name]] searchable=[[searchable]] base-filter=[[baseFilter]]
                 user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
                 preset-filters=[[presetFilters]]>
                 <span class="count" hidden$=[[timeseries]] slot="count">

@@ -2,7 +2,6 @@
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-icon-item/paper-icon-item.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -43,14 +42,6 @@
                 }
             }
 
-            paper-item {
-                /*display: flex;*/
-            }
-
-            paper-item span {
-                /*flex: 1;*/
-            }
-
             paper-item paper-icon-button {
                 transform: scale(0.7);
                 opacity: 0.54;
@@ -59,7 +50,7 @@
         <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
             <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
                 title="Select preset filters" style="margin-left: -18px; margin-right: 4px"></paper-icon-button>
-            <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
+            <paper-listbox id="filterSelect" slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                 <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                 <template is="dom-repeat" items="[[combinedPresetFilters]]">
                     <paper-item id$="[[item.filter]]" class="filter">
@@ -75,7 +66,7 @@
             <slot name="count"></slot>
             <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 16px; width: 100%">
                 <span class="title">
-                    [[_displayName(name,selectedPresetFilter,userFilter)]]
+                    [[_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_searchInputFocusedChanged"
@@ -136,17 +127,24 @@
 
             presetFilters: {
                 type: Array,
-                value: []
+                value: function(){
+                    return [];
+                }
             },
 
             userSavedFilters: {
-                type: Array
+                type: Array,
+                value: function(){
+                    return [];
+                }
             },
 
             combinedPresetFilters: {
                 type: Array,
-                value: [],
-                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters.length)'
+                value: function(){
+                    return [];
+                },
+                computed: '_computeCombinedPresetFilters(presetFilters,userSavedFilters,userSavedFilters.length)'
             },
 
             selectedPresetFilter: {
@@ -182,6 +180,7 @@
                 } else {
                     this.set('userFilter', '');
                 }
+                this.$.filterSelect.select(this.userFilter);
 
                 if (JSON.parse(localStorage.getItem('mist-filter#' + this.id + '/userSavedFilters'))) {
                     this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-filter#' + this.id +
@@ -272,8 +271,9 @@
         },
 
         _userFilterChanged: function (userFilter) {
-            if (userFilter != undefined) {
+            if (this.userFilter != undefined && this.isAttached) {
                 var trimmed = userFilter.trim();
+                console.log('passed')
                 if (this.editingFilter) {
                     this._updateSelectedFilter(userFilter);
                 }
@@ -282,6 +282,7 @@
         },
 
         _updateSelectedFilter: function (userFilter) {
+            console.log('passed')
             var that = this,
                 filter = this.userSavedFilters.find(function (f) {
                     return userFilter == f.filter;
@@ -308,7 +309,7 @@
         },
 
         _searchInputFocusedChanged: function (e) {
-            console.log('focus changed', e);
+            // console.log('focus changed', e);
             if (e.target.focused) return;
             this.async(function () {
                 if (!e.detail.value && this._filterIsAPresetFilter()) {
@@ -365,7 +366,7 @@
         },
 
         _editingFilterChanged: function (editingFilter) {
-            console.log('_editingFilterChanged', editingFilter, this.editingFilter);
+            // console.log('_editingFilterChanged', editingFilter, this.editingFilter);
             this.async(function () {
                 console.log('async', this.$.searchInput.focused);
             }, 100);
@@ -374,7 +375,7 @@
                     // this.$.searchInput.focus();
                 }
                 this.$.searchInput.shadowRoot.querySelector('input').focus()
-                console.log('focus', this.$.searchInput.focused);
+                // console.log('focus', this.$.searchInput.focused);
             } else {
                 if (this.$.searchInput.focused) {
                     this.$.searchInput.blur();
