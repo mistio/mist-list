@@ -29,16 +29,24 @@
                 line-height: 1.1em !important;
             }
 
+            #form {
+                display: inherit;
+                max-height: 48px;
+            }
+
             paper-input {
                 width: 100%;
-                padding-left: 8px;
                 top: -13px;
-                position: relative;
+                padding-left: 8px;
             }
 
             paper-input#searchInput {
+                width: 100%;
                 --paper-input-container-input: {
                     font-size: 16px;
+                    color: inherit;
+                    width: 100%;
+                    padding: 5px 0;
                 }
             }
 
@@ -46,10 +54,42 @@
                 transform: scale(0.7);
                 opacity: 0.54;
             }
+
+            paper-icon-button#saveFilterBtn,
+            paper-icon-button#clearFilterBtn {
+                display: inline-flex;
+                align-self: center;
+            }
+
+            paper-menu-button {
+                padding: var(--mist-filter-paper-menu-button-padding);
+                max-height: 48px;
+            }
+
+            paper-menu-button paper-button {
+                background-color: var(--mist-filter-paper-menu-button-background-color);
+                margin: var(--mist-filter-paper-menu-button-paper-button-margin);
+                padding-left: var(--mist-filter-paper-menu-button-paper-button-padding-left);
+                text-transform: var(--mist-filter-paper-menu-button-paper-button-text-transform);
+                font-size: var(--mist-filter-paper-menu-button-paper-button-font-size);
+            }
+
+            iron-icon[icon="search"] {
+                padding: var(--mist-filter-iron-icon-search-padding);
+                align-self: var(--mist-filter-iron-icon-search-align-self);
+                opacity: .5;
+            }
+
         </style>
+        
         <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden$="[[!combinedPresetFilters.length]]">
-            <paper-icon-button icon="filter-list" slot="dropdown-trigger" class="dropdown-trigger" alt="select filter"
-                title="Select preset filters" style="margin-left: -18px; margin-right: 4px"></paper-icon-button>
+            <template is="dom-if" if="[[!_showButton(buttonName)]]" restamp>
+                    <paper-icon-button icon="filter-list" slot="[[_computeSlot(buttonName,'icon')]]" class="dropdown-trigger" alt="select filter"title="Select preset filters" style="margin-left: -10px; margin-right: 4px" hidden$="[[buttonName.length]]"></paper-icon-button>
+            </template>
+            <template is="dom-if" if="[[_showButton(buttonName)]]" restamp>
+                <paper-button class="dropdown-trigger" slot="[[_computeSlot(buttonName,'button')]]" hidden$="[[!buttonName.length]]" style="height: 48px;"> [[buttonName]]<iron-icon icon="icons:arrow-drop-down"></iron-icon>
+                </paper-button>
+            </template>
             <paper-listbox id="filterSelect" slot="dropdown-content" class="dropdown-content" attr-for-selected="id" selected="{{selectedPresetFilter}}">
                 <paper-item id="" class="filter all-items" on-tap="_clearFilter"><span>[[name]]</span></paper-item>
                 <template is="dom-repeat" items="[[combinedPresetFilters]]">
@@ -61,22 +101,22 @@
                 </template>
             </paper-listbox>
         </paper-menu-button>
-        <div on-tap="_startEditingFilter" style="display: inherit">
-            <iron-icon icon="search" hidden$=[[!searchable]] style="opacity: .5; margin-left: -2px"></iron-icon>
+
+        <div id="form" on-tap="_startEditingFilter">
+            <iron-icon icon="search" hidden$=[[_hideSearchIcon(searchable,placeholder)]]></iron-icon>
             <slot name="count"></slot>
-            <h2 class="titleh2" hidden$=[[editingFilter]] style="margin-left: 16px; width: 100%">
+            <h2 class="titleh2" hidden$=[[_showFilterInput(editingFilter,alwaysShowInput)]] style="margin-left: 16px; width: 100%">
                 <span class="title">
                     [[_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)]]
                 </span>
             </h2>
-            <paper-input id="searchInput" hidden$=[[!editingFilter]] on-focused-changed="_searchInputFocusedChanged"
-                on-keydown="_keyDownSearchInput" tabindex="1" value="{{userFilter}}">
+            <paper-input id="searchInput" hidden$=[[!_showFilterInput(editingFilter,alwaysShowInput)]] on-focused-changed="_searchInputFocusedChanged"
+                on-keydown="_keyDownSearchInput" tabindex="1" value="{{userFilter}}" no-label-float placeholder$="[[placeholder]]">
             </paper-input>
         </div>
-        <paper-icon-button icon="close" hidden$=[[!editingFilter]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
-        <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]">save
+        <paper-icon-button icon="close" hidden$=[[_hideClearButton(editingFilter,userFilter.length)]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+        <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]" id="saveFilterBtn">save
             filter</paper-icon-button>
-
         <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
                 <h2>Save filter</h2>
@@ -103,9 +143,24 @@
                 reflectToAttribute: true
             },
 
+            placeholder: {
+                type: String
+            },
+
+            buttonName: {
+                type: String,
+                value: false
+            },
+
             editingFilter: {
                 type: Boolean,
                 value: false
+            },
+
+            alwaysShowInput:  {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
             },
 
             baseFilter: {
@@ -174,18 +229,23 @@
         ],
 
         attached: function () {
+            this.getLocalStorageData(this.id)
+        },
+
+        getLocalStorageData: function(id) {
             try {
                 if (localStorage.getItem('mist-filter#' + this.id + '/userFilter')) {
                     this.set('userFilter', localStorage.getItem('mist-filter#' + this.id + '/userFilter'));
                 } else {
                     this.set('userFilter', '');
                 }
+                console.log('get userFilter', this.userFilter)
                 this.$.filterSelect.select(this.userFilter);
 
                 if (JSON.parse(localStorage.getItem('mist-filter#' + this.id + '/userSavedFilters'))) {
                     this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-filter#' + this.id +
                         '/userSavedFilters')));
-                    this.fire('filter-change');
+                    this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
                 } else {
                     this.set('userSavedFilters', [])
                 }
@@ -201,7 +261,7 @@
         addFilter: function (filter) {
             this.push('userSavedFilters', filter);
             localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
-            this.fire('filter-change');
+            this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
             this.set('editingFilter', false);
         },
 
@@ -209,7 +269,7 @@
             console.log('_deleteFilter IN', index);
             this.splice('userSavedFilters', index, 1);
             localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
-            this.fire('filter-change');
+            this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
         },
 
         useFilter: function (filter) {
@@ -277,12 +337,12 @@
                 if (this.editingFilter) {
                     this._updateSelectedFilter(userFilter);
                 }
+                this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
                 localStorage.setItem('mist-filter#' + this.id + '/userFilter', this.userFilter);
             }
         },
 
         _updateSelectedFilter: function (userFilter) {
-            console.log('passed')
             var that = this,
                 filter = this.userSavedFilters.find(function (f) {
                     return userFilter == f.filter;
@@ -390,5 +450,31 @@
                 return baseFilter;
             return '(' + baseFilter + ') AND (' + userFilter + ')';
         },
+
+        _showFilterInput: function(editingFilter, alwaysShowInput) {
+            return this.alwaysShowInput ? this.alwaysShowInput : this.editingFilter;
+        },
+
+        _showButton: function(buttonName) {
+            return this.buttonName;
+        },
+
+        _computeSlot: function(buttonName,el) {
+            if (this.buttonName.length && el == "button") {
+                return 'dropdown-trigger';
+            } else if (!this.buttonName.length && el == "icon") {
+                return 'dropdown-trigger';
+            } else {
+                return "";
+            }
+        },
+
+        _hideSearchIcon: function(searchable,placeholder) {
+            return !this.searchable || this.placeholder;
+        },
+
+        _hideClearButton: function(editingFilter,userFilterLength) {
+            return !this.editingFilter || this.userFilter.length == 0;
+        }
     })
 </script>
