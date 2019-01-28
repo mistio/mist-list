@@ -27,6 +27,8 @@
 
             h2.titleh2 {
                 line-height: 1.1em !important;
+                margin: var(--mist-filter-h2-title-margin);
+                width: 100%;
             }
 
             #form {
@@ -75,7 +77,7 @@
             }
 
             iron-icon[icon="search"] {
-                padding: var(--mist-filter-iron-icon-search-padding);
+                padding: 12px 8px 8px 0px;
                 align-self: var(--mist-filter-iron-icon-search-align-self);
                 opacity: .5;
             }
@@ -105,7 +107,7 @@
         <div id="form" on-tap="_startEditingFilter">
             <iron-icon icon="search" hidden$=[[_hideSearchIcon(searchable,placeholder)]]></iron-icon>
             <slot name="count"></slot>
-            <h2 class="titleh2" hidden$=[[_showFilterInput(editingFilter,alwaysShowInput)]] style="margin-left: 16px; width: 100%">
+            <h2 class="titleh2" hidden$=[[_showFilterInput(editingFilter,alwaysShowInput)]]>
                 <span class="title">
                     [[_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)]]
                 </span>
@@ -287,7 +289,7 @@
                 return this.name && this.name.length ? this.name : 'All';
             } else {
                 var that = this,
-                    filter = this.userSavedFilters.find(function (f) {
+                    filter = this.combinedPresetFilters.find(function (f) {
                         return that.selectedPresetFilter == f.filter;
                     });
                 return filter ? filter.name : '';
@@ -470,7 +472,7 @@
         },
 
         _hideSearchIcon: function(searchable,placeholder) {
-            return !this.searchable || this.placeholder;
+            return !this.searchable; // || this.placeholder;
         },
 
         _hideClearButton: function(editingFilter,userFilterLength) {
