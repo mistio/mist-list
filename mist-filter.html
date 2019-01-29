@@ -237,8 +237,10 @@
 
         getLocalStorageData: function(id) {
             try {
-                if (localStorage.getItem('mist-filter#' + this.id + '/userFilter')) {
+                if (localStorage.getItem('mist-filter#' + this.id + '/userFilter') != undefined) {
                     this.set('userFilter', localStorage.getItem('mist-filter#' + this.id + '/userFilter'));
+                } else if (localStorage.getItem('mist-filter#default/userFilter') && this.id.endsWith('List')) {
+                    this.set('userFilter', localStorage.getItem('mist-filter#default/userFilter'));
                 } else {
                     this.set('userFilter', '');
                 }
