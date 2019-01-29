@@ -390,7 +390,7 @@
         </template>
 
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items={{selectedItems}}
-            loading$="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]
+            loading="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort=[[multiSort]]
             theme$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
@@ -754,6 +754,19 @@
                 type: String,
                 reflectToAttribute: true,
                 value: 'compact'
+            },
+
+            _loading: { // grid defined by data provider
+                type: Boolean
+            },
+
+            loading: { // parent defined
+                type: Boolean
+            },
+
+            justAttached: {
+                type: Boolean,
+                value: true
             }
         },
 
@@ -763,8 +776,8 @@
             '_filterItems(items, items.length, combinedFilter, filterMethod)',
             '_selectedItemsChanged(selectedItems.length)',
             '_selectAllToggled(selectAll)',
-            '_setShowNoData(items, filteredItems.length)',
-            '_visibleChanged(visible)',
+            '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
+            '_visibleChanged(visible)'
         ],
 
         listeners: {
@@ -810,6 +823,10 @@
             if (this.streaming) {
                 this.fire('streaming-list-attached', this);
             }
+
+            setTimeout(function() {
+                this.set('justAttached', false);
+            }.bind(this), 4000);
         },
 
         detached: function () {
@@ -847,12 +864,13 @@
             return filteredItems ? filteredItems.length : 0;
         },
 
-        _setShowNoData: function (items, filteredItems) {
-            if ((this.items && !this.items.length) ||
-                (this.filteredItems && !this.filteredItems.length))
-                this.set('showNoData', true);
-            else
+        _updateShowNoData: function (items, filteredItems, loading, _loading, justAttached) {
+            if (!(this.loading || this._loading) && !this.items || (this.items && !this.items.length) ||
+                    (this.filteredItems && !this.filteredItems.length)) {
+                    this.set('showNoData', !justAttached);
+            } else {
                 this.set('showNoData', false);
+            }
         },
 
         _onWheel: function (e) {
