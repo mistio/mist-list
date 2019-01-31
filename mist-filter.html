@@ -38,14 +38,10 @@
                 flex: 1 100%;
             }
 
-            paper-input {
+            paper-input#searchInput {
                 width: 100%;
                 top: -13px;
                 padding-left: 8px;
-            }
-
-            paper-input#searchInput {
-                width: 100%;
                 --paper-input-container-input: {
                     font-size: 16px;
                     color: inherit;
@@ -83,6 +79,17 @@
                 padding: 12px 8px 8px 0px;
                 align-self: var(--mist-filter-iron-icon-search-align-self);
                 opacity: .5;
+            }
+
+            .buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 24px 0;
+            }
+
+            h2.dialog-title {
+                font-size: 20px;
+                font-weight: 500;
             }
 
         </style>
@@ -124,7 +131,7 @@
             filter</paper-icon-button>
         <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
-                <h2>Save filter</h2>
+                <h2 class="dialog-title">Save filter</h2>
                 <div class='vaadin-dialog-scrollable'>
                     <span>Optionally choose a filter name.</span>
                     <paper-input id="filterName" value="{{filterName}}" label="Filter name" tabindex="1" autofocus
@@ -132,7 +139,7 @@
                 </div>
                 <div class="buttons">
                     <paper-button on-tap="_dismissFilterDialog">Cancel</paper-button>
-                    <paper-button dialog-confirm on-tap="_saveFilter">Save</paper-button>
+                    <paper-button dialog-confirm on-tap="_saveFilter" class="confirm">Save</paper-button>
                 </div>
             </template>
         </vaadin-dialog>
