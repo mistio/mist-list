@@ -370,6 +370,9 @@
         _startEditingFilter: function (e) {
             if (this.searchable) {
                 this.editingFilter = true;
+                if (!this.$.searchInput.focused) {
+                    this.$.searchInput.focus();
+                }
             }
         },
 
