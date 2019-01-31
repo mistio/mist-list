@@ -35,6 +35,7 @@
             #form {
                 display: inherit;
                 max-height: 48px;
+                flex: 1 100%;
             }
 
             paper-input {
@@ -246,6 +247,10 @@
                 }
                 console.log('get userFilter', this.userFilter)
                 this.$.filterSelect.select(this.userFilter);
+                // let display input if there is a query stored, which dows not belong to saved filters 
+                if (!this.$.filterSelect.selectedItem || this.$.filterSelect.selectedItem.filter != this.userFilter) {
+                    this.set('editingFilter', true);
+                }
 
                 if (JSON.parse(localStorage.getItem('mist-filter#' + this.id + '/userSavedFilters'))) {
                     this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-filter#' + this.id +
@@ -348,8 +353,7 @@
         },
 
         _updateSelectedFilter: function (userFilter) {
-            var that = this,
-                filter = this.userSavedFilters.find(function (f) {
+            var filter = this.combinedPresetFilters.find(function (f) {
                     return userFilter == f.filter;
                 });
             if (filter) {
@@ -390,8 +394,14 @@
         },
 
         _keyDownSearchInput: function (e) {
+            // ESC
             if (e.keyCode == 27) {
-                this._clearFilter(e);
+                // exit editing if there is a filter enabled
+                if (this.selectedPresetFilter == this.userFilter) {
+                    this.set('editingFilter', false);
+                }
+                // inform consumer of ESC events
+                this.dispatchEvent(new CustomEvent('escape-pressed', {composed: true, bubbles: true}))
             }
             // ENTER
             if (e.keyCode === 13 && this.$.searchInput.focused) {
