@@ -328,6 +328,10 @@
             .tag {
                 @apply --mist-list-tag-mixin;
             }
+            h2.dialog-title {
+                font-size: 20px;
+                font-weight: 500;
+            }
         </style>
         <template is="dom-if" restamp if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
@@ -352,7 +356,7 @@
         <template is="dom-if" if="[[hasVisibleColumns]]" restamp>
             <vaadin-dialog id="columnsDialog" opened={{columnsDialogOpened}} aria-label="styled">
                 <template>
-                    <h2>Select columns and order</h2>
+                    <h2 class="dialog-title">Select columns and order</h2>
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
                     <div class='vaadin-dialog-scrollable'>
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp>
@@ -373,7 +377,7 @@
 
             <vaadin-dialog id="csvDialog" aria-label="styled">
                 <template>
-                    <h2>Download list data in CSV</h2>
+                    <h2 class="dialog-title">Download list data in CSV</h2>
                     <p>Select columns to download.</p>
                     <div class='vaadin-dialog-scrollable'>
                         <template is="dom-repeat" items="[[columns]]" as="column">
