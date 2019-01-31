@@ -428,9 +428,9 @@
                     this.autoHide = true;
                 }.bind(this), 1000);
             }
-            this.userFilter = '';
-            this.selectedPresetFilter = '';
-            this.editingFilter = false;
+            this.set('userFilter', '');
+            this.set('selectedPresetFilter', '');
+            this.set('editingFilter', false);
         },
 
         _baseFilterUpdated: function () {
