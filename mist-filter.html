@@ -115,18 +115,18 @@
         </paper-menu-button>
 
         <div id="form" on-tap="_startEditingFilter">
-            <iron-icon icon="search" hidden$=[[_hideSearchIcon(searchable,placeholder)]]></iron-icon>
+            <iron-icon icon="search" hidden$=[[!searchable]]></iron-icon>
             <slot name="count"></slot>
             <h2 class="titleh2" hidden$=[[_showFilterInput(editingFilter,alwaysShowInput)]]>
                 <span class="title">
-                    [[_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)]]
+                    [[_displayName(selectedPresetFilter,userFilter,combinedPresetFilters)]]
                 </span>
             </h2>
             <paper-input id="searchInput" hidden$=[[!_showFilterInput(editingFilter,alwaysShowInput)]] on-focused-changed="_searchInputFocusedChanged"
-                on-keydown="_keyDownSearchInput" tabindex="1" value="{{userFilter}}" no-label-float placeholder$="[[placeholder]]">
+                on-keydown="_keyDownSearchInput" tabindex="1" value="{{userFilter}}" no-label-float placeholder$="[[name]]">
             </paper-input>
         </div>
-        <paper-icon-button icon="close" hidden$=[[_hideClearButton(editingFilter,userFilter.length)]] on-tap="_clearFilter" id="clearFilterBtn"></paper-icon-button>
+        <paper-icon-button icon="close" hidden$=[[_hideClearButton(editingFilter,userFilter.length)]] on-tap="_clearFilterAndFocus" id="clearFilterBtn"></paper-icon-button>
         <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden$="[[!showSaveSearch]]" id="saveFilterBtn">save
             filter</paper-icon-button>
         <vaadin-dialog id="filterDialog" aria-label="styled">
@@ -143,7 +143,6 @@
                 </div>
             </template>
         </vaadin-dialog>
-
     </template>
 </dom-module>
 <script>
@@ -153,10 +152,6 @@
             name: {
                 type: String,
                 reflectToAttribute: true
-            },
-
-            placeholder: {
-                type: String
             },
 
             buttonName: {
@@ -177,8 +172,7 @@
 
             baseFilter: {
                 type: String,
-                value: "",
-                observer: '_baseFilterUpdated'
+                value: ""
             },
 
             userFilter: {
@@ -196,7 +190,8 @@
                 type: Array,
                 value: function(){
                     return [];
-                }
+                },
+                observer: '_presetFiltersUpdated'
             },
 
             userSavedFilters: {
@@ -236,33 +231,47 @@
         },
 
         observers: [
-            '_userFilterChanged(userFilter)',
-            '_editingFilterChanged(editingFilter)'
+            '_userFilterChanged(combinedFilter)',
+            '_resetUserFilter(baseFilter, name)',
+            //'_fetchSavedFilter(presetFilters, name)'
         ],
 
-        attached: function () {
-            this.getLocalStorageData(this.id)
+        attach: function () {
+            this._presetFiltersUpdated();
         },
 
-        getLocalStorageData: function(id) {
+        _fetchSavedFilter: function () {
+            console.warn('_fetchSavedFilter', this.id, this.name);
+
+            var current_filter_key, current_filter_fallback_key, saved_filters_key, filter_value;
+            if (this.name) {
+                current_filter_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userFilter';
+                saved_filters_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userSavedFilters';
+            } else {
+                current_filter_key = 'mist-filter#' + this.id + '/userFilter';
+                saved_filters_key = 'mist-filter#' + this.id + '/userSavedFilters';
+            }
+            current_filter_fallback_key = 'mist-filter#' + this.id + '/all-resources/userFilter';
+
             try {
-                if (localStorage.getItem('mist-filter#' + this.id + '/userFilter') != undefined) {
-                    this.set('userFilter', localStorage.getItem('mist-filter#' + this.id + '/userFilter'));
-                } else if (localStorage.getItem('mist-filter#default/userFilter') && this.id.endsWith('List')) {
-                    this.set('userFilter', localStorage.getItem('mist-filter#default/userFilter'));
+                if (localStorage.getItem(current_filter_key) != undefined) {
+                    filter_value = localStorage.getItem(current_filter_key);
+                } else if (localStorage.getItem(current_filter_fallback_key)) {
+                    filter_value = localStorage.getItem(current_filter_fallback_key);
+                    localStorage.setItem(current_filter_key, filter_value);
                 } else {
-                    this.set('userFilter', '');
+                    filter_value = '';
                 }
-                console.log('get userFilter', this.userFilter)
+                this.set('userFilter', filter_value);
+                console.log('get userFilter', this.id, this.name, this.userFilter);
                 this.$.filterSelect.select(this.userFilter);
                 // let display input if there is a query stored, which dows not belong to saved filters 
                 if (!this.$.filterSelect.selectedItem || this.$.filterSelect.selectedItem.filter != this.userFilter) {
                     this.set('editingFilter', true);
                 }
 
-                if (JSON.parse(localStorage.getItem('mist-filter#' + this.id + '/userSavedFilters'))) {
-                    this.set('userSavedFilters', JSON.parse(localStorage.getItem('mist-filter#' + this.id +
-                        '/userSavedFilters')));
+                if (JSON.parse(localStorage.getItem(saved_filters_key))) {
+                    this.set('userSavedFilters', JSON.parse(localStorage.getItem(saved_filters_key)));
                     this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
                 } else {
                     this.set('userSavedFilters', [])
@@ -272,21 +281,42 @@
             }
         },
 
+        _presetFiltersUpdated: function (e) {
+            console.warn('_presetFiltersUpdated', e, this.id, this.name);
+            if (this.name && this.presetFilters && !this.userFilter && this.searchable) {
+                this._fetchSavedFilter();
+                this.set('editingFilter', false);
+            }
+        },
+
         _selectedPresetFilterChanged: function (filters) {
-            this.set('userFilter', this.selectedPresetFilter);
+            if (this.searchable) {
+                this.set('userFilter', this.selectedPresetFilter);
+                this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
+            }
         },
 
         addFilter: function (filter) {
+            var saved_filters_key;
+            if (this.name) {
+                saved_filters_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userSavedFilters';
+            } else {
+                saved_filters_key = 'mist-filter#' + this.id + '/userSavedFilters';
+            }
             this.push('userSavedFilters', filter);
-            localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            localStorage.setItem(saved_filters_key, JSON.stringify(this.userSavedFilters));
             this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
             this.set('editingFilter', false);
         },
 
         deleteFilter: function (index) {
-            console.log('_deleteFilter IN', index);
-            this.splice('userSavedFilters', index, 1);
-            localStorage.setItem('mist-filter#' + this.id + '/userSavedFilters', JSON.stringify(this.userSavedFilters));
+            var saved_filters_key;
+            if (this.name) {
+                saved_filters_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userSavedFilters';
+            } else {
+                saved_filters_key = 'mist-filter#' + this.id + '/userSavedFilters';
+            }            this.splice('userSavedFilters', index, 1);
+            localStorage.setItem(saved_filters_key, JSON.stringify(this.userSavedFilters));
             this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
         },
 
@@ -300,7 +330,7 @@
             this.set('selectedPresetFilter', this.userFilter);
         },
 
-        _displayName: function (name, selectedPresetFilter, userFilter) {
+        _displayName: function (selectedPresetFilter, userFilter) {
             if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return this.name && this.name.length ? this.name : 'All';
             } else {
@@ -308,7 +338,7 @@
                     filter = this.combinedPresetFilters.find(function (f) {
                         return that.selectedPresetFilter == f.filter;
                     });
-                return filter ? filter.name : '';
+                return filter ? filter.name : '"' + userFilter + '"' + this.name.replace('All', '');
             }
         },
 
@@ -343,30 +373,35 @@
             if (this.selectedPresetFilter == e.model.item.filter) {
                 this.useFilter('');
             }
-            if (this.userFilter.indexOf(e.model.item.filter) > -1) {
+            if (this.userFilter.indexOf(e.model.item.filter) > -1 && this.searchable) {
                 this.set('userFilter', this.userFilter.replace(e.model.item.filter, ""));
             }
         },
 
         _userFilterChanged: function (userFilter) {
+            var current_filter_key;
+            if (this.name) {
+                current_filter_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userFilter';
+            } else {
+                current_filter_key = 'mist-filter#' + this.id + '/userFilter';
+            }
             if (this.userFilter != undefined && this.isAttached) {
                 var trimmed = userFilter.trim();
-                console.log('passed')
                 if (this.editingFilter) {
                     this._updateSelectedFilter(userFilter);
                 }
+                if (this.userFilter || localStorage.getItem(current_filter_key)) {
+                    localStorage.setItem(current_filter_key, this.userFilter);
+                }
                 this.dispatchEvent(new CustomEvent('filter-change', { bubbles: true, composed: true}));
-                localStorage.setItem('mist-filter#' + this.id + '/userFilter', this.userFilter);
             }
         },
 
         _updateSelectedFilter: function (userFilter) {
             var filter = this.combinedPresetFilters.find(function (f) {
-                    return userFilter == f.filter;
-                });
-            if (filter) {
-                this.set('selectedPresetFilter', this.userFilter);
-            }
+                return userFilter == f.filter;
+            });
+            this.set('selectedPresetFilter', this.userFilter);
         },
 
         _computeShowSaveSearch: function (userFilter, presetFiltersLength) {
@@ -389,17 +424,15 @@
         },
 
         _searchInputFocusedChanged: function (e) {
-            // console.log('focus changed', e);
-            if (e.target.focused) return;
+            if (e.target.focused || this.shadowRoot.querySelector('paper-icon-button[icon="close"]').pressed) return;
             this.async(function () {
-                if (!e.detail.value && this._filterIsAPresetFilter()) {
+                if (this._filterIsAPresetFilter())
                     this.set('editingFilter', false);
-                }
             }, 100);
         },
 
         _filterIsAPresetFilter: function () {
-            return !this.userFilter.trim() || this.combinedPresetFilters.map(function (m) {
+            return !this.userFilter || !this.userFilter.trim() || this.combinedPresetFilters.map(function (m) {
                 return m.filter;
             }).indexOf(this.userFilter.trim()) > -1;
         },
@@ -438,35 +471,27 @@
                     this.autoHide = true;
                 }.bind(this), 1000);
             }
+            console.log('_clearFilter');
             this.set('userFilter', '');
-            this.set('selectedPresetFilter', '');
             this.set('editingFilter', false);
         },
 
-        _baseFilterUpdated: function () {
-            // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter) {
-                this.set('userFilter', '');
-            }
-            this.editingFilter = false;
+        _clearFilterAndFocus: function (e) {
+            e.stopPropagation();
+            console.log('_clearFilterAndFocus');
+            this.set('userFilter', '');
+            this.set('editingFilter', true);
+            this.$.searchInput.shadowRoot.querySelector('input').focus();
         },
 
-        _editingFilterChanged: function (editingFilter) {
-            // console.log('_editingFilterChanged', editingFilter, this.editingFilter);
-            this.async(function () {
-                console.log('async', this.$.searchInput.focused);
-            }, 100);
-            if (this.editingFilter) {
-                if (this.$.searchInput.focused) {
-                    // this.$.searchInput.focus();
-                }
-                this.$.searchInput.shadowRoot.querySelector('input').focus()
-                // console.log('focus', this.$.searchInput.focused);
-            } else {
-                if (this.$.searchInput.focused) {
-                    this.$.searchInput.blur();
-                }
+        _resetUserFilter: function () {
+            // Reset the user defined filter every time the base filter gets updated
+            if (this.userFilter) {
+                console.log('_resetUserFilter');
+                this.set('userFilter', '');
+                this._fetchSavedFilter();
             }
+            this.set('editingFilter', false);
         },
 
         _computeFilter: function (baseFilter, userFilter) {
@@ -493,10 +518,6 @@
             } else {
                 return "";
             }
-        },
-
-        _hideSearchIcon: function(searchable,placeholder) {
-            return !this.searchable; // || this.placeholder;
         },
 
         _hideClearButton: function(editingFilter,userFilterLength) {
