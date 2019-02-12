@@ -12,6 +12,7 @@
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../sortable-list/sortable-list.html">
+<link rel="import" href="../json-viewer/json-viewer.html">
 
 <link rel="import" href="mist-check.html">
 <link rel="import" href="mist-filter.html">
@@ -108,7 +109,6 @@
             }
 
             vaadin-grid .details-cell {
-                background: #f0f0f0;
                 width: 100%;
                 font-size: 12px;
             }
@@ -119,7 +119,8 @@
                 overflow-x: auto;
                 overflow-y: scroll;
                 height: 266px;
-                margin: 0 16px;
+                margin: 0 0px 0 34px;
+                border-left: 1px dashed #ddd;
             }
 
             vaadin-grid .details table {
@@ -332,6 +333,10 @@
                 font-size: 20px;
                 font-weight: 500;
             }
+
+            json-viewer {
+                padding: 8px;
+            }
         </style>
         <template is="dom-if" restamp if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count={{count}}
@@ -401,16 +406,7 @@
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault"
                         on-mouseup="_preventDefault">
-                        <table>
-                            <tbody>
-                                <template is="dom-repeat" items="{{_computeItemKeys(item)}}" as="i">
-                                    <tr class$="[[i.key]]">
-                                        <td class="key">[[i]]</td>
-                                        <td class="value">[[_getRawBody(i, item)]]</td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                        <json-viewer json="[[_stringify(item)]]"></json-viewer>
                     </div>
                 </div>
             </template>
@@ -1085,11 +1081,6 @@
             }
         },
 
-        _computeItemKeys: function (item) {
-            if (!item) return [];
-            return Object.keys(item)
-        },
-
         _getTitle: function (column) {
             if (this.renderers[column] && this.renderers[column].title) {
                 if (typeof this.renderers[column].title == 'function')
@@ -1115,10 +1106,8 @@
             return '&nbsp;';
         },
 
-        _getRawBody: function (column, item) {
-            if (item)
-                return JSON.stringify(item[column]);
-            return '';
+        _stringify: function(item) {
+            return JSON.stringify(item);
         },
 
         _isColumnVisible: function (column) {
