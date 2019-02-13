@@ -231,7 +231,7 @@
 
             displayName: {
                 type: String,
-                computed: '_displayName(selectedPresetFilter,userFilter,combinedPresetFilters)',
+                computed: '_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)',
                 notify: true
             }
         },
@@ -336,7 +336,7 @@
             this.set('selectedPresetFilter', this.userFilter);
         },
 
-        _displayName: function (selectedPresetFilter, userFilter) {
+        _displayName: function (name, selectedPresetFilter, userFilter) {
             if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return this.name && this.name.length ? this.name : 'All';
             } else {
@@ -344,7 +344,11 @@
                     filter = this.combinedPresetFilters.find(function (f) {
                         return that.selectedPresetFilter == f.filter;
                     });
-                return filter ? filter.name : '"' + userFilter + '"' + this.name.replace('All', '');
+                if (filter) {
+                    return filter.name;
+                } else {
+                    return this.name ? '"' + userFilter + '"' + this.name.replace('All', '') : '"' + userFilter + '"';
+                }
             }
         },
 
