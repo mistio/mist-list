@@ -237,8 +237,8 @@
         },
 
         observers: [
-            '_userFilterChanged(combinedFilter, name)',
-            '_resetUserFilter(baseFilter, name)',
+            '_userFilterChanged(combinedFilter)',
+            '_resetUserFilter(name)',
             //'_fetchSavedFilter(presetFilters, name)'
         ],
 
@@ -388,7 +388,7 @@
             }
         },
 
-        _userFilterChanged: function (userFilter, name) {
+        _userFilterChanged: function (userFilter) {
             var current_filter_key;
             if (this.name) {
                 current_filter_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userFilter';
@@ -494,11 +494,10 @@
             this.$.searchInput.shadowRoot.querySelector('input').focus();
         },
 
-        _resetUserFilter: function () {
+        _resetUserFilter: function (name) {
             // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter) {
+            if (this.userFilter && this.name) {
                 console.log('_resetUserFilter');
-                this.set('userFilter', '');
                 this._fetchSavedFilter();
             }
             this.set('editingFilter', false);
