@@ -231,14 +231,14 @@
 
             displayName: {
                 type: String,
-                computed: '_displayName(selectedPresetFilter,userFilter,combinedPresetFilters)',
+                computed: '_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)',
                 notify: true
             }
         },
 
         observers: [
-            '_userFilterChanged(combinedFilter, name)',
-            '_resetUserFilter(baseFilter, name)',
+            '_userFilterChanged(combinedFilter)',
+            '_resetUserFilter(name)',
             //'_fetchSavedFilter(presetFilters, name)'
         ],
 
@@ -336,7 +336,7 @@
             this.set('selectedPresetFilter', this.userFilter);
         },
 
-        _displayName: function (selectedPresetFilter, userFilter) {
+        _displayName: function (name, selectedPresetFilter, userFilter) {
             if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
                 return this.name && this.name.length ? this.name : 'All';
             } else {
@@ -344,7 +344,11 @@
                     filter = this.combinedPresetFilters.find(function (f) {
                         return that.selectedPresetFilter == f.filter;
                     });
-                return filter ? filter.name : '"' + userFilter + '"' + this.name.replace('All', '');
+                if (filter) {
+                    return filter.name;
+                } else {
+                    return this.name ? '"' + userFilter + '"' + this.name.replace('All', '') : '"' + userFilter + '"';
+                }
             }
         },
 
@@ -384,7 +388,7 @@
             }
         },
 
-        _userFilterChanged: function (userFilter, name) {
+        _userFilterChanged: function (userFilter) {
             var current_filter_key;
             if (this.name) {
                 current_filter_key = 'mist-filter#' + this.id + '/' + this.name.toLowerCase().replace(' ', '-') + '/userFilter';
@@ -490,11 +494,10 @@
             this.$.searchInput.shadowRoot.querySelector('input').focus();
         },
 
-        _resetUserFilter: function () {
+        _resetUserFilter: function (name) {
             // Reset the user defined filter every time the base filter gets updated
-            if (this.userFilter) {
+            if (this.userFilter && this.name) {
                 console.log('_resetUserFilter');
-                this.set('userFilter', '');
                 this._fetchSavedFilter();
             }
             this.set('editingFilter', false);
