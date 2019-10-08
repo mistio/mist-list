@@ -85,7 +85,7 @@
       console.log(event.detail);
       dialogs = this.shadowRoot.querySelectorAll('vaadin-dialog') || [];
       for (var i = 0; i < dialogs.length; i++) {
-        if (dialogs[i].opened) {
+        if (dialogs[i].opened && !this.modal) {
           var overlay = dialogs[i].$.overlay.$.overlay,
             overlayShadowRoot = overlay.querySelector('#content').shadowRoot,
             confirmButton = overlayShadowRoot.querySelector('paper-button[dialog-confirm]');
