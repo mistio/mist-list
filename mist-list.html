@@ -344,7 +344,7 @@
                 received={{received}} columns={{columns}} frozen=[[frozen]] item-map={{itemMap}} primary-field-name="[[primaryFieldName]]"
                 timeseries=[[timeseries]] filter="[[combinedFilter]]" finished={{finished}}></rest-data-provider>
         </template>
-        <slot name="header"></slot>
+        <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$=[[!toolbar]]>
             <mist-filter id$="[[id]]" name=[[name]] searchable=[[searchable]] base-filter=[[baseFilter]]
                 user-filter={{userFilter}} combined-filter={{combinedFilter}} editing-filter={{editingFilter}}
@@ -888,17 +888,25 @@
             this.debounce('resize', function () { this.fire('resize'); }, 500);
         },
 
-        _windowResize: function () {
+        _windowResize: function (e) {
             if (!this.resizable) {
                 return;
             }
             var top = this.getBoundingClientRect().top,
                 newHeight,
-                itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 45,
+                itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 56,
                 isSmallScreen = window.innerWidth <= 768,
                 outerScroller = this.$.grid.$.outerscroller,
                 hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
                 heightOffset = 36;
+            // Calculate and add the height of the content slotted in the header, so 
+            // it does not push mist-list below visible height.
+            var headerSlotElements = this.$.slottedHeader.assignedElements();
+            if (headerSlotElements.length) {
+                for (var i = 0; i<headerSlotElements.length; i++) {
+                    top += headerSlotElements[i].getBoundingClientRect().height;
+                }
+            }
             if (hasVerticalScroll) {
                 heightOffset += 19;
             }
