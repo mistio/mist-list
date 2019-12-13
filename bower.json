@@ -31,6 +31,22 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
   },
   "resolutions": {
-    "vaadin-grid": "5.2-mist"
+    "vaadin-grid": "5.2-mist",
+    "webcomponentsjs": "^v1.1.0",
+    "polymer": "^v2.0.0",
+    "iron-a11y-keys-behavior": "^2.0.0",
+    "iron-resizable-behavior": "^2.0.0",
+    "iron-flex-layout": "^2.0.0",
+    "iron-list": "^2.0.2",
+    "iron-scroll-target-behavior": "^v2.0.0",
+    "iron-icon": "^2.0.1",
+    "iron-media-query": "^2.0.0",
+    "iron-a11y-announcer": "^2.0.0",
+    "iron-collapse": "^2.0.0",
+    "iron-doc-viewer": "^3.0.0",
+    "iron-iconset-svg": "^2.1.0",
+    "iron-location": "1 - 2",
+    "app-layout": "1 - 2",
+    "paper-input": "^2.2.3"
   }
 }

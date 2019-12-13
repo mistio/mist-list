@@ -21,6 +21,13 @@
       <demo-snippet>
         <template>
           <mist-list></mist-list>
+          <script>
+            window.addEventListener('WebComponentsReady', function() {
+              const grid = document.querySelector('mist-list');
+              grid.itemMap = {'yo': {'key':'ko', 'poy':'la'}, 'lo': {'key':'a','poy':'os'}};
+              grid.visible=['key','poy']
+            });
+            </script>
         </template>
       </demo-snippet>
     </div>
