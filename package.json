@@ -17,6 +17,7 @@
     "@polymer/paper-listbox": "^3.0.0",
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
+    "@vaadin/vaadin-dialog": "^2.2.1",
     "@vaadin/vaadin-grid": "^5.0.5"
   },
   "devDependencies": {
