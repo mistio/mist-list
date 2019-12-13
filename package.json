@@ -1,27 +1,29 @@
 {
-  "name": "mist-list",
+  "description": "Flexible list element based on vaadin-grid",
+  "name": "@mistio/mist-list",
+  "version": "3.0.0",
   "main": "mist-list.js",
+  "contributors": [
+    "Dimitris Moraitis <dimo@mist.io>",
+    "Christina Papakonstantinou <xristina@mist.io>"
+  ],
   "dependencies": {
-    "@polymer/iron-icons": "^3.0.1",
     "@polymer/iron-resizable-behavior": "^3.0.0",
     "@polymer/paper-button": "^3.0.0",
-    "@polymer/paper-checkbox": "^3.1.0",
+    "@polymer/paper-checkbox": "^3.0.0",
     "@polymer/paper-dialog": "^3.0.0",
-    "@polymer/paper-icon-button": "^3.0.2",
     "@polymer/paper-input": "^3.0.0",
     "@polymer/paper-item": "^3.0.0",
-    "@polymer/paper-listbox": "^3.0.1",
+    "@polymer/paper-listbox": "^3.0.0",
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
-    "@vaadin/vaadin-dialog": "^2.2.1",
-    "@vaadin/vaadin-grid": "^5.0.5",
-    "json-viewer": "^2.2.0",
-    "moment": "^2.24.0"
+    "@vaadin/vaadin-grid": "^5.0.5"
   },
   "devDependencies": {
+    "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-demo-helpers": "^3.1.0",
     "@polymer/test-fixture": "^4.0.2",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "@webcomponents/webcomponentsjs": "^2.4.0",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
     "wct-mocha": "^1.0.1"
