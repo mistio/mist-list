@@ -9,8 +9,8 @@
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
     <script type="module">
-      import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
-      import '@polymer/iron-demo-helpers/demo-snippet';
+       import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
+       import '@polymer/iron-demo-helpers/demo-snippet';
     </script>
 
     <script type="module" src="../mist-list.js"></script>
@@ -26,16 +26,43 @@
       <h3>Basic mist-list demo</h3>
       <demo-snippet>
         <template>
-          <mist-list></mist-list>
+          <mist-list id="demo1"></mist-list>
           <script>
-            window.addEventListener('WebComponentsReady', function() {
-              const grid = document.querySelector('mist-list');
-              grid.itemMap = {'yo': {'key':'ko', 'poy':'la'}, 'lo': {'key':'a','poy':'os'}};
-              grid.visible = ['key','poy'];
+            window.addEventListener("WebComponentsReady", () => {
+              document.querySelector("mist-list#demo1").items = [
+                {"first_name":"John", "last_name":"Smith", "position": "Obergruppenführer"},
+                {"first_name":"Juliana","last_name":"Crain"},
+                {"first_name":"Frank","last_name":"Frink"},
+                {"first_name":"Joe","last_name":"Blake", "position": "SS Agent"},
+                {"first_name":"Robert","last_name":"Childan"},
+                {"first_name":"Takeshi","last_name":"Kido", "position": "Inspector"},
+              ];
+              document.querySelector("mist-list#demo1").visible = ["first_name","last_name", "position"];
             });
           </script>
         </template>
       </demo-snippet>
     </div>
+    <div class="vertical-section-container centered">
+        <h3>Initialize mist-list using item-map</h3>
+        <demo-snippet>
+          <template>
+            <mist-list id="demo2"></mist-list>
+            <script>
+              window.addEventListener("WebComponentsReady", () => {
+                document.querySelector("mist-list#demo2").itemMap = {
+                  "john-smith": {"first_name":"John", "last_name":"Smith", "position": "Obergruppenführer"},
+                  "juliana-crain": {"first_name":"Juliana","last_name":"Crain"},
+                  "frank-frink": {"first_name":"Frank","last_name":"Frink"},
+                  "joe-blake": {"first_name":"Joe","last_name":"Blake", "position": "SS Agent"},
+                  "robert-childan": {"first_name":"Robert","last_name":"Childan"},
+                  "takeshi-kido": {"first_name":"Takeshi","last_name":"Kido", "position": "Inspector"},
+                };
+                document.querySelector("mist-list#demo2").visible = ["last_name", "position"];
+              });
+            </script>
+          </template>
+        </demo-snippet>
+      </div>
   </body>
 </html>
