@@ -64,5 +64,49 @@
           </template>
         </demo-snippet>
       </div>
+      <div class="vertical-section-container centered">
+        <h3>Mist-list with a column menu</h3>
+        <demo-snippet>
+          <template>
+            <mist-list id="demo3"></mist-list>
+            <script>
+              window.addEventListener("WebComponentsReady", () => {
+                document.querySelector("mist-list#demo3").columnMenu = true;
+                document.querySelector("mist-list#demo3").items = [
+                  {"first_name":"John", "last_name":"Smith", "position": "Obergruppenführer"},
+                  {"first_name":"Juliana","last_name":"Crain"},
+                  {"first_name":"Frank","last_name":"Frink"},
+                  {"first_name":"Joe","last_name":"Blake", "position": "SS Agent"},
+                  {"first_name":"Robert","last_name":"Childan"},
+                  {"first_name":"Takeshi","last_name":"Kido", "position": "Inspector"},
+                ];
+                document.querySelector("mist-list#demo3").frozen = ["first_name"];
+                document.querySelector("mist-list#demo3").visible = ["last_name"];
+              });
+            </script>
+          </template>
+        </demo-snippet>
+      </div>
+      <div class="vertical-section-container centered">
+        <h3>Initialize mist-list with expandable items</h3>
+        <demo-snippet>
+          <template>
+            <mist-list id="demo4"></mist-list>
+            <script>
+              window.addEventListener("WebComponentsReady", () => {
+                document.querySelector("mist-list#demo4").expands = true;
+                document.querySelector("mist-list#demo4").itemMap = {
+                  "john-smith": {"first_name":"John", "last_name":"Smith", "position": "Obergruppenführer"},
+                  "juliana-crain": {"first_name":"Juliana","last_name":"Crain"},
+                  "frank-frink": {"first_name":"Frank","last_name":"Frink"},
+                  "joe-blake": {"first_name":"Joe","last_name":"Blake", "position": "SS Agent"},
+                  "robert-childan": {"first_name":"Robert","last_name":"Childan"}
+                };
+                document.querySelector("mist-list#demo4").visible = ["last_name", "position"];
+              });
+            </script>
+          </template>
+        </demo-snippet>
+      </div>
   </body>
 </html>

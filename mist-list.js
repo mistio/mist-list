@@ -568,7 +568,7 @@ Polymer({
               vertical-align="top"
               vertical-offset="45"
               class="column-menu"
-              style="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]"
+              style$="[[menuButtonStyle]]"
             >
               <paper-icon-button
                 icon="icons:view-column"
@@ -589,7 +589,7 @@ Polymer({
           <template>
             <paper-icon-button
               icon="icons:arrow-drop-down"
-              style="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;"
+              style$="[[_computeExpandIconStyle(item,selectable)]]; padding: 8px; width: 36px; height: 36px;"
               toggles=""
               active="{{item.expanded}}"
               id="btn-[[_computeId(item)]]"
@@ -973,9 +973,15 @@ Polymer({
       type: String,
       value: '',
     },
+
+    menuButtonStyle: {
+      type: String,
+      value: 'display:none;',
+    },
   },
 
   observers: [
+    '_updateMenuButtonStyle(selectable, columnMenu, selectedItemsLength, count)',
     '_itemsUpdated(items)',
     '_itemMapUpdated(itemMap.*)',
     '_filterItems(items, items.length, combinedFilter, filterMethod)',
@@ -1299,6 +1305,7 @@ Polymer({
   },
 
   _itemsUpdated() {
+    // console.log('_itemsUpdated', this.items && this.items.length);
     if (this.items) {
       this.set('received', this.items.length);
       this.set('count', this.items.length);
@@ -1458,12 +1465,14 @@ Polymer({
     return this.renderers[column] && this.renderers[column].cmp;
   },
 
-  _computeExpandIconStyle(expanded, selectable) {
+  _computeExpandIconStyle(item, selectable) {
     // TODO: animate icon
+    if (!item) return 'display:none';
     let ret = '';
     if (selectable) ret += 'margin-left: -8px;';
     else ret += 'margin-left: 4px;';
-    if (!expanded) ret += 'transform: rotate(270deg);';
+    if (!item.expanded) ret += 'transform: rotate(270deg);';
+    // console.log('_computeExpandIconStyle', this.columnMenu, selectable, ret);
     return ret;
   },
 
@@ -1501,10 +1510,13 @@ Polymer({
       });
   },
 
-  _computeColumnMenuButtonStyle(selectable, columnMenu, selectedItemsLength, count) {
-    if (!columnMenu || selectedItemsLength || !count) return 'display: none';
-    if (selectable) return 'margin-left: -8px;';
-    return 'margin-left: 4px;';
+  _updateMenuButtonStyle(selectable, columnMenu, selectedItemsLength, count) {
+    // console.log('_updateMenuButtonStyle', selectable, columnMenu, selectedItemsLength, count);
+    let ret;
+    if (!columnMenu || selectedItemsLength || !count) ret = 'display: none';
+    else if (selectable) ret = 'margin-left: -8px;';
+    else ret = 'margin-left: 4px;';
+    this.set('menuButtonStyle', ret);
   },
 
   _or(a, b) {
