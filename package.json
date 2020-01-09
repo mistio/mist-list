@@ -8,6 +8,7 @@
     "Christina Papakonstantinou <xristina@mist.io>"
   ],
   "dependencies": {
+    "@advanced-rest-client/json-viewer": "^3.1.4",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-icons": "^3.0.1",
     "@polymer/iron-resizable-behavior": "^3.0.0",

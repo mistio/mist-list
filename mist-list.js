@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import '@polymer/polymer/polymer-legacy.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
 import '@vaadin/vaadin-grid/vaadin-grid-sorter.js';
@@ -11,7 +12,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
-// import 'json-viewer/json-viewer.js';
+import '@advanced-rest-client/json-viewer/json-viewer.js';
 import './mist-check.js';
 import './mist-filter.js';
 import './mist-list-actions.js';
@@ -71,6 +72,7 @@ $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaad
 
 document.head.appendChild($_documentContainer.content);
 Polymer({
+  // eslint-disable-next-line lit/no-legacy-template-syntax
   _template: html`
     <style>
       [hidden] {
@@ -171,6 +173,7 @@ Polymer({
         height: 266px;
         margin: 0 0px 0 34px;
         border-left: 1px dashed #ddd;
+        padding-left: 10px;
       }
 
       vaadin-grid .details table {
@@ -385,7 +388,7 @@ Polymer({
       }
 
       json-viewer {
-        padding: 8px;
+        font-size: 0.9em;
       }
     </style>
     <template is="dom-if" restamp="" if="[[rest]]">
@@ -505,6 +508,7 @@ Polymer({
       data-provider="[[dataProvider]]"
       selected-items="{{selectedItems}}"
       loading="[[_loading]]"
+      active-item="{{activeItem}}"
       @active-item-changed="_activeItemChanged"
       selection-mode="multi"
       multi-sort="[[multiSort]]"
@@ -591,7 +595,7 @@ Polymer({
               icon="icons:arrow-drop-down"
               style$="[[_computeExpandIconStyle(item,selectable)]]; padding: 8px; width: 36px; height: 36px;"
               toggles=""
-              active="{{item.expanded}}"
+              active="{{detailsOpened}}"
               id="btn-[[_computeId(item)]]"
               hidden="[[!expands]]"
               @active-changed="_toggleItemExpand"
@@ -976,7 +980,7 @@ Polymer({
 
     menuButtonStyle: {
       type: String,
-      value: 'display:none;',
+      value: '',
     },
   },
 
@@ -1054,6 +1058,7 @@ Polymer({
   },
 
   _toggleItemExpand(e) {
+    console.log('_toggleItemExpand', e);
     if (e.target.active) {
       this.$.grid.openItemDetails(e.target.__dataHost.item);
     } else {
@@ -1341,7 +1346,7 @@ Polymer({
   },
 
   _activeItemChanged(e) {
-    // console.log('_activeItemChanged', e);
+    console.log('_activeItemChanged', e);
     const grid = e.target;
     this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
     // we should either redirect to the proper route path, or expand the item
@@ -1372,7 +1377,7 @@ Polymer({
   },
 
   _stringify(item) {
-    return JSON.stringify(item);
+    return JSON.stringify(item, null, 2);
   },
 
   _isColumnVisible(column) {
@@ -1511,11 +1516,11 @@ Polymer({
   },
 
   _updateMenuButtonStyle(selectable, columnMenu, selectedItemsLength, count) {
-    // console.log('_updateMenuButtonStyle', selectable, columnMenu, selectedItemsLength, count);
     let ret;
     if (!columnMenu || selectedItemsLength || !count) ret = 'display: none';
     else if (selectable) ret = 'margin-left: -8px;';
     else ret = 'margin-left: 4px;';
+    // console.log('_updateMenuButtonStyle', selectable, columnMenu, selectedItemsLength, count, ret);
     this.set('menuButtonStyle', ret);
   },
 
