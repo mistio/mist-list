@@ -20,6 +20,7 @@ import './rest-data-provider.js';
 import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 // import 'moment/moment.js';
+
 // eslint-disable-next-line camelcase
 const $_documentContainer = document.createElement('template');
 
@@ -432,13 +433,13 @@ Polymer({
         <paper-icon-button
           icon="icons:fullscreen"
           hidden="[[fullscreen]]"
-          @tap="_enterFullscreen"
+          on-tap="_enterFullscreen"
           id="fullscreenBtn"
         ></paper-icon-button>
         <paper-icon-button
           icon="icons:fullscreen-exit"
           hidden="[[!fullscreen]]"
-          @tap="_exitFullscreen"
+          on-tap="_exitFullscreen"
           id="exitFullscreenBtn"
         ></paper-icon-button>
       </span>
@@ -454,8 +455,8 @@ Polymer({
               <sortable-list
                 id="columnsSortable"
                 sortable=".column-item"
-                @sort-start="_onSortStart"
-                @sort-finish="_onSortFinish"
+                on-sort-start="_onSortStart"
+                on-sort-finish="_onSortFinish"
               >
                 <template
                   id="columnsSortableRepeater"
@@ -466,7 +467,7 @@ Polymer({
                   <paper-item label="[[column]]" class="column-item">
                     <paper-checkbox
                       checked="[[_isColumnVisible(column,visible)]]"
-                      @change="_checkboxChanged"
+                      on-change="_checkboxChanged"
                       >[[column]]</paper-checkbox
                     >
                   </paper-item>
@@ -475,7 +476,7 @@ Polymer({
             </template>
           </div>
           <div class="buttons">
-            <paper-button @tap="_dismissDialog">Close</paper-button>
+            <paper-button on-tap="_dismissDialog">Close</paper-button>
           </div>
         </template>
       </vaadin-dialog>
@@ -487,15 +488,15 @@ Polymer({
           <div class="vaadin-dialog-scrollable">
             <template is="dom-repeat" items="[[columns]]" as="column">
               <paper-item label="[[column]]">
-                <paper-checkbox checked="[[_isCsvVisible(column)]]" @change="_CSVcheckboxChanged"
+                <paper-checkbox checked="[[_isCsvVisible(column)]]" on-change="_CSVcheckboxChanged"
                   >[[column]]</paper-checkbox
                 >
               </paper-item>
             </template>
           </div>
           <div class="buttons">
-            <paper-button @tap="_dismissDialog">Cancel</paper-button>
-            <paper-button dialog-confirm="" autofocus="" @tap="_exportCsv"
+            <paper-button on-tap="_dismissDialog">Cancel</paper-button>
+            <paper-button dialog-confirm="" autofocus="" on-tap="_exportCsv"
               >Download CSV</paper-button
             >
           </div>
@@ -509,7 +510,7 @@ Polymer({
       selected-items="{{selectedItems}}"
       loading="[[_loading]]"
       active-item="{{activeItem}}"
-      @active-item-changed="_activeItemChanged"
+      on-active-item-changed="_activeItemChanged"
       selection-mode="multi"
       multi-sort="[[multiSort]]"
       theme="[[theme]] no-row-borders row-stripes"
@@ -518,10 +519,10 @@ Polymer({
         <div class="details-cell">
           <div
             class="details"
-            @tap="_preventDefault"
-            @click="_preventDefault"
-            @pointerup="_preventDefault"
-            @mouseup="_preventDefault"
+            on-tap="_preventDefault"
+            on-click="_preventDefault"
+            on-pointerup="_preventDefault"
+            on-mouseup="_preventDefault"
           >
             <json-viewer json="[[_stringify(item)]]"></json-viewer>
           </div>
@@ -583,8 +584,8 @@ Polymer({
                 style="height: 36px; width: 36px;"
               ></paper-icon-button>
               <paper-listbox class="dropdown-content" slot="dropdown-content">
-                <paper-item @tap="_openDialogSelectColumns">Select columns</paper-item>
-                <paper-item @tap="_openDialogExportCsv" disabled="[[!apiurl]]"
+                <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
+                <paper-item on-tap="_openDialogExportCsv" disabled="[[!apiurl]]"
                   >Download CSV</paper-item
                 >
               </paper-listbox>
@@ -598,7 +599,7 @@ Polymer({
               active="{{detailsOpened}}"
               id="btn-[[_computeId(item)]]"
               hidden="[[!expands]]"
-              @active-changed="_toggleItemExpand"
+              on-active-changed="_toggleItemExpand"
             ></paper-icon-button>
           </template>
         </vaadin-grid-column>
@@ -608,7 +609,7 @@ Polymer({
           frozen=""
           resizable=""
           width="[[columnWidth(column,frozenWidth)]]"
-          @column-width-changed="_saveColumnWidth"
+          on-column-width-changed="_saveColumnWidth"
         >
           <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
             <vaadin-grid-sorter
@@ -632,7 +633,7 @@ Polymer({
         <vaadin-grid-column
           resizable=""
           width="[[columnWidth(column)]]"
-          @column-width-changed="_saveColumnWidth"
+          on-column-width-changed="_saveColumnWidth"
         >
           <template class="header">
             <vaadin-grid-sorter
@@ -656,7 +657,7 @@ Polymer({
           <vaadin-grid-column
             resizable=""
             width="[[columnWidth(column)]]"
-            @column-width-changed="_saveColumnWidth"
+            on-column-width-changed="_saveColumnWidth"
           >
             <template class="header">
               <vaadin-grid-sorter
@@ -685,9 +686,9 @@ Polymer({
       id="getCsv"
       method="GET"
       loading="{{loadingCSV}}"
-      @request="_csvRequest"
-      @response="_csvResponse"
-      @error="_csvError"
+      on-request="_csvRequest"
+      on-response="_csvResponse"
+      on-error="_csvError"
       handle-as="txt"
     ></iron-ajax>
 
