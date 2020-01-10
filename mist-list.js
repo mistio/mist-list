@@ -257,6 +257,7 @@ Polymer({
         border: 1px solid #dbdbdb;
         border-bottom: 0 none;
         color: #000;
+        display: flex;
       }
 
       vaadin-dialog {
@@ -300,12 +301,16 @@ Polymer({
 
       span.count {
         font-size: 14px;
-        display: inline-block;
-        text-align: center;
+        display: flex;
         opacity: 0.5;
-        margin-left: -38px;
-        margin-top: 38px;
-        width: 60px;
+        padding-right: 16px;
+        align-self: center;
+      }
+
+      .toolbar-buttons {
+        align-items: center;
+        padding: 4px 8px;
+        border-left: 1px dotted #ddd;
       }
 
       paper-menu-button.column-menu {
@@ -313,11 +318,6 @@ Polymer({
         padding: calc(var(--row-height) / 2 - 25px) 0;
         margin-left: -8px;
         color: #666;
-      }
-
-      paper-input#searchInput {
-        margin-bottom: 16px;
-        margin-left: 8px;
       }
 
       .nodata {
@@ -429,7 +429,7 @@ Polymer({
           >
         </span>
       </mist-filter>
-      <span hidden="[[!enableFullscreen]]">
+      <span class="toolbar-buttons" hidden="[[!enableFullscreen]]">
         <paper-icon-button
           icon="icons:fullscreen"
           hidden="[[fullscreen]]"

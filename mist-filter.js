@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-legacy-template-syntax */
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-input/paper-input.js';
@@ -17,7 +18,8 @@ Polymer({
       }
 
       :host {
-        display: inherit;
+        display: flex;
+        flex: 1 100%;
       }
 
       span.title {
@@ -25,10 +27,11 @@ Polymer({
         text-transform: capitalize;
         font-weight: 500;
         opacity: 0.7;
+        display: flex;
       }
 
       h2.titleh2 {
-        line-height: 1.1em !important;
+        align-self: center;
         margin: var(--mist-filter-h2-title-margin);
         width: 100%;
       }
@@ -40,15 +43,15 @@ Polymer({
       }
 
       paper-input#searchInput {
-        width: 100%;
-        top: -13px;
+        width: 90%;
+        /* top: -13px;
         padding-left: 8px;
         --paper-input-container-input: {
           font-size: 16px;
           color: inherit;
           width: 100%;
           padding: 5px 0;
-        }
+        } */
       }
 
       paper-item paper-icon-button {
@@ -77,9 +80,20 @@ Polymer({
       }
 
       iron-icon[icon='search'] {
-        padding: 12px 8px 8px 0px;
-        align-self: var(--mist-filter-iron-icon-search-align-self);
+        padding: 12px 8px;
+        display: block;
+        flex: none;
+        cursor: pointer;
+        /* var(--mist-filter-iron-icon-search-align-self); */
         opacity: 0.5;
+        width: 24px;
+        height: 24px;
+      }
+
+      paper-icon-button[icon='filter-list'] {
+        margin-top: 7px;
+        width: 36px;
+        height: 36px;
       }
 
       .buttons {
@@ -108,7 +122,6 @@ Polymer({
           class="dropdown-trigger"
           alt="select filter"
           title="Select preset filters"
-          style="margin-left: -10px; margin-right: 4px"
           hidden="[[buttonName.length]]"
         ></paper-icon-button>
       </template>
@@ -129,7 +142,7 @@ Polymer({
         attr-for-selected="id"
         selected="{{selectedPresetFilter}}"
       >
-        <paper-item id="" class="filter all-items" @tap="_clearFilter"
+        <paper-item id="" class="filter all-items" on-tap="_clearFilter"
           ><span>[[name]]</span></paper-item
         >
         <template is="dom-repeat" items="[[combinedPresetFilters]]">
@@ -139,7 +152,7 @@ Polymer({
               class="clear-filter"
               icon="icons:delete"
               title="Delete filter"
-              @tap="_deletePresetFilter"
+              on-tap="_deletePresetFilter"
               hidden="[[item.default]]"
             ></paper-icon-button>
           </paper-item>
@@ -147,7 +160,7 @@ Polymer({
       </paper-listbox>
     </paper-menu-button>
 
-    <div id="form" @tap="_startEditingFilter">
+    <div id="form" on-tap="_startEditingFilter">
       <iron-icon icon="search" hidden="[[!searchable]]"></iron-icon>
       <slot name="count"></slot>
       <h2 class="titleh2" hidden="[[_showFilterInput(editingFilter,alwaysShowInput)]]">
@@ -158,8 +171,8 @@ Polymer({
       <paper-input
         id="searchInput"
         hidden="[[!_showFilterInput(editingFilter,alwaysShowInput)]]"
-        @focused-changed="_searchInputFocusedChanged"
-        @keydown="_keyDownSearchInput"
+        on-focused-changed="_searchInputFocusedChanged"
+        on-keydown="_keyDownSearchInput"
         tabindex="1"
         value="{{userFilter}}"
         no-label-float=""
@@ -170,11 +183,11 @@ Polymer({
     <paper-icon-button
       icon="close"
       hidden="[[_hideClearButton(editingFilter,userFilter.length)]]"
-      @tap="_clearFilterAndFocus"
+      on-tap="_clearFilterAndFocus"
       id="clearFilterBtn"
     ></paper-icon-button>
     <paper-icon-button
-      @tap="_openDialogSaveFilter"
+      on-tap="_openDialogSaveFilter"
       icon="icons:save"
       hidden="[[!showSaveSearch]]"
       id="saveFilterBtn"
@@ -191,12 +204,12 @@ Polymer({
             label="Filter name"
             tabindex="1"
             autofocus=""
-            @keydown="_keyDownFilterName"
+            on-keydown="_keyDownFilterName"
           ></paper-input>
         </div>
         <div class="buttons">
-          <paper-button @tap="_dismissFilterDialog">Cancel</paper-button>
-          <paper-button dialog-confirm="" @tap="_saveFilter" class="confirm">Save</paper-button>
+          <paper-button on-tap="_dismissFilterDialog">Cancel</paper-button>
+          <paper-button dialog-confirm="" on-tap="_saveFilter" class="confirm">Save</paper-button>
         </div>
       </template>
     </vaadin-dialog>
