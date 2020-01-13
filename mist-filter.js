@@ -99,10 +99,10 @@ Polymer({
       .buttons {
         display: flex;
         justify-content: flex-end;
-        padding: 24px 0;
       }
 
       h2.dialog-title {
+        margin: 0;
         font-size: 20px;
         font-weight: 500;
       }
@@ -143,7 +143,7 @@ Polymer({
         selected="{{selectedPresetFilter}}"
       >
         <paper-item id="" class="filter all-items" on-tap="_clearFilter"
-          ><span>[[name]]</span></paper-item
+          ><span>all [[name]]</span></paper-item
         >
         <template is="dom-repeat" items="[[combinedPresetFilters]]">
           <paper-item id="[[item.filter]]" class="filter">
