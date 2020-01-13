@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-legacy-template-syntax */
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/paper-button/paper-button.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
@@ -18,12 +19,11 @@ Polymer({
       }
 
       paper-button.actions {
-        display: inline-block;
+        display: inline-flex;
         flex-wrap: nowrap;
         white-space: nowrap;
         width: auto;
         min-width: auto;
-        padding: 0.8em 1.57em 0.7em 0.57em;
         fill: inherit;
       }
 
@@ -87,7 +87,7 @@ Polymer({
     </style>
     <template is="dom-if" if="[[_hasActions(topActions.length)]]" restamp="">
       <template is="dom-repeat" items="[[topActions]]" as="action">
-        <paper-button @tap="_selectAction" class="visible actions">
+        <paper-button on-tap="_selectAction" class="visible actions">
           <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
         </paper-button>
       </template>
@@ -99,7 +99,7 @@ Polymer({
         </paper-button>
         <div class="dropdown-content" slot="dropdown-content">
           <template is="dom-repeat" items="[[moreActions]]" as="action">
-            <paper-button @tap="_selectAction" class="more actions">
+            <paper-button on-tap="_selectAction" class="more actions">
               <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
             </paper-button>
           </template>

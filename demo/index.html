@@ -22,7 +22,7 @@
     </custom-style>
   </head>
   <body>
-    <div class="vertical-section-container centered">
+    <!-- <div class="vertical-section-container centered">
       <h3>Basic mist-list demo</h3>
       <demo-snippet>
         <template>
@@ -107,7 +107,7 @@
             </script>
           </template>
         </demo-snippet>
-      </div>
+      </div> -->
       <div class="vertical-section-container centered">
         <h3>Initialize mist-list with toolbar and search input </h3>
         <demo-snippet>
@@ -125,6 +125,55 @@
                   "robert-childan": {"first_name":"Robert","last_name":"Childan"}
                 };
                 document.querySelector("mist-list#demo5").visible = ["last_name", "position"];
+              });
+            </script>
+          </template>
+        </demo-snippet>
+      </div>
+      <div class="vertical-section-container centered">
+        <h3>Initialize mist-list with selection and actions</h3>
+        <demo-snippet>
+          <template>
+            <mist-list id="demo6"></mist-list>
+            <script>
+              window.addEventListener("WebComponentsReady", () => {
+                document.querySelector("mist-list#demo6").toolbar = true;
+                document.querySelector("mist-list#demo6").selectable = true;
+                document.querySelector("mist-list#demo6").actions = [{
+                    'name': 'attach volume',
+                    'icon': 'device:storage',
+                    'confirm': false,
+                    'multi': false,
+                    'single': true
+                },{
+                    'name': 'create snapshot',
+                    'icon': 'image:add-a-photo',
+                    'confirm': true,
+                    'multi': false
+                },{
+                    'name': 'remove snapshot',
+                    'icon': 'image:monochrome-photos',
+                    'confirm': true,
+                    'multi': false
+                },{
+                    'name': 'revert to snapshot',
+                    'icon': 'social:party-mode',
+                    'confirm': true,
+                    'multi': false
+                },{
+                    'name': 'shell',
+                    'icon': 'vaadin:terminal',
+                    'confirm': false,
+                    'multi': true
+                }]
+                document.querySelector("mist-list#demo6").itemMap = {
+                  "john-smith": {"first_name":"John", "last_name":"Smith", "position": "Obergruppenführer", "test": ["a","b"]},
+                  "juliana-crain": {"first_name":"Juliana","last_name":"Crain"},
+                  "frank-frink": {"first_name":"Frank","last_name":"Frink"},
+                  "joe-blake": {"first_name":"Joe","last_name":"Blake", "position": "SS Agent"},
+                  "robert-childan": {"first_name":"Robert","last_name":"Childan"}
+                };
+                document.querySelector("mist-list#demo6").visible = ["last_name", "position"];
               });
             </script>
           </template>

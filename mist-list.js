@@ -132,6 +132,10 @@ Polymer({
         color: #424242;
       }
 
+      vaadin-grid:not([actions]) {
+        margin-top: -50px;
+      }
+
       a {
         color: var(--mist-list-link-color);
       }
@@ -237,18 +241,13 @@ Polymer({
       div#actions {
         background-color: #666;
         z-index: 3;
-        position: fixed;
-        padding: 10px 16px;
-        width: calc(100% - 32px);
-        height: 28px;
-        margin-bottom: -56px;
+        position: relative;
         color: #fff;
         display: flex;
         top: 0;
-      }
-
-      div#actions mist-check {
-        padding-top: 0px;
+        width: calc(100% - 32px);
+        border: 1px solid #666;
+        top: 1px;
       }
 
       app-toolbar {
@@ -304,6 +303,7 @@ Polymer({
         display: flex;
         opacity: 0.5;
         padding-right: 16px;
+        padding-left: 20px;
         align-self: center;
       }
 
@@ -363,8 +363,6 @@ Polymer({
       }
 
       mist-list-actions {
-        margin-top: 8px;
-        margin-left: 2px;
         fill: #fff;
       }
 
@@ -504,6 +502,15 @@ Polymer({
       </vaadin-dialog>
     </template>
 
+    <div
+      id="actions"
+      hidden="[[!selectedItems.length]]"
+      style$="width: [[headerWidth]]px; z-index: 99999;"
+    >
+      <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
+      <mist-list-actions actions="[[actions]]"></mist-list-actions>
+    </div>
+
     <vaadin-grid
       id="grid"
       data-provider="[[dataProvider]]"
@@ -513,7 +520,8 @@ Polymer({
       on-active-item-changed="_activeItemChanged"
       selection-mode="multi"
       multi-sort="[[multiSort]]"
-      theme="[[theme]] no-row-borders row-stripes"
+      theme$="[[theme]] no-row-borders row-stripes"
+      actions$="[[!selectedItems.length]]"
     >
       <template class="row-details">
         <div class="details-cell">
@@ -532,7 +540,7 @@ Polymer({
         <vaadin-grid-selection-column
           flex-grow="0"
           frozen=""
-          style="overflow: visible;"
+          style="overflow: visible !important;"
           width="50px"
           z-index="5"
         >
@@ -540,20 +548,12 @@ Polymer({
             <mist-check selected="{{selectAll}}" hidden="[[selectedItems.length]]"
               >[[selectedItems.length]]</mist-check
             >
-            <div
-              id="actions"
-              hidden="[[!selectedItems.length]]"
-              style="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999"
-            >
-              <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
-              <mist-list-actions actions="[[actions]]"></mist-list-actions>
-            </div>
           </template>
           <template>
             <mist-check
               class="item-check"
               selected="{{selected}}"
-              style="[[_computeIndicatorStyle(item,renderers.indicator)]]"
+              style$="[[_computeIndicatorStyle(item,renderers.indicator)]]"
               icon="[[_computeIcon(item, renderers.icon)]]"
               item="[[item]]"
             ></mist-check>
@@ -1151,7 +1151,7 @@ Polymer({
     )
       newHeight += 16;
     this.style.height = `${newHeight}px`;
-    this.set('headerWidth', this.$.grid.$.header.clientWidth);
+    this.updateHeaderWidth();
   },
 
   columnWidth(column, frozen) {
@@ -1624,12 +1624,18 @@ Polymer({
 
   _enterFullscreen() {
     this.set('fullscreen', true);
+    this.updateHeaderWidth();
     this.fire('enter-fullscreen');
   },
 
   _exitFullscreen() {
     this.set('fullscreen', false);
+    this.updateHeaderWidth();
     this.fire('exit-fullscreen');
+  },
+
+  updateHeaderWidth() {
+    this.set('headerWidth', this.$.grid.$.header.clientWidth);
   },
 
   _dismissDialog() {
