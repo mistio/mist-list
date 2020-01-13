@@ -140,29 +140,28 @@
                 document.querySelector("mist-list#demo6").toolbar = true;
                 document.querySelector("mist-list#demo6").selectable = true;
                 document.querySelector("mist-list#demo6").actions = [{
-                    'name': 'attach volume',
-                    'icon': 'device:storage',
+                    'name': 'favorite',
+                    'icon': 'icons:favorite-border',
                     'confirm': false,
                     'multi': false,
                     'single': true
                 },{
                     'name': 'create snapshot',
-                    'icon': 'image:add-a-photo',
+                    'icon': 'icons:attachment',
                     'confirm': true,
                     'multi': false
                 },{
                     'name': 'remove snapshot',
-                    'icon': 'image:monochrome-photos',
+                    'icon': 'icons:eject',
                     'confirm': true,
                     'multi': false
                 },{
                     'name': 'revert to snapshot',
-                    'icon': 'social:party-mode',
+                    'icon': 'icons:flight-takeoff',
                     'confirm': true,
                     'multi': false
                 },{
                     'name': 'shell',
-                    'icon': 'vaadin:terminal',
                     'confirm': false,
                     'multi': true
                 }]

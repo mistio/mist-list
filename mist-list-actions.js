@@ -22,8 +22,10 @@ Polymer({
         display: inline-flex;
         flex-wrap: nowrap;
         white-space: nowrap;
-        width: auto;
-        min-width: auto;
+        /* min-width: auto;
+        width: auto; */
+        overflow: hidden;
+        text-overflow: ellipsis;
         fill: inherit;
       }
 
@@ -47,7 +49,6 @@ Polymer({
 
       iron-icon {
         color: inherit;
-        margin-top: -2px;
         min-width: 24px;
         padding-right: 8px;
       }
@@ -88,7 +89,8 @@ Polymer({
     <template is="dom-if" if="[[_hasActions(topActions.length)]]" restamp="">
       <template is="dom-repeat" items="[[topActions]]" as="action">
         <paper-button on-tap="_selectAction" class="visible actions">
-          <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
+          <iron-icon icon="[[action.icon]]" hidden$="[[!action.icon]]"></iron-icon>
+          <span>[[action.name]]</span>
         </paper-button>
       </template>
     </template>
@@ -100,7 +102,8 @@ Polymer({
         <div class="dropdown-content" slot="dropdown-content">
           <template is="dom-repeat" items="[[moreActions]]" as="action">
             <paper-button on-tap="_selectAction" class="more actions">
-              <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
+              <iron-icon icon="[[action.icon]]" hidden$="[[!action.icon]]"></iron-icon>
+              <span>[[action.name]]</span>
             </paper-button>
           </template>
         </div>
@@ -147,6 +150,8 @@ Polymer({
 
   listeners: {
     'iron-resize': '_updateVisibleActions',
+    'list-resize': '_updateVisibleActions',
+    resize: '_updateVisibleActions',
   },
 
   attached() {
@@ -182,6 +187,7 @@ Polymer({
   },
 
   _updateVisibleActions() {
+    console.log('_updateVisibleActions', Math.floor(this.offsetWidth - 50) / 150);
     this.set('visibleActions', Math.floor(this.offsetWidth - 50) / 150);
   },
 

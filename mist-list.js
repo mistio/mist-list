@@ -508,7 +508,7 @@ Polymer({
       style$="width: [[headerWidth]]px; z-index: 99999;"
     >
       <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
-      <mist-list-actions actions="[[actions]]"></mist-list-actions>
+      <mist-list-actions id="listActions" actions="[[actions]]"></mist-list-actions>
     </div>
 
     <vaadin-grid
@@ -1465,6 +1465,7 @@ Polymer({
     } else if (this.count && this.count !== itemslength && this.selectAll) {
       this.set('selectAll', false);
     }
+    this.updateHeaderWidth();
   },
 
   _getComparisonFunction(column) {
@@ -1636,6 +1637,7 @@ Polymer({
 
   updateHeaderWidth() {
     this.set('headerWidth', this.$.grid.$.header.clientWidth);
+    if (this.$.listActions) this.$.listActions.fire('list-resize');
   },
 
   _dismissDialog() {
