@@ -3,6 +3,7 @@ import '@polymer/polymer/polymer-legacy.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
 import '@vaadin/vaadin-grid/vaadin-grid-sorter.js';
 import '@vaadin/vaadin-grid/vaadin-grid-selection-column.js';
+import '@vaadin/vaadin-grid/vaadin-grid-tree-column.js';
 import '@polymer/paper-button/paper-button.js';
 import '@vaadin/vaadin-dialog/vaadin-dialog.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
@@ -624,7 +625,19 @@ Polymer({
             <span class="header" hidden="[[!timeseries]]">[[_getTitle(column)]]</span>
           </template>
           <template>
-            <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+            <vaadin-grid-tree-toggle
+              leaf="[[!item.hasChildren]]"
+              expanded="{{expanded}}"
+              level="[[level]]"
+              hidden="[[!_is(column,treeHandleColumn)]]"
+            >
+              <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+            </vaadin-grid-tree-toggle>
+            <div
+              style="padding: 8px 0px;"
+              inner-h-t-m-l="[[_getBody(column, item)]]"
+              hidden="[[_is(column,treeHandleColumn)]]"
+            ></div>
           </template>
         </vaadin-grid-column>
       </template>
@@ -633,6 +646,7 @@ Polymer({
         <vaadin-grid-column
           resizable=""
           width="[[columnWidth(column)]]"
+          item-has-children-path="hasChildren"
           on-column-width-changed="_saveColumnWidth"
         >
           <template class="header">
@@ -647,7 +661,19 @@ Polymer({
             <span class="header" hidden="[[!timeseries]]">[[_getTitle(column)]]</span>
           </template>
           <template>
-            <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+            <vaadin-grid-tree-toggle
+              leaf="[[!item.hasChildren]]"
+              expanded="{{expanded}}"
+              level="[[level]]"
+              hidden="[[!_is(column,treeHandleColumn)]]"
+            >
+              <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
+            </vaadin-grid-tree-toggle>
+            <div
+              style="padding: 8px 0px;"
+              inner-h-t-m-l="[[_getBody(column, item)]]"
+              hidden="[[_is(column,treeHandleColumn)]]"
+            ></div>
           </template>
         </vaadin-grid-column>
       </template>
@@ -983,6 +1009,11 @@ Polymer({
       type: String,
       value: '',
     },
+
+    treeHandleColumn: {
+      type: String,
+      value: '',
+    },
   },
 
   observers: [
@@ -994,6 +1025,7 @@ Polymer({
     '_selectAllToggled(selectAll)',
     '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
     '_visibleChanged(visible)',
+    '_updateTreeHandleColumn(visible,frozen)',
   ],
 
   listeners: {
@@ -1056,6 +1088,14 @@ Polymer({
     if (this.streaming) {
       this.fire('streaming-list-detached', this);
     }
+  },
+
+  _updateTreeHandleColumn(visible, frozen) {
+    let col = frozen ? frozen[0] : visible && visible[0];
+    if (!col) {
+      col = this.columns && this.columns[0];
+    }
+    this.set('treeHandleColumn', col);
   },
 
   _toggleItemExpand(e) {
@@ -1347,7 +1387,6 @@ Polymer({
   },
 
   _activeItemChanged(e) {
-    console.log('_activeItemChanged', e);
     const grid = e.target;
     this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
     // we should either redirect to the proper route path, or expand the item
@@ -1658,5 +1697,9 @@ Polymer({
   _hasVisibleColumns() {
     if (this.visible && this.visible.length > 0) return true;
     return false;
+  },
+
+  _is(a, b) {
+    return a === b;
   },
 });
