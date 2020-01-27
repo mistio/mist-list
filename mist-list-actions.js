@@ -187,7 +187,7 @@ Polymer({
   },
 
   _updateVisibleActions() {
-    this.set('visibleActions', Math.floor(this.offsetWidth - 50) / 150);
+    this.set('visibleActions', Math.floor(this.offsetWidth - 50) / 170);
   },
 
   _hasActions(length) {

@@ -123,6 +123,7 @@ Polymer({
       mist-list-actions {
         width: 100%;
         justify-content: flex-start;
+        font-size: var(--mist-list-actions-font-size,14px);
       }
 
       vaadin-grid {
