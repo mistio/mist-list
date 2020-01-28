@@ -92,7 +92,7 @@ Polymer({
   observers: ['_computeDataProvider(filter, url)'],
 
   _computeDataProvider(filter, url) {
-    console.log('_computeDataProvider', filter, url)
+    // console.log('_computeDataProvider', filter, url)
     if (this.url && this.url.length)
       // eslint-disable-next-line func-names
       this.debounce(

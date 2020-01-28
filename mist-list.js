@@ -1100,7 +1100,7 @@ Polymer({
   },
 
   _toggleItemExpand(e) {
-    console.log('_toggleItemExpand', e);
+    // console.log('_toggleItemExpand', e);
     if (e.target.active) {
       this.$.grid.openItemDetails(e.target.__dataHost.item);
     } else {

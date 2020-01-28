@@ -613,6 +613,6 @@ Polymer({
   },
 
   _hideClearButton() {
-    return !this.editingFilter || this.userFilter.length === 0;
+    return !this.editingFilter || (this.userFilter && this.userFilter.length === 0);
   },
 });
