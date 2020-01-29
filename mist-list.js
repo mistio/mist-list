@@ -1191,6 +1191,8 @@ Polymer({
       this.$.grid.$.items.scrollHeight <= this.scrollHeight
     )
       newHeight += 16;
+    if (this.toolbar)
+      newHeight += 57;
     this.style.height = `${newHeight}px`;
     this.updateHeaderWidth();
   },
