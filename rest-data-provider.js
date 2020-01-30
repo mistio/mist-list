@@ -85,7 +85,7 @@ Polymer({
     finished: {
       type: Boolean,
       value: false,
-      notify: true,
+      notify: true
     },
   },
 
@@ -136,10 +136,13 @@ Polymer({
                 if (!_this.timeseries) {
                   _this.count = response.count;
                   items = response.items;
+                  _this.set('finished', true);
                 } else {
                   items = response;
                   _this.count += items.length;
-                  if (items.length < opts.pageSize) _this.set('finished', true);
+                  if (items.length < opts.pageSize){
+                    _this.set('finished', true);
+                  }
                 }
                 _this.received += items.length;
                 if (items && items.length) {
@@ -165,12 +168,8 @@ Polymer({
                   }
                 }
                 callback(items, _this.count);
-                if (_this.parentElement) {
-                  // eslint-disable-next-line func-names
-                  _this.parentElement.async(function() {
-                    this.fire('resize');
-                  }, 1000);
-                }
+                _this.set("itemMap",  _this.itemMap);
+                _this.fire('resize');
               }
               _this.loading = false;
             };
