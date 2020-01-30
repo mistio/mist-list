@@ -410,7 +410,7 @@ Polymer({
       ></rest-data-provider>
     </template>
     <slot id="slottedHeader" name="header"></slot>
-    <app-toolbar hidden="[[!toolbar]]">
+    <app-toolbar id="toolbar" hidden="[[!toolbar]]">
       <mist-filter
         id="[[id]]"
         name="[[name]]"
@@ -585,7 +585,7 @@ Polymer({
                 slot="dropdown-trigger"
                 style="height: 36px; width: 36px;"
               ></paper-icon-button>
-              <paper-listbox class="dropdown-content" slot="dropdown-content">
+              <paper-listbox id="listbox" class="dropdown-content" slot="dropdown-content">
                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                 <paper-item on-tap="_openDialogExportCsv" disabled="[[!apiurl]]"
                   >Download CSV</paper-item
@@ -1015,12 +1015,17 @@ Polymer({
       type: String,
       value: '',
     },
+
+    resizeCounter: {
+      type: Number,
+      value: 0,
+    },
   },
 
   observers: [
     '_updateMenuButtonStyle(selectable, columnMenu, selectedItemsLength, count)',
     '_itemsUpdated(items)',
-    '_itemMapUpdated(itemMap.*)',
+    '_itemMapUpdated(itemMap, itemMap.*)',
     '_filterItems(items, items.length, combinedFilter, filterMethod)',
     '_selectedItemsChanged(selectedItems.length)',
     '_selectAllToggled(selectAll)',
@@ -1039,18 +1044,6 @@ Polymer({
 
   attached() {
     const _this = this;
-    if (this.resizable) {
-      // eslint-disable-next-line func-names
-      this.resizeHandler = function() {
-        _this._debounceResize();
-      };
-      window.addEventListener('resize', this.resizeHandler);
-      this._debounceResize();
-      // eslint-disable-next-line func-names
-      this.async(function() {
-        this.fire('resize');
-      }, 1000);
-    }
 
     if (this.infinite) {
       this.listen(this.querySelector('vaadin-grid'), 'wheel', '_onWheel');
@@ -1083,9 +1076,6 @@ Polymer({
   },
 
   detached() {
-    if (this.resizable) {
-      window.removeEventListener('resize', this.resizeHandler);
-    }
     if (this.streaming) {
       this.fire('streaming-list-detached', this);
     }
@@ -1106,13 +1096,17 @@ Polymer({
     } else {
       this.$.grid.closeItemDetails(e.target.__dataHost.item);
     }
+    this.fire('resize', {detailsOpenedItems: this.$.grid.detailsOpenedItems.length || 0})
   },
 
   _computeGridWidth() {
     return `${this.$.grid.$.header.clientWidth}px`;
   },
 
-  _itemMapUpdated() {
+  _itemMapUpdated(itemMap) {
+    this.resizeCounter = 0;
+    this.fire('itemMap-changed', { itemMap: itemMap });
+    this.fire('resize');
     if (this.itemMap && !this.rest) {
       const that = this;
       this.debounce(
@@ -1150,51 +1144,57 @@ Polymer({
     }
   },
 
-  _debounceResize() {
-    // eslint-disable-next-line func-names
-    this.debounce(
-      'resize',
-      function() {
-        this.fire('resize');
-      },
-      500,
-    );
-  },
-
-  _windowResize() {
+  _windowResize(e) {
+    console.log("=================", this.resizeCounter, e);
     if (!this.resizable) {
       return;
     }
-    let { top } = this.getBoundingClientRect();
-    let newHeight;
-    const itemsHeight = ((this.$.grid.items && this.$.grid.items.length) || 0) * 56;
+    const windowHeight = window.innerHeight;
+    const mistListTop = this.getBoundingClientRect().top;
+    const toolbarHeight = this.toolbar ? this.$.toolbar.getBoundingClientRect().height + 2 : 0; // +2 for borders
+    const itemHeight = 56; // default for theme compact
+    const itemsHeight = ((this.$.grid.items && this.$.grid.items.length) + 1 || 1) * itemHeight + 2; // +1 for header row
     const outerScroller = this.$.grid.$.outerscroller;
     const hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth;
-    let heightOffset = 36;
-    // Calculate and add the height of the content slotted in the header, so
-    // it does not push mist-list below visible height.
     const headerSlotElements = this.$.slottedHeader.assignedElements();
+    let heightOffset = 36 + 16; // adds top & bottom space 
+    let headerElementsHeight = 0;
+    let detailsOpenedItemsHeight = 0;
+    let maxAllowedHeight = 0;
+    let newHeight = 0;
+
+    // Calculate the height of the slots of the header
     if (headerSlotElements.length) {
       // eslint-disable-next-line no-plusplus
+      console.log("height : slots", headerSlotElements.length);
       for (let i = 0; i < headerSlotElements.length; i++) {
-        top += headerSlotElements[i].getBoundingClientRect().height;
+        headerElementsHeight += headerSlotElements[i].getBoundingClientRect().height;
       }
     }
-    if (hasVerticalScroll) {
-      heightOffset += 19;
+
+    // Calculate the height of open-details items
+    if (e.detail.detailsOpenedItems) {
+      detailsOpenedItemsHeight += e.detail.detailsOpenedItems * 275;
     }
-    if (this.toolbar)
-      newHeight = Math.min(window.innerHeight - top - 80, itemsHeight + heightOffset);
-    else newHeight = Math.min(window.innerHeight - top - 36, itemsHeight + heightOffset);
-    if (
-      this.$.grid.$.items.scrollWidth > itemsHeight &&
-      this.$.grid.$.items.scrollHeight <= this.scrollHeight
-    )
-      newHeight += 16;
-    if (this.toolbar)
-      newHeight += 57;
-    this.style.height = `${newHeight}px`;
+
+    // Calculate new list-height and max-allowed height
+    newHeight = itemsHeight + detailsOpenedItemsHeight + toolbarHeight + headerElementsHeight;
+    maxAllowedHeight = windowHeight - mistListTop - heightOffset;
+
+    // Choose min of two
+    newHeight = Math.min(maxAllowedHeight, newHeight);
+
+    // Add vertical scroll height if necessary
+    if (hasVerticalScroll) {
+      newHeight += 19;
+    }
+
+    // Set if different
+    if (this.style.height != `${newHeight}px`) {
+      this.style.height = `${newHeight}px`;
+    }
     this.updateHeaderWidth();
+    this.resizeCounter ++;
   },
 
   columnWidth(column, frozen) {
@@ -1240,6 +1240,7 @@ Polymer({
         '_filterListItems',
         function() {
           // console.log('filterItems exec', filter, this.id);
+          const _this = this;
           const newItems = this.items.filter(this._applyFilter.bind(this));
           this.set('filteredItems', newItems);
           this.fire('mist-list-filtered-items-length-changed', {
@@ -1247,9 +1248,9 @@ Polymer({
           });
           this.$.grid.set('items', this.filteredItems);
           // eslint-disable-next-line func-names
-          this.async(function() {
-            this.fire('resize');
-          }, 200);
+          // this.async(function() {
+            _this.fire('resize');
+          // }, 200);
 
           if (this.selectedItems.length) {
             // eslint-disable-next-line func-names
@@ -1268,9 +1269,9 @@ Polymer({
                 }
                 this.set('selectedItems', newSelectedItems);
                 // eslint-disable-next-line func-names
-                this.async(function() {
-                  this.fire('resize');
-                }, 100);
+                // this.async(function() {
+                  _this.fire('resize');
+                // }, 100);
               },
               200,
             );
@@ -1279,7 +1280,7 @@ Polymer({
             this.debounce(
               'iron-resize',
               function() {
-                this.$.grid.fire('iron-resize');
+                this.$.grid.notifyResize();
               },
               100,
             );
@@ -1356,8 +1357,11 @@ Polymer({
   _itemsUpdated() {
     // console.log('_itemsUpdated', this.items && this.items.length);
     if (this.items) {
+      this.resizeCounter = 0;
       this.set('received', this.items.length);
       this.set('count', this.items.length);
+      this.fire('items-changed', { items: this.items });
+      this.fire('resize');
     }
     if (this.items && this.items.length) {
       // update column map using response.items values
@@ -1554,7 +1558,7 @@ Polymer({
             this.$.grid._cache.items[i] = this.$.grid._cache.items[i - 1];
           }
           this.$.grid._cache.items[0] = item.detail;
-          this.$.grid.fire('iron-resize');
+          this.$.grid.notifyResize();
         }
       });
   },
