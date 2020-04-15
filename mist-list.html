@@ -974,7 +974,7 @@
                             for (var i = 0; i < _this.selectedItems.length; i++) {
                                 var j = this.filteredItems.findIndex(
                                     function (item) {
-                                        return item.id === _this.selectedItems[i].id
+                                        return _this.selectedItems[i] && item.id === _this.selectedItems[i].id
                                     }
                                 );
                                 if (j > -1)
