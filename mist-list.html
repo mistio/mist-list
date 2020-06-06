@@ -490,6 +490,7 @@
 
         <div class="nodata" hidden$="[[!showNoData]]">
             <slot name="no-items-found"></slot>
+            <span hidden$="[[!userFilter]]"> search: [[userFilter]] </span>
         </div>
 
         <iron-ajax id="getCsv" method="GET" loading="{{loadingCSV}}" on-request="_csvRequest" on-response="_csvResponse"
