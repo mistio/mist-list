@@ -32,7 +32,7 @@
                 width: 100%;
             }
 
-            #form {
+            div[id^="form-"] {
                 display: inherit;
                 max-height: 48px;
                 flex: 1 100%;
@@ -114,7 +114,7 @@
             </paper-listbox>
         </paper-menu-button>
 
-        <div id="form" on-tap="_startEditingFilter">
+        <div id$="form-[[id]]" on-tap="_startEditingFilter">
             <iron-icon icon="search" hidden$=[[!searchable]]></iron-icon>
             <slot name="count"></slot>
             <h2 class="titleh2" hidden$=[[_showFilterInput(editingFilter,alwaysShowInput)]]>
@@ -149,6 +149,10 @@
     Polymer({
         is: 'mist-filter',
         properties: {
+            id: {
+                type: String,
+                reflectToAttribute: true
+            },
             name: {
                 type: String,
                 reflectToAttribute: true
@@ -232,7 +236,8 @@
             displayName: {
                 type: String,
                 computed: '_displayName(name,selectedPresetFilter,userFilter,combinedPresetFilters)',
-                notify: true
+                notify: true,
+                value: ''
             }
         },
 
@@ -336,20 +341,18 @@
             this.set('selectedPresetFilter', this.userFilter);
         },
 
-        _displayName: function (name, selectedPresetFilter, userFilter) {
-            if (!this.selectedPresetFilter || !this.selectedPresetFilter.length) {
-                return this.name && this.name.length ? this.name : 'All';
-            } else {
-                var that = this,
-                    filter = this.combinedPresetFilters.find(function (f) {
-                        return that.selectedPresetFilter == f.filter;
-                    });
-                if (filter) {
-                    return filter.name;
-                } else {
-                    return this.name ? '"' + userFilter + '"' + this.name.replace('All', '') : '"' + userFilter + '"';
-                }
+        _displayName: function (name, selectedPresetFilter, userFilter, combinedPresetFilters) {
+            var filters = this.combinedPresetFilters || [],
+                filter = filters.find(function (f) {
+                    return selectedPresetFilter == f.filter;
+                });
+            if (filter) {
+                return filter.name;
             }
+            if (!this.userFilter && (!this.selectedPresetFilter || !this.selectedPresetFilter.length)) {
+                return this.name && this.name.length ? this.name : 'All';
+            }
+            return this.name ? '"' + userFilter + '"' + this.name.replace('All', '') : '"' + userFilter + '"';
         },
 
         _openDialogSaveFilter: function (e) {
