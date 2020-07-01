@@ -21,8 +21,8 @@
     "@polymer/paper-listbox": "^3.0.0",
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
-    "@vaadin/vaadin-dialog": "^2.2.1",
-    "@vaadin/vaadin-grid": "^5.0.5",
+    "@vaadin/vaadin-dialog": "^2.4.2",
+    "@vaadin/vaadin-grid": "^5.5.6",
     "moment": "^2.24.0"
   },
   "devDependencies": {
@@ -83,5 +83,18 @@
       "prettier --write",
       "git add"
     ]
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mistio/mist-list.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/mistio/mist-list/issues"
+  },
+  "homepage": "https://github.com/mistio/mist-list#readme"
 }
