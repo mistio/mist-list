@@ -8,6 +8,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@vaadin/vaadin-dialog/vaadin-dialog.js';
 import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 Polymer({
   _template: html`
         <style>

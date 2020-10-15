@@ -11,14 +11,15 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
-//import 'json-viewer/json-viewer.js';
+import '@advanced-rest-client/json-viewer/json-viewer.js';
+import  "@mistio/sortable-list/sortable-list.js";
 import './mist-check.js';
 import './mist-filter.js';
 import './mist-list-actions.js';
 import './rest-data-provider.js';
 import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-//import 'moment/moment.js';
+
 const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaadin-grid">
@@ -410,7 +411,7 @@ Polymer({
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
                     <div class="vaadin-dialog-scrollable">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
-                            <sortable-list id="columnsSortable" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
+                        <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
                                     <paper-item label="[[column]]" class="column-item">
                                         <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
