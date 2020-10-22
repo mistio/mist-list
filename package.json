@@ -8,7 +8,7 @@
     "Christina Papakonstantinou <xristina@mist.io>"
   ],
   "dependencies": {
-    "@mistio/sortable-list": "^1.0.0",
+    "@mistio/sortable-list": "^1.0.1",
     "@polymer/iron-resizable-behavior": "^3.0.0",
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-checkbox": "^3.0.0",
