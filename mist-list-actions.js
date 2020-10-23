@@ -3,6 +3,7 @@ import '@polymer/paper-button/paper-button.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 Polymer({
   _template: html`
         <style include="shared-styles">
@@ -153,7 +154,7 @@ Polymer({
       'iron-resize': '_updateVisibleActions'
   },
 
-  attached: function () {
+  attached() {
       this._updateVisibleActions();
   },
 
@@ -169,28 +170,28 @@ Polymer({
       }
   },
 
-  _actionsChanged: function (actions) {
+  _actionsChanged(actions) {
       if (actions) {
           this._updateVisibleActions();
       }
   },
 
-  _computeTopActions: function (actions, visibleActions) {
+  _computeTopActions(_actions, _visibleActions) {
       if (this.actions)
           return this.actions.slice(0, this.visibleActions);
   },
 
-  _computeMoreActions: function (actions, visbleActions) {
+  _computeMoreActions(_actions, _visbleActions) {
       if (this.actions)
           return this.actions.slice(this.visibleActions);
   },
 
-  _updateVisibleActions: function (e) {
+  _updateVisibleActions(_e) {
       var offsetWidth = this.offsetWidth;
       this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
   },
 
-  _hasActions: function (length) {
+  _hasActions(length) {
       return length > 0
   }
 });
