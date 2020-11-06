@@ -94,7 +94,7 @@ Polymer({
             }
 
         </style>
-        
+
         <paper-menu-button id="presetFilters" horizontal-align="left" vertical-align="top" vertical-offset="40" hidden\$="[[!combinedPresetFilters.length]]">
             <template is="dom-if" if="[[!_showButton(buttonName)]]" restamp="">
                     <paper-icon-button icon="filter-list" slot="[[_computeSlot(buttonName,'icon')]]" class="dropdown-trigger" alt="select filter" title="Select preset filters" style="margin-left: -10px; margin-right: 4px" hidden\$="[[buttonName.length]]"></paper-icon-button>
@@ -126,7 +126,7 @@ Polymer({
             </paper-input>
         </div>
         <paper-icon-button icon="close" hidden\$="[[_hideClearButton(editingFilter,userFilter.length)]]" on-tap="_clearFilterAndFocus" id="clearFilterBtn"></paper-icon-button>
-        <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden\$="[[!showSaveSearch]]" id="saveFilterBtn">save
+        <paper-icon-button on-tap="_openDialogSaveFilter" icon="icons:save" hidden\$="[[!showSaveSearch]]" id="saveFilterBtn" title="Save filter">save
             filter</paper-icon-button>
         <vaadin-dialog id="filterDialog" aria-label="styled">
             <template>
@@ -268,7 +268,7 @@ Polymer({
           this.set('userFilter', filter_value);
           console.log('get userFilter', this.id, this.name, this.userFilter);
           this.$.filterSelect.select(this.userFilter);
-          // let display input if there is a query stored, which dows not belong to saved filters 
+          // let display input if there is a query stored, which does not belong to saved filters
           if (!this.$.filterSelect.selectedItem || this.$.filterSelect.selectedItem.filter != this.userFilter) {
               this.set('editingFilter', true);
           }
@@ -457,7 +457,7 @@ Polymer({
       // ENTER
       if (e.keyCode === 13 && this.$.searchInput.focused) {
           this._updateSelectedFilter(this.userFilter);
-          // stop editing only if 
+          // stop editing only if
           if (this.userFilter == this.selectedPresetFilter) {
               this.set('editingFilter', false);
           }
