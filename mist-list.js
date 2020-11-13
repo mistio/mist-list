@@ -9,6 +9,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@advanced-rest-client/json-viewer/json-viewer.js';
@@ -53,6 +54,7 @@ $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaad
             [part~="cell"] {
                 /* Styles that affect all grid cells, including header, body and footer cells */
                 border-bottom: 1px solid #dbdbdb;
+                text-align: center;
             }
 
             [part~="body-cell"] {
@@ -167,7 +169,7 @@ Polymer({
                 display: block;
                 font-family: monospace;
                 overflow-x: auto;
-                overflow-y: scroll;
+                overflow-y: auto;
                 height: 266px;
                 margin: 0 0px 0 34px;
                 border-left: 1px dashed #ddd;
@@ -338,6 +340,8 @@ Polymer({
 
             paper-item.column-item {
                 cursor: grab;
+                width: 40em;
+                margin: 0px auto;
             }
 
             #presetFilters {
@@ -392,13 +396,13 @@ Polymer({
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
         <slot id="slottedHeader" name="header"></slot>
-        <app-toolbar hidden\$="[[!toolbar]]">
-            <mist-filter id\$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
-                <span class="count" hidden\$="[[timeseries]]" slot="count">
+        <app-toolbar hidden$="[[!toolbar]]">
+            <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
+                <span class="count" hidden$="[[timeseries]]" slot="count">
                     <sub hidden="[[!count]]"><template is="dom-if" if="[[!_hasReceivedAll(received,count)]]" restamp="">[[received]]/</template>[[count]]</sub>
                 </span>
             </mist-filter>
-            <span hidden\$="[[!enableFullscreen]]">
+            <span hidden$="[[!enableFullscreen]]">
                 <paper-icon-button icon="icons:fullscreen" hidden\$="[[fullscreen]]" on-tap="_enterFullscreen" id="fullscreenBtn"></paper-icon-button>
                 <paper-icon-button icon="icons:fullscreen-exit" hidden\$="[[!fullscreen]]" on-tap="_exitFullscreen" id="exitFullscreenBtn"></paper-icon-button>
             </span>
@@ -409,11 +413,12 @@ Polymer({
                 <template>
                     <h2 class="dialog-title">Select columns and order</h2>
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
-                    <div class="vaadin-dialog-scrollable">
+                    <div class="vaadin-dialog">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
                         <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
                                     <paper-item label="[[column]]" class="column-item">
+                                        <iron-icon icon="swap-vert" style="fill: #a6a6a6"></iron-icon>
                                         <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
                                     </paper-item>
                                 </template>
@@ -471,23 +476,23 @@ Polymer({
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen="" style="z-index: -1">
                     <template class="header" style="z-index: -1">
                         <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="45" class="column-menu" style\$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
+                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 40px; width: 48px;"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
-                                <paper-item on-tap="_openDialogExportCsv" disabled\$="[[!apiurl]]">Download CSV</paper-item>
+                                <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
                             </paper-listbox>
                         </paper-menu-button>
                     </template>
                     <template>
-                        <paper-icon-button icon="icons:arrow-drop-down" style\$="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;" toggles="" active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden\$="[[!expands]]" on-active-changed="_toggleItemExpand"></paper-icon-button>
+                        <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;" toggles="" active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden$="[[!expands]]" on-active-changed="_toggleItemExpand"></paper-icon-button>
                     </template>
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
-                <vaadin-grid-column frozen="" resizable="" width\$="[[columnWidth(column,frozenWidth)]]" on-column-width-changed="_saveColumnWidth">
+                <vaadin-grid-column frozen="" resizable="" width$="[[columnWidth(column,frozenWidth)]]" on-column-width-changed="_saveColumnWidth">
                     <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
                         <vaadin-grid-sorter style="z-index: -10000" hidden="[[timeseries]]" path="[[column]]" direction\$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" id\$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
-                        <span class="header" hidden\$="[[!timeseries]]">[[_getTitle(column)]]</span>
+                        <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
                     </template>
                     <template>
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(column, item)]]"></div>
@@ -1185,7 +1190,6 @@ Polymer({
               newOrder.push(el.querySelector('paper-checkbox').textContent.trim());
           }
       });
-
       this.set('visible', newOrder);
       this._saveVisibleColumns();
   },
