@@ -413,7 +413,7 @@ Polymer({
                 <template>
                     <h2 class="dialog-title">Select columns and order</h2>
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
-                    <div class="vaadin-dialog">
+                    <div class="vaadin-dialog-scrollable">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
                         <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
