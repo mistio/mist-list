@@ -54,7 +54,6 @@ $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaad
             [part~="cell"] {
                 /* Styles that affect all grid cells, including header, body and footer cells */
                 border-bottom: 1px solid #dbdbdb;
-                text-align: center;
             }
 
             [part~="body-cell"] {
