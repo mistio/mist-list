@@ -51,6 +51,10 @@ $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaad
                 background-image: linear-gradient(rgba(255, 255, 141, 0.8), rgba(255, 255, 141, .7)) !important;
             }
 
+            [part~="cell"] ::slotted(vaadin-grid-cell-content){
+                text-overflow: unset;
+            }
+
             [part~="cell"] {
                 /* Styles that affect all grid cells, including header, body and footer cells */
                 border-bottom: 1px solid #dbdbdb;
@@ -475,7 +479,7 @@ Polymer({
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen="" style="z-index: -1">
                     <template class="header" style="z-index: -1">
                         <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="45" class="column-menu" style\$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 40px; width: 48px;"></paper-icon-button>
+                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
