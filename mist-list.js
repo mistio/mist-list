@@ -261,7 +261,7 @@ Polymer({
             }
 
             vaadin-dialog {
-                width: 400px;
+                width: 500px;
                 max-width: 100%;
                 font-family: inherit;
             }
@@ -277,7 +277,7 @@ Polymer({
                 overflow-y: scroll;
                 flex-wrap: wrap;
                 justify-content: flex-start;
-                width: 500px;
+                width: 400px;
                 padding: 0;
                 max-height: 500px;
             }
@@ -361,7 +361,7 @@ Polymer({
                 transform: scale(.7);
             }
 
-            vaadin-dialog>.buttons {
+            vaadin-dialog.buttons {
                 padding: 24px;
             }
 
@@ -418,7 +418,7 @@ Polymer({
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
                     <div class="vaadin-dialog-scrollable">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
-                        <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
+                        <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-end="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
                                     <paper-item label="[[column]]" class="column-item">
                                         <iron-icon icon="swap-vert" style="fill: #a6a6a6"></iron-icon>
@@ -1309,11 +1309,13 @@ Polymer({
       return expands && '46px' || '36px';
   },
 
-  _openDialogSelectColumns: function (e) {
+  _openDialogSelectColumns: function (_e) {
+      this.shadowRoot.querySelector('.dropdown-content').selected = undefined;
       this.shadowRoot.querySelector('#columnsDialog').opened = true;
   },
 
-  _openDialogExportCsv: function (e) {
+  _openDialogExportCsv: function (_e) {
+      this.shadowRoot.querySelector('.dropdown-content').selected = undefined;
       this.shadowRoot.querySelector('#csvDialog').opened = true;
   },
 
