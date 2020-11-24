@@ -51,6 +51,10 @@ $_documentContainer.innerHTML = `<dom-module id="mist-list-grid" theme-for="vaad
                 background-image: linear-gradient(rgba(255, 255, 141, 0.8), rgba(255, 255, 141, .7)) !important;
             }
 
+            [part~="cell"] ::slotted(vaadin-grid-cell-content){
+                text-overflow: unset;
+            }
+
             [part~="cell"] {
                 /* Styles that affect all grid cells, including header, body and footer cells */
                 border-bottom: 1px solid #dbdbdb;
@@ -257,7 +261,7 @@ Polymer({
             }
 
             vaadin-dialog {
-                width: 400px;
+                width: 500px;
                 max-width: 100%;
                 font-family: inherit;
             }
@@ -273,7 +277,7 @@ Polymer({
                 overflow-y: scroll;
                 flex-wrap: wrap;
                 justify-content: flex-start;
-                width: 500px;
+                width: 400px;
                 padding: 0;
                 max-height: 500px;
             }
@@ -357,7 +361,7 @@ Polymer({
                 transform: scale(.7);
             }
 
-            vaadin-dialog>.buttons {
+            vaadin-dialog.buttons {
                 padding: 24px;
             }
 
@@ -414,7 +418,7 @@ Polymer({
                     <p>Select the list's visible columns. Drag to arrange their order.</p>
                     <div class="vaadin-dialog-scrollable">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
-                        <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-finish="_onSortFinish">
+                        <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-end="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
                                     <paper-item label="[[column]]" class="column-item">
                                         <iron-icon icon="swap-vert" style="fill: #a6a6a6"></iron-icon>
@@ -475,7 +479,7 @@ Polymer({
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen="" style="z-index: -1">
                     <template class="header" style="z-index: -1">
                         <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="45" class="column-menu" style\$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 40px; width: 48px;"></paper-icon-button>
+                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
@@ -1305,11 +1309,13 @@ Polymer({
       return expands && '46px' || '36px';
   },
 
-  _openDialogSelectColumns: function (e) {
+  _openDialogSelectColumns: function (_e) {
+      this.shadowRoot.querySelector('.dropdown-content').selected = undefined;
       this.shadowRoot.querySelector('#columnsDialog').opened = true;
   },
 
-  _openDialogExportCsv: function (e) {
+  _openDialogExportCsv: function (_e) {
+      this.shadowRoot.querySelector('.dropdown-content').selected = undefined;
       this.shadowRoot.querySelector('#csvDialog').opened = true;
   },
 

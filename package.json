@@ -1,7 +1,7 @@
 {
   "description": "Flexible list element based on vaadin-grid",
   "name": "@mistio/mist-list",
-  "version": "3.0.7",
+  "version": "3.0.9",
   "main": "mist-list.js",
   "contributors": [
     "Dimitris Moraitis <dimo@mist.io>",
@@ -22,7 +22,7 @@
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.4.1",
     "@vaadin/vaadin-dialog": "^2.4.5",
-    "@vaadin/vaadin-grid": "^5.7.4"
+    "@vaadin/vaadin-grid": "github:mistio/vaadin-grid#custom-compare-with-sorter"
   },
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
