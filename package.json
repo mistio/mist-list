@@ -22,7 +22,7 @@
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.4.1",
     "@vaadin/vaadin-dialog": "^2.4.5",
-    "@vaadin/vaadin-grid": "github:mistio/vaadin-grid#custom-compare-with-sorter"
+    "@vaadin/vaadin-grid": "git+https://github.com/mistio/vaadin-grid.git#ES6-custom-compare"
   },
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
