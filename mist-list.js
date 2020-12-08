@@ -806,6 +806,11 @@ Polymer({
       justAttached: {
           type: Boolean,
           value: true
+      },
+
+      columnsDialogItems:{
+          type: Array,
+          value: []
       }
   },
 
@@ -816,7 +821,8 @@ Polymer({
       '_selectedItemsChanged(selectedItems.length)',
       '_selectAllToggled(selectAll)',
       '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
-      '_visibleChanged(visible)'
+      '_visibleChanged(visible)',
+      '_columnsDialogClosed(columnsDialogOpened)'
   ],
 
   listeners: {
@@ -1177,27 +1183,35 @@ Polymer({
       return this.received >= this.count
   },
 
-  _onSortStart: function(e) {
+  _onSortStart(_e) {
       // this.shadowRoot.querySelector('vaadin-dialog-scrollable')
   },
 
-  _onSortFinish: function(e) {
-      var newOrder = [];
-      var overlay = document.getElementById('overlay');
-      var content = overlay.shadowRoot.querySelector('div[part="content"]');
-      var list = content.shadowRoot.querySelector('sortable-list');
-      var elements = list.querySelectorAll('paper-item');
-
-      elements.forEach(function(el){
+  _onSortFinish(_e) {
+      const newOrder = [];
+      const overlay = document.getElementById('overlay');
+      const content = overlay.shadowRoot.querySelector('div[part="content"]');
+      const list = content.shadowRoot.querySelector('sortable-list');
+      const elements = list.querySelectorAll('paper-item');
+      const allItemsList = [];
+      elements.forEach((el) => {
+          const text = el.querySelector('paper-checkbox').textContent.trim()
           if (el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]').textContent) {
-              newOrder.push(el.querySelector('paper-checkbox').textContent.trim());
+              newOrder.push(text);
           }
+          allItemsList.push(text);
       });
       this.set('visible', newOrder);
       this._saveVisibleColumns();
+      this.set('columnsDialogItems', allItemsList);
+  },
+  _columnsDialogClosed(state) {
+      if(!state && this.columnDialogItems){
+          this.set('columns', this.columnsDialogItems);
+      }
   },
 
-  _checkboxChanged: function (e) {
+  _checkboxChanged(e) {
       // console.log('_checkboxChanged', e.model.column, e.target.active, e.model.item);
       if (e.target.active && this.visible.indexOf(e.model.column) == -1) {
           this.push('visible', e.model.column);
