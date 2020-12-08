@@ -1206,7 +1206,7 @@ Polymer({
       this.set('columnsDialogItems', allItemsList);
   },
   _columnsDialogClosed(state) {
-      if(!state && this.columnDialogItems){
+      if(!state && this.columnsDialogItems){
           this.set('columns', this.columnsDialogItems);
       }
   },
