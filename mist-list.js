@@ -420,9 +420,9 @@ Polymer({
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
                         <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-end="_onSortFinish">
                                 <template id="columnsSortableRepeater" is="dom-repeat" items="[[columns]]" as="column">
-                                    <paper-item label="[[column]]" class="column-item">
-                                        <iron-icon icon="swap-vert" style="fill: #a6a6a6"></iron-icon>
+                                    <paper-item label="[[column]]" class="column-item" style="display: flex; justify-content: space-between;">
                                         <paper-checkbox checked="[[_isColumnVisible(column,visible)]]" on-change="_checkboxChanged">[[column]]</paper-checkbox>
+                                        <iron-icon icon="editor:drag-handle" style="fill: #a6a6a6;"></iron-icon>
                                     </paper-item>
                                 </template>
                             </sortable-list>
@@ -1105,20 +1105,19 @@ Polymer({
               }
           }
           var cols = Object.keys(this.colmap);
-          // Add the visible columns if any that are not an item property
+          // Remove all visible to add it in front further down
           if (this.visible && this.visible.length) {
-              for (var j = 0; j < this.visible.length; j++) {
-                  if (cols.indexOf(this.visible[j]) == -1) {
-                      cols.push(this.visible[j]);
-                  }
-              }
+            cols = cols.filter((el) => {
+                return !this.visible.includes(el);
+            });
           }
+
           // Compute columns list from colmap, removing frozen columns
           this.frozen.forEach(function (f) {
               if (cols.indexOf(f) > -1)
                   cols.splice(cols.indexOf(f), 1);
           });
-          this.set('columns', cols);
+          this.set('columns', this.visible.concat(cols));
       }
   },
 
@@ -1193,17 +1192,18 @@ Polymer({
       const content = overlay.shadowRoot.querySelector('div[part="content"]');
       const list = content.shadowRoot.querySelector('sortable-list');
       const elements = list.querySelectorAll('paper-item');
-      const allItemsList = [];
+      const invisibleItemsList = [];
       elements.forEach((el) => {
           const text = el.querySelector('paper-checkbox').textContent.trim()
           if (el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]') && el.querySelector('paper-checkbox[checked]').textContent) {
               newOrder.push(text);
+          } else {
+            invisibleItemsList.push(text);
           }
-          allItemsList.push(text);
       });
       this.set('visible', newOrder);
       this._saveVisibleColumns();
-      this.set('columnsDialogItems', allItemsList);
+      this.set('columnsDialogItems', newOrder.concat(invisibleItemsList));
   },
   _columnsDialogClosed(state) {
       if(!state && this.columnsDialogItems){
