@@ -277,14 +277,14 @@ Polymer({
                 overflow-y: scroll;
                 flex-wrap: wrap;
                 justify-content: flex-start;
-                width: 400px;
+                max-width: 400px;
                 padding: 0;
                 max-height: 500px;
             }
 
             .vaadin-dialog-scrollable paper-item {
-                max-width: 200px;
-                width: 50%;
+                max-width: 300px;
+                width: auto !important;
             }
 
             .buttons {
@@ -393,6 +393,10 @@ Polymer({
 
             json-viewer {
                 padding: 8px;
+            }
+
+            sortable-list#columnsSortable {
+                width: 100%;
             }
         </style>
         <template is="dom-if" restamp="" if="[[rest]]">
