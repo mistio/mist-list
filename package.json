@@ -1,7 +1,7 @@
 {
   "description": "Flexible list element based on vaadin-grid",
   "name": "@mistio/mist-list",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "main": "mist-list.js",
   "contributors": [
     "Dimitris Moraitis <dimo@mist.io>",
