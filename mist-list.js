@@ -419,7 +419,7 @@ Polymer({
             <vaadin-dialog id="columnsDialog" opened="{{columnsDialogOpened}}" aria-label="styled">
                 <template>
                     <h2 class="dialog-title">Select columns and order</h2>
-                    <p>Select the list's visible columns. Drag to arrange their order.</p>
+                    <p>Select which columns are visible in the list and drag to rearrange their order.</p>
                     <div class="vaadin-dialog-scrollable">
                         <template is="dom-if" if="[[columnsDialogOpened]]" restamp="">
                         <sortable-list id="columnsSortable" animation="150" sortable=".column-item" on-sort-start="_onSortStart" on-sort-end="_onSortFinish">
@@ -1099,16 +1099,16 @@ Polymer({
       }
       if (this.items && this.items.length) {
           // update column map using response.items values
-          for (var i = 0; i < this.items.length; i++) {
-              var item = this.items[i];
+          for (let i = 0; i < this.items.length; i++) {
+              const item = this.items[i];
               if (this.rest)
                   this.itemMap[item[this.primaryFieldName]] = item;
               var keys = item ? Object.keys(item) : [];
-              for (var k = 0; k < keys.length; k++) {
+              for (let k = 0; k < keys.length; k++) {
                   this.colmap[keys[k]] = true;
               }
           }
-          var cols = Object.keys(this.colmap);
+          let cols = Object.keys(this.colmap);
           // Remove all visible to add it in front further down
           if (this.visible && this.visible.length) {
             cols = cols.filter((el) => {
@@ -1125,7 +1125,7 @@ Polymer({
       }
   },
 
-  _activeItemChanged: function (e) {
+  _activeItemChanged(e) {
       console.log('_activeItemChanged', e);
       var grid = e.target;
       this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
@@ -1136,7 +1136,7 @@ Polymer({
       }
   },
 
-  _getTitle: function (column) {
+  _getTitle(column) {
       if (this.renderers[column] && this.renderers[column].title) {
           if (typeof this.renderers[column].title == 'function')
               return this.renderers[column].title();
@@ -1146,7 +1146,7 @@ Polymer({
       return column;
   },
 
-  _getBody: function (column, item) {
+  _getBody(column, item) {
       if (item) {
           if (this.renderers[column])
               return this.renderers[column].body(item[column], item);
@@ -1175,8 +1175,8 @@ Polymer({
 
   _getSelectedColumnsIndexArray: function (visible) {
       if (!this.visible) return [];
-      var ret = [];
-      for (var i = 0; i < this.visible.length; i++)
+      const ret = [];
+      for (let i = 0; i < this.visible.length; i++)
           ret.push(this.columns.indexOf(this.visible[i]));
       // console.log('_getSelectedColumnsIndexArray returning', ret);
       return ret;
@@ -1210,7 +1210,7 @@ Polymer({
       this.set('columnsDialogItems', newOrder.concat(invisibleItemsList));
   },
   _columnsDialogClosed(state) {
-      if(!state && this.columnsDialogItems){
+      if(!state && this.columnsDialogItems.length > 0){
           this.set('columns', this.columnsDialogItems);
       }
   },
@@ -1227,11 +1227,11 @@ Polymer({
       }
   },
 
-  _saveVisibleColumns: function() {
+  _saveVisibleColumns() {
       localStorage.setItem('mist-list#' + this.id, JSON.stringify(this.visible));
   },
 
-  _CSVcheckboxChanged: function (e) {
+  _CSVcheckboxChanged (e) {
       if (e.target.active && this.CSVvisible.indexOf(e.model.column) == -1) {
           this.push('CSVvisible', e.model.column);
       } else if (!e.target.active && this.CSVvisible.indexOf(e.model.column) > -1) {
@@ -1239,7 +1239,7 @@ Polymer({
       }
   },
 
-  _selectAllToggled: function (selectAll) {
+  _selectAllToggled (selectAll) {
       if (selectAll && this.count != this.selectedItems.length) {
           this.set('selectedItems', this.filteredItems);
       } else if (!selectAll && this.count == this.selectedItems.length) {
@@ -1247,7 +1247,7 @@ Polymer({
       }
   },
 
-  _selectedItemsChanged: function (itemslength) {
+  _selectedItemsChanged (itemslength) {
       if (this.count && this.count == itemslength && !this.selectAll) {
           this.set('selectAll', true);
       } else if (this.count && this.count != itemslength && this.selectAll) {
@@ -1255,13 +1255,13 @@ Polymer({
       }
   },
 
-  _getComparisonFunction: function (column) {
+  _getComparisonFunction(column) {
       return this.renderers[column] && this.renderers[column].cmp;
   },
 
   _computeExpandIconStyle: function (expanded, selectable) {
       // TODO: animate icon
-      var ret = '';
+      let ret = '';
       if (selectable) ret += "margin-left: -8px;";
       else ret += "margin-left: 4px;";
       if (!expanded) ret += "transform: rotate(270deg);";
