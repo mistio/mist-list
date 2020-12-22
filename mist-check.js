@@ -1,8 +1,9 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-
-<dom-module id="mist-check">
-    <template>
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/iron-icon/iron-icon.js';
+import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+Polymer({
+  _template: html`
         <style>
             :host {
                 display: inline-block;
@@ -84,37 +85,33 @@
             <span class="unchecked layout horizontal center-center">
                 <slot></slot>
                 <template is="dom-if" if="[[icon]]">
-                    <img src="[[icon]]" />
+                    <img src="[[icon]]">
                 </template>
             </span>
             <iron-icon icon="check"></iron-icon>
         </div>
-    </template>
-</dom-module>
-<script>
-    Polymer({
-        is: 'mist-check',
+`,
 
-        properties: {
-            item: {
-                type: Object
-            },
-            selected: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: false,
-                notify: true
-            }
-        },
+  is: 'mist-check',
 
-        listeners: {
-            'click': 'toggle',
-        },
+  properties: {
+      item: {
+          type: Object
+      },
+      selected: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+          notify: true
+      }
+  },
 
-        toggle: function (e) {
-            e.stopImmediatePropagation();
-            this.set('selected', !this.selected);
-        }
-    });
-</script>
-</dom-module>
+  listeners: {
+      'click': 'toggle',
+  },
+
+  toggle: function (e) {
+      e.stopImmediatePropagation();
+      this.set('selected', !this.selected);
+  }
+});

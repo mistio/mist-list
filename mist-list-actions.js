@@ -1,8 +1,11 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
-<dom-module id="mist-list-actions">
-    <template>
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/paper-button/paper-button.js';
+import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
+import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
+Polymer({
+  _template: html`
         <style include="shared-styles">
             :host {
                 display: flex;
@@ -83,14 +86,14 @@
                 }
             }
         </style>
-        <template is="dom-if" if="[[_hasActions(topActions.length)]]" restamp>
+        <template is="dom-if" if="[[_hasActions(topActions.length)]]" restamp="">
             <template is="dom-repeat" items="[[topActions]]" as="action">
                 <paper-button on-tap="_selectAction" class="visible actions">
                     <iron-icon icon="[[action.icon]]"></iron-icon> <span>[[action.name]]</span>
                 </paper-button>
             </template>
         </template>
-        <template is="dom-if" if="[[_hasActions(moreActions.length)]]" restamp>
+        <template is="dom-if" if="[[_hasActions(moreActions.length)]]" restamp="">
             <paper-menu-button id="actionmenu" horizontal-align="right" vertical-offset="40">
                 <paper-button class="dropdown-trigger" slot="dropdown-trigger">
                     <iron-icon icon="more-vert"></iron-icon>
@@ -104,83 +107,91 @@
                 </div>
             </paper-menu-button>
         </template>
-    </template>
-    <script>
-        Polymer({
-            is: 'mist-list-actions',
-            behaviors: [
-                Polymer.IronResizableBehavior
-            ],
-            properties: {
-                actions: {
-                    type: Array
-                },
-                selectedAction: {
-                    type: Object
-                },
-                visibleActions: {
-                    type: Number,
-                    value: 3
-                },
-                topActions: {
-                    type: Array,
-                    computed: "_computeTopActions(actions, visibleActions)",
-                    value: function () {
-                        return []
-                    }
-                },
-                moreActions: {
-                    type: Array,
-                    computed: "_computeMoreActions(actions, visibleActions)",
-                    value: function () {
-                        return []
-                    }
-                },
-                useHalfWidth: {
-                    type: Boolean,
-                    reflectToAttribute: true
-                }
-            },
-            observers: [
-                '_actionsChanged(actions)'
-            ],
-            listeners: {
-                'iron-resize': '_updateVisibleActions'
-            },
-            attached: function () {
-                this._updateVisibleActions();
-            },
-            _selectAction: function (e) {
-                if (this.shadowRoot.querySelector('paper-menu-button#actionmenu')) {
-                    this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
-                }
-                if (e.model.action) {
-                    this.set('selectedAction', e.model.action);
-                    this.fire('select-action', {
-                        action: e.model.action
-                    })
-                }
-            },
-            _actionsChanged: function (actions) {
-                if (actions) {
-                    this._updateVisibleActions();
-                }
-            },
-            _computeTopActions: function (actions, visibleActions) {
-                if (this.actions)
-                    return this.actions.slice(0, this.visibleActions);
-            },
-            _computeMoreActions: function (actions, visbleActions) {
-                if (this.actions)
-                    return this.actions.slice(this.visibleActions);
-            },
-            _updateVisibleActions: function (e) {
-                var offsetWidth = this.offsetWidth;
-                this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
-            },
-            _hasActions: function (length) {
-                return length > 0
-            }
-        });
-    </script>
-</dom-module>
+`,
+
+  is: 'mist-list-actions',
+
+  behaviors: [
+      IronResizableBehavior
+  ],
+
+  properties: {
+      actions: {
+          type: Array
+      },
+      selectedAction: {
+          type: Object
+      },
+      visibleActions: {
+          type: Number,
+          value: 3
+      },
+      topActions: {
+          type: Array,
+          computed: "_computeTopActions(actions, visibleActions)",
+          value: function () {
+              return []
+          }
+      },
+      moreActions: {
+          type: Array,
+          computed: "_computeMoreActions(actions, visibleActions)",
+          value: function () {
+              return []
+          }
+      },
+      useHalfWidth: {
+          type: Boolean,
+          reflectToAttribute: true
+      }
+  },
+
+  observers: [
+      '_actionsChanged(actions)'
+  ],
+
+  listeners: {
+      'iron-resize': '_updateVisibleActions'
+  },
+
+  attached() {
+      this._updateVisibleActions();
+  },
+
+  _selectAction: function (e) {
+      if (this.shadowRoot.querySelector('paper-menu-button#actionmenu')) {
+          this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
+      }
+      if (e.model.action) {
+          this.set('selectedAction', e.model.action);
+          this.fire('select-action', {
+              action: e.model.action
+          })
+      }
+  },
+
+  _actionsChanged(actions) {
+      if (actions) {
+          this._updateVisibleActions();
+      }
+  },
+
+  _computeTopActions(_actions, _visibleActions) {
+      if (this.actions)
+          return this.actions.slice(0, this.visibleActions);
+  },
+
+  _computeMoreActions(_actions, _visbleActions) {
+      if (this.actions)
+          return this.actions.slice(this.visibleActions);
+  },
+
+  _updateVisibleActions(_e) {
+      var offsetWidth = this.offsetWidth;
+      this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
+  },
+
+  _hasActions(length) {
+      return length > 0
+  }
+});

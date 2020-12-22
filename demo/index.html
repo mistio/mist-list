@@ -6,14 +6,19 @@
 
     <title>mist-list demo</title>
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
-    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../mist-list.html">
+    <script type="module">
+      import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
+      import '@polymer/iron-demo-helpers/demo-snippet';
+    </script>
 
-    <style is="custom-style" include="demo-pages-shared-styles">
-    </style>
+    <script type="module" src="../mist-list.js"></script>
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      </style>
+    </custom-style>
   </head>
   <body>
     <div class="vertical-section-container centered">
@@ -21,6 +26,13 @@
       <demo-snippet>
         <template>
           <mist-list></mist-list>
+          <script>
+            window.addEventListener('WebComponentsReady', function() {
+              const grid = document.querySelector('mist-list');
+              grid.itemMap = {'yo': {'key':'ko', 'poy':'la'}, 'lo': {'key':'a','poy':'os'}};
+              grid.visible = ['key','poy'];
+            });
+          </script>
         </template>
       </demo-snippet>
     </div>
