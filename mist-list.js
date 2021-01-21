@@ -471,7 +471,7 @@ Polymer({
                         <mist-check selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
                         <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999">
                             <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
-                            <mist-list-actions actions="[[actions]]"></mist-list-actions>
+                            <mist-list-actions actions="[[_computeAllowedActions(actions)]]"></mist-list-actions>
                         </div>
                     </template>
                     <template>
@@ -815,6 +815,12 @@ Polymer({
       columnsDialogItems:{
           type: Array,
           value: []
+      },
+      checkPermissions:{
+          type: Object,
+          value() {
+            return {};
+        }
       }
   },
 
@@ -1255,6 +1261,20 @@ Polymer({
       }
   },
 
+  _computeAllowedActions(acts) {
+    if(this.checkPermissions.apply && this.selectedItems.length > 0 && acts.length > 0){
+      for(let item of this.selectedItems){
+          acts = acts.filter(action => {
+              let actionName = action.name;
+              if (actionName === 'rename') actionName = 'edit';
+              else if (actionName === 'tag') actionName = 'edit_tags';
+              else if (actionName === 'shell') actionName = 'open_shell';
+              return this.checkPermissions.apply(actionName, item.id);
+              });
+      }
+    }
+    return acts;
+  },
   _getComparisonFunction(column) {
       return this.renderers[column] && this.renderers[column].cmp;
   },
