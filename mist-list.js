@@ -1265,11 +1265,7 @@ Polymer({
     if(this.checkPermissions.apply && this.selectedItems.length > 0 && acts.length > 0){
       for(let item of this.selectedItems){
           acts = acts.filter(action => {
-              let actionName = action.name;
-              if (actionName === 'rename') actionName = 'edit';
-              else if (actionName === 'tag') actionName = 'edit_tags';
-              else if (actionName === 'shell') actionName = 'open_shell';
-              return this.checkPermissions.apply(actionName, item.id);
+              return this.checkPermissions.apply(action.name, item.id);
               });
       }
     }
