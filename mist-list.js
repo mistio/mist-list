@@ -1266,7 +1266,7 @@ Polymer({
       for(let item of this.selectedItems){
           acts = acts.filter(action => {
               return this.checkPermissions.apply(action.name, item.id);
-              });
+          });
       }
     }
     return acts;
