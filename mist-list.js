@@ -371,6 +371,10 @@ Polymer({
                 fill: #fff;
             }
 
+            .mist-check-header {
+                margin-left: var(--mist-check-header-margin, 0);
+            }
+
             .error {
                 color: var(--mist-list-error-color);
             }
@@ -468,7 +472,7 @@ Polymer({
             <template is="dom-if" if="[[selectable]]" restamp="">
                 <vaadin-grid-selection-column flex-grow="0" frozen="" style="overflow: visible;" width="50px" z-index="5">
                     <template class="header">
-                        <mist-check selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
+                        <mist-check class="mist-check-header" selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
                         <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999">
                             <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions="[[_computeAllowedActions(actions)]]"></mist-list-actions>
@@ -952,7 +956,7 @@ Polymer({
           outerScroller = this.$.grid.$.outerscroller,
           hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
           heightOffset = 36;
-      // Calculate and add the height of the content slotted in the header, so 
+      // Calculate and add the height of the content slotted in the header, so
       // it does not push mist-list below visible height.
       var headerSlotElements = this.$.slottedHeader.assignedElements();
       if (headerSlotElements.length) {
