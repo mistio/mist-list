@@ -12,7 +12,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
-import '@advanced-rest-client/json-viewer/json-viewer.js';
 import  "@mistio/sortable-list/sortable-list.js";
 import './mist-check.js';
 import './mist-filter.js';
@@ -174,8 +173,7 @@ Polymer({
                 overflow-x: auto;
                 overflow-y: auto;
                 height: 266px;
-                margin: 0 0px 0 34px;
-                border-left: 1px dashed #ddd;
+                margin: 0 10px;
             }
 
             vaadin-grid .details table {
@@ -390,13 +388,10 @@ Polymer({
             .tag {
                 @apply --mist-list-tag-mixin;
             }
+
             h2.dialog-title {
                 font-size: 20px;
                 font-weight: 500;
-            }
-
-            json-viewer {
-                padding: 8px;
             }
 
             sortable-list#columnsSortable {
@@ -465,7 +460,7 @@ Polymer({
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
-                        <json-viewer json="[[_stringify(item)]]"></json-viewer>
+                        <code-viewer value="[[_stringify(item)]]" language="json" read-only></code-viewer>
                     </div>
                 </div>
             </template>
@@ -1172,7 +1167,7 @@ Polymer({
   },
 
   _stringify: function(item) {
-      return JSON.stringify(item);
+        return JSON.stringify(item, undefined, 2);
   },
 
   _isColumnVisible: function (column) {
