@@ -85,6 +85,10 @@ Polymer({
                 display: block;
                 font-family: inherit;
                 font: 400 14px;
+                --code-viewer-toolbar-height: 36px;
+                --code-viewer-fullscreen-padding: 8px;
+                --code-viewer-fullscreen-margin-left: 0;
+                --code-viewer-copyBtn-size: 36px;
             }
 
             :host([fullscreen]) {
@@ -397,7 +401,17 @@ Polymer({
             sortable-list#columnsSortable {
                 width: 100%;
             }
+
+            #fullscreenBtn, #exitFullscreenBtn {
+                color: #808080;
+            }
+
+            code-viewer #fullscreenBtn,
+            code-viewer  #exitFullscreenBtn {
+              padding: 8px;
+            }
         </style>
+        <code-viewer mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
@@ -460,7 +474,7 @@ Polymer({
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
-                        <code-viewer value="[[_stringify(item)]]" language="json" read-only></code-viewer>
+                        <code-viewer mist-list-item value="[[_stringify(item)]]" language="json" read-only></code-viewer>
                     </div>
                 </div>
             </template>
@@ -775,7 +789,10 @@ Polymer({
           value: false,
           reflectToAttribute: true
       },
-
+      insideFullscreen: {
+        type: Boolean,
+        value: false
+        },
       presetFilters: {
           type: Array,
           value: function () {
@@ -820,7 +837,11 @@ Polymer({
           value() {
             return {};
         }
-      }
+      },
+      itemFullscreen: {
+        type: Boolean,
+        value: false
+    },
   },
 
   observers: [
@@ -839,7 +860,9 @@ Polymer({
       'receive-log': 'eventReceived',
       'resize': '_windowResize',
       'column-width-changed': '_saveColumnWidth',
-      'sorter-changed': '_sorterChanged'
+      'sorter-changed': '_sorterChanged',
+      'enter-fullscreen-mist-list': 'codeViewerEnterFullscreen',
+      'exit-fullscreen-mist-list': 'codeViewerExitFullscreen'
   },
 
   attached: function () {
@@ -1167,7 +1190,7 @@ Polymer({
   },
 
   _stringify: function(item) {
-      return JSON.stringify(item, undefined, 2);
+        return JSON.stringify(item, undefined, 2);
   },
 
   _isColumnVisible: function (column) {
@@ -1414,13 +1437,26 @@ Polymer({
           }
       }
   },
-
+  codeViewerEnterFullscreen(e){
+    this.itemFullscreen = true;
+    this.fullScreenValue = e.detail.value;
+  },
+  codeViewerExitFullscreen() {
+    this.itemFullscreen = false;
+    if (this.insideFullscreen) {
+        this._enterFullscreen();
+    } else {
+        this._exitFullscreen();
+    }
+  },
   _enterFullscreen: function (e) {
+      this.insideFullscreen = true;
       this.set('fullscreen', true);
       this.fire('enter-fullscreen');
   },
 
   _exitFullscreen: function (e) {
+      this.insideFullscreen = false;
       this.set('fullscreen', false);
       this.fire('exit-fullscreen');
   },
