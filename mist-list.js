@@ -1167,7 +1167,7 @@ Polymer({
   },
 
   _stringify: function(item) {
-        return JSON.stringify(item, undefined, 2);
+      return JSON.stringify(item, undefined, 2);
   },
 
   _isColumnVisible: function (column) {
