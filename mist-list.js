@@ -12,7 +12,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
-import '@advanced-rest-client/json-viewer/json-viewer.js';
 import  "@mistio/sortable-list/sortable-list.js";
 import './mist-check.js';
 import './mist-filter.js';
@@ -86,6 +85,10 @@ Polymer({
                 display: block;
                 font-family: inherit;
                 font: 400 14px;
+                --code-viewer-toolbar-height: 36px;
+                --code-viewer-fullscreen-padding: 8px;
+                --code-viewer-fullscreen-margin-left: 0;
+                --code-viewer-copyBtn-size: 36px;
             }
 
             :host([fullscreen]) {
@@ -174,8 +177,7 @@ Polymer({
                 overflow-x: auto;
                 overflow-y: auto;
                 height: 266px;
-                margin: 0 0px 0 34px;
-                border-left: 1px dashed #ddd;
+                margin: 0 10px;
             }
 
             vaadin-grid .details table {
@@ -390,19 +392,26 @@ Polymer({
             .tag {
                 @apply --mist-list-tag-mixin;
             }
+
             h2.dialog-title {
                 font-size: 20px;
                 font-weight: 500;
             }
 
-            json-viewer {
-                padding: 8px;
-            }
-
             sortable-list#columnsSortable {
                 width: 100%;
             }
+
+            #fullscreenBtn, #exitFullscreenBtn {
+                color: #808080;
+            }
+
+            code-viewer #fullscreenBtn,
+            code-viewer  #exitFullscreenBtn {
+              padding: 8px;
+            }
         </style>
+        <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
@@ -465,7 +474,7 @@ Polymer({
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
-                        <json-viewer json="[[_stringify(item)]]"></json-viewer>
+                        <code-viewer theme="vs-light" mist-list-item value="[[_stringify(item)]]" language="json" read-only></code-viewer>
                     </div>
                 </div>
             </template>
@@ -780,7 +789,10 @@ Polymer({
           value: false,
           reflectToAttribute: true
       },
-
+      insideFullscreen: {
+        type: Boolean,
+        value: false
+        },
       presetFilters: {
           type: Array,
           value: function () {
@@ -825,7 +837,11 @@ Polymer({
           value() {
             return {};
         }
-      }
+      },
+      itemFullscreen: {
+        type: Boolean,
+        value: false
+    },
   },
 
   observers: [
@@ -844,7 +860,9 @@ Polymer({
       'receive-log': 'eventReceived',
       'resize': '_windowResize',
       'column-width-changed': '_saveColumnWidth',
-      'sorter-changed': '_sorterChanged'
+      'sorter-changed': '_sorterChanged',
+      'enter-fullscreen-mist-list': 'codeViewerEnterFullscreen',
+      'exit-fullscreen-mist-list': 'codeViewerExitFullscreen'
   },
 
   attached: function () {
@@ -1172,7 +1190,7 @@ Polymer({
   },
 
   _stringify: function(item) {
-      return JSON.stringify(item);
+        return JSON.stringify(item, undefined, 2);
   },
 
   _isColumnVisible: function (column) {
@@ -1419,13 +1437,26 @@ Polymer({
           }
       }
   },
-
+  codeViewerEnterFullscreen(e){
+    this.itemFullscreen = true;
+    this.fullScreenValue = e.detail.value;
+  },
+  codeViewerExitFullscreen() {
+    this.itemFullscreen = false;
+    if (this.insideFullscreen) {
+        this._enterFullscreen();
+    } else {
+        this._exitFullscreen();
+    }
+  },
   _enterFullscreen: function (e) {
+      this.insideFullscreen = true;
       this.set('fullscreen', true);
       this.fire('enter-fullscreen');
   },
 
   _exitFullscreen: function (e) {
+      this.insideFullscreen = false;
       this.set('fullscreen', false);
       this.fire('exit-fullscreen');
   },
