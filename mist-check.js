@@ -20,8 +20,7 @@ Polymer({
                 opacity: 1;
             }
 
-            :host([selected]) .unchecked,
-            :host([selected])::content iron-icon {
+            :host([selected]) .unchecked {
                 opacity: 0;
             }
 
