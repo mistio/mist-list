@@ -1,7 +1,7 @@
 import '@polymer/polymer/polymer-legacy.js';
-import '@vaadin/vaadin-grid/vaadin-grid.js';
-import '@vaadin/vaadin-grid/vaadin-grid-sorter.js';
-import '@vaadin/vaadin-grid/vaadin-grid-selection-column.js';
+import '@mistio/vaadin-grid/vaadin-grid.js';
+import '@mistio/vaadin-grid/vaadin-grid-sorter.js';
+import '@mistio/vaadin-grid/vaadin-grid-selection-column.js';
 import '@polymer/paper-button/paper-button.js';
 import '@vaadin/vaadin-dialog/vaadin-dialog.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
