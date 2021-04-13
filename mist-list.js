@@ -509,7 +509,7 @@ Polymer({
                 </vaadin-grid-column>
             </template>
             <template is="dom-repeat" items="[[frozen]]" as="column">
-                <vaadin-grid-column frozen="" resizable="" width$="[[columnWidth(column,frozenWidth)]]" on-column-width-changed="_saveColumnWidth">
+                <vaadin-grid-column frozen="" name="[[column]]" resizable="" width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
                         <vaadin-grid-sorter style="z-index: -10000" hidden="[[timeseries]]" path="[[column]]" direction\$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" id\$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
@@ -521,7 +521,7 @@ Polymer({
             </template>
 
             <template is="dom-repeat" items="{{visible}}" as="column" restamp="">
-                <vaadin-grid-column resizable="" width\$="[[columnWidth(column)]]" on-column-width-changed="_saveColumnWidth">
+                <vaadin-grid-column resizable="" name="[[column]]" width\$="[[columnWidth(column)]]">
                     <template class="header">
                         <vaadin-grid-sorter path="[[column]]" direction\$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" hidden\$="[[timeseries]]" id\$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                         <span class="header" hidden\$="[[!timeseries]]">[[_getTitle(column)]]</span>
@@ -534,7 +534,7 @@ Polymer({
 
             <template is="dom-if" if="[[!hasVisibleColumns]]" restamp="">
                 <template is="dom-repeat" items="[[columns]]" as="column">
-                    <vaadin-grid-column resizable="" width\$="[[columnWidth(column)]]" on-column-width-changed="_saveColumnWidth">
+                    <vaadin-grid-column resizable="" name="[[column]]" width\$="[[columnWidth(column)]]">
                         <template class="header">
                             <vaadin-grid-sorter path="[[column]]" direction\$="[[_getDirection(column)]]" cmp="[[_getComparisonFunction(column)]]" hidden\$="[[timeseries]]" id\$="sorter-column-[[column]]">[[_getTitle(column)]]</vaadin-grid-sorter>
                             <span class="header" hidden\$="[[!timeseries]]">[[_getTitle(column)]]</span>
@@ -859,7 +859,7 @@ Polymer({
       'action-finished': '_clearSelection',
       'receive-log': 'eventReceived',
       'resize': '_windowResize',
-      'column-width-changed': '_saveColumnWidth',
+      'column-resize': '_saveColumnWidth',
       'sorter-changed': '_sorterChanged',
       'enter-fullscreen-mist-list': 'codeViewerEnterFullscreen',
       'exit-fullscreen-mist-list': 'codeViewerExitFullscreen'
@@ -1015,12 +1015,10 @@ Polymer({
   },
 
   _saveColumnWidth: function (e) {
-      this.debounce('debounceWidthChanges', function(){
-          var column = e.model ? e.model.column : null;
-          if (column) {
-              localStorage.setItem('mist-list#' + this.id + '/col/' + e.model.column + '/width', e.detail.width);
-          }
-      }, 500);
+    const column = e.detail.resizedColumn.name ? e.detail.resizedColumn.name : null;
+    if (column) {
+        localStorage.setItem('mist-list#' + this.id + '/col/' + column + '/width', e.detail.resizedColumn.width);
+    }
   },
 
   _saveColumnOrder: function (e) {
