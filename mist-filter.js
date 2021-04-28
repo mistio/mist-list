@@ -24,7 +24,6 @@ Polymer({
                 font-size: 18px !important;
                 text-transform: capitalize;
                 font-weight: 500;
-                opacity: .7;
             }
 
             h2.titleh2 {
