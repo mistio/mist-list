@@ -111,6 +111,9 @@ Polymer({
                     var xhr = new XMLHttpRequest();
                     var url = _this.url + '?';
                     url += 'limit=' + opts.pageSize + '&';
+                    if(url.indexOf('v2/orgs') !== -1){
+                        url += 'allorgs=true&'
+                    }
                     if (!_this.timeseries) {
                         url += 'start=' + (opts.page * opts.pageSize) + '&';
                     } else if (_this.stop) {
@@ -146,6 +149,8 @@ Polymer({
                                     _this.set('finished', true);
                             }
                             _this.received += items.length;
+                            if (!_this.itemMap)
+                                _this.itemMap = {};
                             if (items && items.length) {
                                 // update column map using response.items values
                                 items.forEach(function (i) {
