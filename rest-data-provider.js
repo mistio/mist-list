@@ -133,9 +133,12 @@ Polymer({
                         if (xhr.readyState === 4 && xhr.status === 200) {
                             var response = JSON.parse(xhr.responseText),
                                 items;
-                            if (!_this.timeseries) {
+                            if (!_this.timeseries && xhr.responseURL.indexOf('v2') === -1) {
                                 _this.count = response.count;
                                 items = response.items;
+                            } else if (xhr.responseURL.indexOf('v2') !== -1) {
+                                items = response.data;
+                                _this.count = response.meta.returned
                             } else {
                                 items = response;
                                 _this.count += items.length;
@@ -170,6 +173,11 @@ Polymer({
                                     _this.count = _this.received;
                                 }
                             }
+
+                            const sectionName = _this.url.split('/').slice(-1)[0];
+                            _this.dispatchEvent(new CustomEvent(`update-${sectionName}`,
+                                                                {detail: _this.itemMap, bubbles: true, 
+                                                                composed: true}));
                             callback(items, _this.count);
                             if (_this.parentElement) {
                                 _this.parentElement.async(function () {
