@@ -1,6 +1,7 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@mistio/vaadin-grid/vaadin-grid.js';
 import '@mistio/vaadin-grid/vaadin-grid-sorter.js';
+import '@mistio/vaadin-grid/vaadin-grid-tree-toggle.js';
 import '@mistio/vaadin-grid/vaadin-grid-selection-column.js';
 import '@polymer/paper-button/paper-button.js';
 import '@vaadin/vaadin-dialog/vaadin-dialog.js';
@@ -412,9 +413,9 @@ Polymer({
             }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
-        <template is="dom-if" restamp="" if="[[rest]]">
-            <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
-        </template>
+
+        <rest-data-provider id="restProvider" url="[[apiurl]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
+
         <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
@@ -508,6 +509,20 @@ Polymer({
                     </template>
                 </vaadin-grid-column>
             </template>
+            <vaadin-grid-column frozen="" name="[[primaryColumn]]" resizable="" width$="[[columnWidth(primaryColumn,frozenWidth)]]">
+                <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
+                    <vaadin-grid-sorter style="z-index: -10000" hidden="[[timeseries]]" path="[[primaryColumn]]" direction\$="[[_getDirection(primaryColumn)]]" cmp="[[_getComparisonFunction(primaryColumn)]]" id\$="sorter-column-[[primaryColumn]]">[[_getTitle(primaryColumn)]]</vaadin-grid-sorter>
+                    <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
+                </template>
+                <template>
+                    <vaadin-grid-tree-toggle
+                      leaf="[[_hasChildren(item)]]"
+                      expanded="{{expanded}}"
+                      level="[[level]]">
+                      <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(primaryColumn, item)]]"></div>
+                    </vaading-grid-tree-toggle>
+                </template>
+            </vaadin-grid-column>
             <template is="dom-repeat" items="[[frozen]]" as="column">
                 <vaadin-grid-column frozen="" name="[[column]]" resizable="" width$="[[columnWidth(column,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
@@ -620,6 +635,11 @@ Polymer({
           value: function () {
               return []
           }
+      },
+
+      primaryColumn: {
+        type: String,
+        computed: '_computePrimaryColumn(frozen)'
       },
 
       visible: {
@@ -1478,5 +1498,13 @@ Polymer({
       if (this.visible && this.visible.length > 0)
           return true;
       return false;
+  },
+  _computePrimaryColumn(_frozen){
+      return this.frozen.shift();
+  },
+  _hasChildren(item){
+      if(item && (item.machine_type === 'node' || item.machine_type === 'pod' || item.machine_type === 'hypervisor'))
+        return false;
+      return true;
   }
 });
