@@ -88,7 +88,7 @@ Polymer({
             notify: true
         },
 
-        rest: {
+        treeView: {
             type: Boolean,
             value: false
         }
@@ -107,7 +107,7 @@ Polymer({
                 this.finished = false;
                 var _this = this;
                 this.set('provider', function (opts, callback) {
-                    if (_this.rest){
+                    if (!_this.treeView){
                         if (_this.finished)
                             return;
                         if (!opts.page) {
