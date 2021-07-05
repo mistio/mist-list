@@ -517,7 +517,7 @@ Polymer({
                     </template>
                     <template>
                         <vaadin-grid-tree-toggle
-                        leaf="[[_hasChildren(item)]]"
+                        leaf="[[item.treeNode]]"
                         expanded="{{expanded}}"
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
@@ -1508,11 +1508,6 @@ Polymer({
       if (this.treeView)
         return this.frozen.shift();
       return "";
-  },
-  _hasChildren(item){
-      if(item && (item.machine_type === 'node' || item.machine_type === 'pod' || item.machine_type === 'hypervisor' || item.machine_type === 'container-host'))
-        return false;
-      return true;
   },
   _requireDataProvider(rest, treeView){
       return rest || treeView;
