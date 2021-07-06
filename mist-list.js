@@ -1367,7 +1367,7 @@ Polymer({
   },
 
   _computeColumnMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
-      if (!columnMenu || selectedItemsLength || !count)
+      if (!columnMenu || selectedItemsLength || (this.items && !this.items.length))
           return 'display: none';
       if (selectable) return 'margin-left: -8px;';
       return 'margin-left: 4px;';
