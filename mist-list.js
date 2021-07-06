@@ -517,7 +517,7 @@ Polymer({
                     </template>
                     <template>
                         <vaadin-grid-tree-toggle
-                        leaf="[[item.treeNode]]"
+                        leaf="[[!item.treeNode]]"
                         expanded="{{expanded}}"
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
