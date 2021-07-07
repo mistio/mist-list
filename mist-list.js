@@ -9,6 +9,7 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-toggle-button/paper-toggle-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
@@ -501,6 +502,7 @@ Polymer({
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
+                                <paper-item on-tap="_toggleTreeView">Tree View</paper-item>
                             </paper-listbox>
                         </paper-menu-button>
                     </template>
@@ -512,13 +514,13 @@ Polymer({
             <template is="dom-if" if="[[treeView]]" restamp="">
                 <vaadin-grid-column frozen="" name="[[firstFrozen]]" resizable="" width$="[[columnWidth(firstFrozen,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
-                        <vaadin-grid-sorter style="z-index: -10000" hidden="[[timeseries]]" path="[[firstFrozen]]" direction\$="[[_getDirection(firstFrozen)]]" cmp="[[_getComparisonFunction(firstFrozen)]]" id\$="sorter-column-[[firstFrozen]]">[[_getTitle(firstFrozen)]]</vaadin-grid-sorter>
-                        <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
+                        <vaadin-grid-sorter style="z-index: -10000; float: left; margin-left:20px;" hidden="[[timeseries]]" path="[[firstFrozen]]" direction\$="[[_getDirection(firstFrozen)]]" cmp="[[_getComparisonFunction(firstFrozen)]]" id\$="sorter-column-[[firstFrozen]]">[[_getTitle(firstFrozen)]]</vaadin-grid-sorter>
+                        <span class="header" hidden$="[[!timeseries]]" style="float: left; margin-left:20px;">[[_getTitle(column)]]</span>
                     </template>
                     <template>
                         <vaadin-grid-tree-toggle
                         leaf="[[!item.treeNode]]"
-                        expanded="{{expanded}}"
+                        expanded="{{expanded}}" 
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
                         </vaading-grid-tree-toggle>
@@ -1292,17 +1294,17 @@ Polymer({
   },
 
   _selectAllToggled (selectAll) {
-      if (selectAll && this.count != this.selectedItems.length) {
+      if (selectAll && this.filteredItems.length !== this.selectedItems.length) {
           this.set('selectedItems', this.filteredItems);
-      } else if (!selectAll && this.count == this.selectedItems.length) {
+      } else if (!selectAll && this.filteredItems.length === this.selectedItems.length) {
           this.set('selectedItems', []);
       }
   },
 
   _selectedItemsChanged (itemslength) {
-      if (this.count && this.count == itemslength && !this.selectAll) {
+      if (this.count && this.filteredItems.length === itemslength && !this.selectAll) {
           this.set('selectAll', true);
-      } else if (this.count && this.count != itemslength && this.selectAll) {
+      } else if (this.filteredItems && this.filteredItems.length !== itemslength && this.selectAll) {
           this.set('selectAll', false);
       }
   },
@@ -1511,5 +1513,18 @@ Polymer({
   },
   _requireDataProvider(rest, treeView){
       return rest || treeView;
+  },
+  _toggleTreeView(){
+      this.set('treeView', !this.treeView);
+      let firstFrozen;
+      if(!this.treeView){
+        firstFrozen = this.firstFrozen;
+        this.set('firstFrozen', undefined);
+        this.unshift('frozen', firstFrozen);
+      } else {
+          firstFrozen = this.shift('frozen');
+          this.set('firstFrozen', firstFrozen);
+      }
+      this._dismissDialog();
   }
 });
