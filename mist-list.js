@@ -1301,7 +1301,7 @@ Polymer({
   },
 
   _selectedItemsChanged (itemslength) {
-      if (this.count && this.filteredItems.length === itemslength && !this.selectAll) {
+      if (itemslength > 0 && this.filteredItems.length === itemslength && !this.selectAll) {
           this.set('selectAll', true);
       } else if (this.filteredItems && this.filteredItems.length !== itemslength && this.selectAll) {
           this.set('selectAll', false);
@@ -1513,17 +1513,19 @@ Polymer({
   _requireDataProvider(rest, treeView){
       return rest || treeView;
   },
-  _toggleTreeView(){
-      this.set('treeView', !this.treeView);
-      let firstFrozen;
-      if(!this.treeView){
+
+  _toggleTreeView(e) {
+    this.set('treeView', !this.treeView);
+    let firstFrozen;
+    if (!this.treeView) {
         firstFrozen = this.firstFrozen;
         this.set('firstFrozen', undefined);
         this.unshift('frozen', firstFrozen);
-      } else {
-          firstFrozen = this.shift('frozen');
-          this.set('firstFrozen', firstFrozen);
-      }
-      this._dismissDialog();
+        this.$.grid.dataProvider = this.$.grid._arrayDataProvider
+    } else {
+        firstFrozen = this.shift('frozen');
+        this.set('firstFrozen', firstFrozen);
+    }
+    e.currentTarget.parentNode.parentNode.close();
   }
 });
