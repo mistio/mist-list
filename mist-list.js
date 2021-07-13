@@ -1521,6 +1521,10 @@ Polymer({
         firstFrozen = this.firstFrozen;
         this.set('firstFrozen', undefined);
         this.unshift('frozen', firstFrozen);
+        this.$.grid.items.forEach(item => {
+            if(item.treeNode)
+                this.$.grid.collapseItem(item);
+        });
         this.$.grid.dataProvider = this.$.grid._arrayDataProvider
     } else {
         firstFrozen = this.shift('frozen');
