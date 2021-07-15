@@ -137,6 +137,7 @@ Polymer({
                 font-weight: 400;
                 font-size: 14px;
                 color: #424242;
+                background: inherit;
             }
 
             a {
