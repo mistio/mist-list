@@ -473,7 +473,7 @@ Polymer({
             </vaadin-dialog>
         </template>
 
-        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items="{{selectedItems}}" loading="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort="[[multiSort]]" theme\$="[[theme]] no-row-borders row-stripes">
+        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items="{{selectedItems}}" loading="[[_loading]]" _virtual-count="{{vcount}}" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort="[[multiSort]]" theme\$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
@@ -869,6 +869,14 @@ Polymer({
       treeView: {
           type: Boolean,
           value: false
+      },
+      vcount: {
+          type: Number,
+          value: 0
+      },
+      mistListHeight: {
+          type: Number,
+          value: 0
       }
   },
 
@@ -880,7 +888,8 @@ Polymer({
       '_selectAllToggled(selectAll)',
       '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
       '_visibleChanged(visible)',
-      '_columnsDialogClosed(columnsDialogOpened)'
+      '_columnsDialogClosed(columnsDialogOpened)',
+      '_gridItemsChanged(vcount, mistListHeight)'
   ],
 
   listeners: {
@@ -1022,7 +1031,7 @@ Polymer({
       if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
           this.scrollHeight)
           newHeight += 16;
-      this.style.height = newHeight + "px";
+      this.set('mistListHeight', newHeight);
       this.set('headerWidth', this.$.grid.$.header.clientWidth);
   },
 
@@ -1532,5 +1541,13 @@ Polymer({
         this.set('firstFrozen', firstFrozen);
     }
     e.currentTarget.parentNode.parentNode.close();
+  },
+  _gridItemsChanged(_vcount, mistListHeight){
+      let gridHeight = (this.vcount + 1) * 60;
+      let elementHeight = mistListHeight || 0;
+      if(gridHeight > elementHeight)
+        gridHeight = elementHeight
+      this.$.grid.style.height = `${gridHeight}px`;
+      this._itemMapUpdated();
   }
 });
