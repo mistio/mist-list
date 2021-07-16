@@ -1174,6 +1174,7 @@ Polymer({
 
   _getBody(column, item) {
       if (item) {
+          item[column] = item[column] ? item[column].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
           if (this.renderers[column])
               return this.renderers[column].body(item[column], item);
           if (typeof (item[column]) == 'undefined') return '&nbsp;';
