@@ -1223,7 +1223,7 @@ Polymer({
 
   _getBody(column, item) {
       if (item) {
-          item[column] = typeof(item[column]) == 'string' ? item[column].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+          item[column] = typeof(item[column]) == 'string' ? item[column].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : item[column];
           if (this.renderers[column])
               return this.renderers[column].body(item[column], item);
           if (typeof (item[column]) == 'undefined') return '&nbsp;';
