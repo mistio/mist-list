@@ -88,9 +88,14 @@ Polymer({
             notify: true
         },
 
-        treeView: {
+        rest: {
             type: Boolean,
             value: false
+        },
+        treeView: {
+            type: Boolean,
+            value: true,
+            reflectToAttribute: true
         }
     },
 
@@ -107,7 +112,7 @@ Polymer({
                 this.finished = false;
                 var _this = this;
                 this.set('provider', function (opts, callback) {
-                    if (!_this.treeView){
+                    if (_this.rest){
                         if (_this.finished)
                             return;
                         if (!opts.page) {
@@ -189,25 +194,41 @@ Polymer({
                         _this.loading = true;
                     } else {
                         let items = (Array.isArray(this.items) ? this.items : []).slice(0);
-
                         if (this._filters && this._checkPaths(this._filters, 'filtering', items)) {
                         items = this._filter(items);
                         }
 
                         this.size = items.length;
-
                         if (opts.sortOrders.length && this._checkPaths(this._sorters, 'sorting', items)) {
                         items = items.sort(this._multiSort.bind(this));
                         }
+                        if(_this.filteredItems && _this.filter && _this.filter.trim().length > 0){
+                            const filterMap = {};
+                            _this.filteredItems.forEach(item => {
+                                filterMap[item.id] = item;
+                            });
+                            // add parents
+                            Object.values(filterMap).forEach(item => {
+                                if(item.parent)
+                                    filterMap[item.parent] = _this.itemMap[item.parent];
+                            });
+                            items = Object.values(filterMap);
+                        }
                         let data = [];
-                        if (opts.parentItem){
+                        if (!_this.treeView) {
+                             data = items;
+                            _this.count = data.length
+                        }
+                        else if (opts.parentItem){
                             data = items.filter(item => {
                                 return item.parent === opts.parentItem.id;
                             });
+                            _this.count += data.length
                         } else {
                             data = items.filter(item => {
                                 return !item.parent;
                             });
+                            _this.count = data.length;
                         }
                         const start = opts.page * opts.pageSize;
                         const end = start + opts.pageSize;

@@ -413,10 +413,15 @@ Polymer({
             code-viewer  #exitFullscreenBtn {
               padding: 8px;
             }
+            .treeToggle[leaf] {
+                float: left;
+                margin-left: -30px;
+
+            }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, treeView)]]">
-            <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
+            <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}" filter="[[combinedFilter]]"></rest-data-provider>
         </template>
         <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$="[[!toolbar]]">
@@ -503,7 +508,7 @@ Polymer({
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
-                                <paper-item on-tap="_toggleTreeView">Tree View</paper-item>
+                                <paper-item on-tap="_toggleTreeView">[[_getTreeViewToggleText(treeView)]]</paper-item>
                             </paper-listbox>
                         </paper-menu-button>
                     </template>
@@ -515,11 +520,12 @@ Polymer({
             <template is="dom-if" if="[[treeView]]" restamp="">
                 <vaadin-grid-column frozen="" name="[[firstFrozen]]" resizable="" width$="[[columnWidth(firstFrozen,frozenWidth)]]">
                     <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
-                        <vaadin-grid-sorter style="z-index: -10000; float: left; margin-left:20px;" hidden="[[timeseries]]" path="[[firstFrozen]]" direction\$="[[_getDirection(firstFrozen)]]" cmp="[[_getComparisonFunction(firstFrozen)]]" id\$="sorter-column-[[firstFrozen]]">[[_getTitle(firstFrozen)]]</vaadin-grid-sorter>
-                        <span class="header" hidden$="[[!timeseries]]" style="float: left; margin-left:20px;">[[_getTitle(column)]]</span>
+                        <vaadin-grid-sorter style="z-index: -10000;" hidden="[[timeseries]]" path="[[firstFrozen]]" direction\$="[[_getDirection(firstFrozen)]]" cmp="[[_getComparisonFunction(firstFrozen)]]" id\$="sorter-column-[[firstFrozen]]">[[_getTitle(firstFrozen)]]</vaadin-grid-sorter>
+                        <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
                     </template>
                     <template>
                         <vaadin-grid-tree-toggle
+                        class="treeToggle"
                         leaf="[[!item.treeNode]]"
                         expanded="{{expanded}}" 
                         level="[[level]]">
@@ -1006,7 +1012,7 @@ Polymer({
       }
       var top = this.getBoundingClientRect().top,
           newHeight,
-          itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 56,
+          itemsHeight = (this.itemMap && Object.keys(this.itemMap).length || 0) * 56,
           isSmallScreen = window.innerWidth <= 768,
           outerScroller = this.$.grid.$.outerscroller,
           hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -1064,10 +1070,16 @@ Polymer({
 
   _filterItems: function (items, length, filter, filterMethod) {
       // console.log('filterItems', filter, this.id);
-      if (this.items) {
+      if(this.treeView && this.items && filter && filter.trim().length > 0){
+           const newItems = this.items.filter(this._applyFilter.bind(this));
+           this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
+           //this.$.grid.set('items', newItems);
+           //this._itemMapUpdated();
+      }
+      else if (this.items) {
           this.debounce('_filterListItems', function (items) {
               console.log('filterItems exec', filter, this.id);
-              var newItems = this.items.filter(this._applyFilter.bind(this));
+              const newItems = this.items.filter(this._applyFilter.bind(this));
               this.set('filteredItems', newItems);
               this.fire('mist-list-filtered-items-length-changed', {
                   length: this.filteredItems.length
@@ -1543,11 +1555,17 @@ Polymer({
     e.currentTarget.parentNode.parentNode.close();
   },
   _gridItemsChanged(_vcount, mistListHeight){
-      let gridHeight = (this.vcount + 1) * 60;
+      let gridHeight = (this.vcount + 1) * 52
       let elementHeight = mistListHeight || 0;
       if(gridHeight > elementHeight)
         gridHeight = elementHeight
       this.$.grid.style.height = `${gridHeight}px`;
-      this._itemMapUpdated();
+      if(this.combinedFilter && this.items)
+        this._filterItems(this.items, this.items.length, this.combinedFilter);
+  },
+  _getTreeViewToggleText(treeView) {
+      if (treeView)
+        return 'Normal View';
+      return 'Tree View';
   }
 });
