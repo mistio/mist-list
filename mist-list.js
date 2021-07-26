@@ -977,6 +977,8 @@ Polymer({
               console.log('itemMap updated');
               that.set('items', Object.values(that.itemMap));
           }, 300);
+      } else if (this.itemMap){
+          this._windowResize()
       }
   },
 
