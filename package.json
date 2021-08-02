@@ -1,7 +1,7 @@
 {
   "description": "Flexible list element based on vaadin-grid",
   "name": "@mistio/mist-list",
-  "version": "3.0.23",
+  "version": "3.1.0",
   "main": "mist-list.js",
   "contributors": [
     "Dimitris Moraitis <dimo@mist.io>",
@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@mistio/sortable-list": "^1.0.1",
-    "@mistio/vaadin-grid": "^5.7.6",
+    "@mistio/vaadin-grid": "^5.7.7",
     "@polymer/iron-resizable-behavior": "^3.0.0",
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-checkbox": "^3.0.0",
