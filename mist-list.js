@@ -420,9 +420,10 @@ Polymer({
             }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
-        <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, treeView)]]">
+        <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, dataProvider)]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
+
         <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
@@ -526,7 +527,7 @@ Polymer({
                     <template>
                         <vaadin-grid-tree-toggle
                         class="treeToggle"
-                        leaf="[[!item.treeNode]]"
+                        leaf="[[!item.is_dir]]"
                         expanded="{{expanded}}" 
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
@@ -1014,7 +1015,7 @@ Polymer({
       }
       var top = this.getBoundingClientRect().top,
           newHeight,
-          itemsHeight = (this.itemMap && Object.keys(this.itemMap).length || 0) * 56,
+          itemsHeight = this.$.grid.items.length * 56,
           isSmallScreen = window.innerWidth <= 768,
           outerScroller = this.$.grid.$.outerscroller,
           hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -1037,8 +1038,9 @@ Polymer({
           newHeight = Math.min(window.innerHeight - top - 36, itemsHeight +
               heightOffset);
       if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
-          this.scrollHeight)
+          this.scrollHeight) {
           newHeight += 16;
+      }
       this.set('mistListHeight', newHeight);
       this.set('headerWidth', this.$.grid.$.header.clientWidth);
   },
@@ -1535,8 +1537,8 @@ Polymer({
         return this.frozen.shift();
       return "";
   },
-  _requireDataProvider(rest, treeView){
-      return rest || treeView;
+  _requireDataProvider(rest, dataProvider) {
+      return typeof(dataProvider) !== 'function' || rest;
   },
 
   _toggleTreeView(e) {
@@ -1550,7 +1552,7 @@ Polymer({
             if(item.treeNode)
                 this.$.grid.collapseItem(item);
         });
-        this.$.grid.dataProvider = this.$.grid._arrayDataProvider
+        // this.$.grid.dataProvider = this.$.grid._arrayDataProvider
     } else {
         firstFrozen = this.shift('frozen');
         this.set('firstFrozen', firstFrozen);
