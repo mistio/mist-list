@@ -990,7 +990,7 @@ Polymer({
   _updateShowNoData: function (items, filteredItems, loading, _loading, justAttached) {
       if (!(this.loading || this._loading) && !this.items || (this.items && !this.items.length) ||
               (this.filteredItems && !this.filteredItems.length)) {
-              this.set('showNoData', !justAttached);
+              this.set('showNoData', !justAttached && !this.treeView);
       } else {
           this.set('showNoData', false);
       }
@@ -1210,8 +1210,15 @@ Polymer({
       this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
       // we should either redirect to the proper route path, or expand the item
       if (this._clickedItem) {
-          if (this.route != undefined)
-              this.set('route.path', this._clickedItem[this.primaryFieldName]);
+        if (this.treeView && this._clickedItem.is_dir) {
+            if (!grid._isExpanded(this._clickedItem)) {
+                grid.expandItem(this._clickedItem);
+            } else {
+                grid.collapseItem(this._clickedItem);
+            }
+        } else if (this.route != undefined) {
+            this.set('route.path', this._clickedItem[this.primaryFieldName]);
+        }
       }
   },
 
