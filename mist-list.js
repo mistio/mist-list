@@ -420,7 +420,7 @@ Polymer({
             }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
-        <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, dataProvider)]]">
+        <template is="dom-if" restamp="" if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
 
@@ -1496,10 +1496,12 @@ Polymer({
           }
       }
   },
+
   codeViewerEnterFullscreen(e){
     this.itemFullscreen = true;
     this.fullScreenValue = e.detail.value;
   },
+
   codeViewerExitFullscreen() {
     this.itemFullscreen = false;
     if (this.insideFullscreen) {
@@ -1508,6 +1510,7 @@ Polymer({
         this._exitFullscreen();
     }
   },
+
   _enterFullscreen: function (e) {
       this.insideFullscreen = true;
       this.set('fullscreen', true);
@@ -1539,13 +1542,11 @@ Polymer({
           return true;
       return false;
   },
+
   _computefirstFrozen(_frozen){
       if (this.treeView)
         return this.frozen.shift();
       return "";
-  },
-  _requireDataProvider(rest, dataProvider) {
-      return typeof(dataProvider) !== 'function' || rest;
   },
 
   _toggleTreeView(e) {
@@ -1566,6 +1567,7 @@ Polymer({
     }
     e.currentTarget.parentNode.parentNode.close();
   },
+
   _gridItemsChanged(_vcount, mistListHeight){
       let gridHeight = (this.vcount + 1) * 52
       let elementHeight = mistListHeight || 0;
@@ -1575,9 +1577,11 @@ Polymer({
       if(this.combinedFilter && this.items)
         this._filterItems(this.items, this.items.length, this.combinedFilter);
   },
+
   _getTreeViewToggleText(treeView) {
       if (treeView)
         return 'Normal View';
       return 'Tree View';
   }
+
 });
