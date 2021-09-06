@@ -181,11 +181,9 @@ Polymer({
                                     }
                                 }
                                 callback(items, _this.count);
-                                if (_this.parentElement) {
-                                    _this.parentElement.async(function () {
-                                        this.fire('resize')
-                                    }, 1000);
-                                }
+                                _this.async(function () {
+                                    _this.fire('resize')
+                                }, 500);
                             }
                             _this.loading = false;
                         };

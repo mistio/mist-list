@@ -14,8 +14,11 @@ Polymer({
             :host([selected]) .check {
                 transform: rotate3d(0, 1, 0, 180deg);
             }
-
             :host([selected]) iron-icon {
+                display: none;
+            }
+            :host([selected]) iron-icon#check {
+                display: flex;
                 transform: rotate3d(0, 1, 0, -180deg) scale(1);
                 opacity: 1;
             }
@@ -48,7 +51,7 @@ Polymer({
                 text-transform: uppercase;
             }
 
-            iron-icon {
+            iron-icon#check {
                 transition: transform 300ms ease-in-out 100ms;
                 will-change: opacity;
                 transform: rotate3d(0, 1, 0, -180deg) scale(0);
@@ -83,11 +86,15 @@ Polymer({
         <div class="check">
             <span class="unchecked layout horizontal center-center">
                 <slot></slot>
-                <template is="dom-if" if="[[icon]]">
+                <template is="dom-if" if="[[_hasSlash(icon)]]" restamp>
                     <img src="[[icon]]">
                 </template>
+                <template is="dom-if" if="[[!_hasSlash(icon)]]" restamp>
+                    <iron-icon icon="[[icon]]"></iron-icon>
+                </template>
+
             </span>
-            <iron-icon icon="check"></iron-icon>
+            <iron-icon icon="check" id="check"></iron-icon>
         </div>
 `,
 
@@ -112,5 +119,9 @@ Polymer({
   toggle: function (e) {
       e.stopImmediatePropagation();
       this.set('selected', !this.selected);
+  },
+
+  _hasSlash(icon) {
+      return icon.indexOf('/') != -1;
   }
 });

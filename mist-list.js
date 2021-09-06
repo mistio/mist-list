@@ -420,9 +420,10 @@ Polymer({
             }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
-        <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, treeView)]]">
+        <template is="dom-if" restamp="" if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
+
         <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
@@ -526,7 +527,7 @@ Polymer({
                     <template>
                         <vaadin-grid-tree-toggle
                         class="treeToggle"
-                        leaf="[[!item.treeNode]]"
+                        leaf="[[!item.is_dir]]"
                         expanded="{{expanded}}" 
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
@@ -989,7 +990,7 @@ Polymer({
   _updateShowNoData: function (items, filteredItems, loading, _loading, justAttached) {
       if (!(this.loading || this._loading) && !this.items || (this.items && !this.items.length) ||
               (this.filteredItems && !this.filteredItems.length)) {
-              this.set('showNoData', !justAttached);
+              this.set('showNoData', !justAttached && !this.treeView);
       } else {
           this.set('showNoData', false);
       }
@@ -1014,7 +1015,7 @@ Polymer({
       }
       var top = this.getBoundingClientRect().top,
           newHeight,
-          itemsHeight = (this.itemMap && Object.keys(this.itemMap).length || 0) * 56,
+          itemsHeight = this.$.grid.items.length * 56,
           isSmallScreen = window.innerWidth <= 768,
           outerScroller = this.$.grid.$.outerscroller,
           hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -1037,8 +1038,9 @@ Polymer({
           newHeight = Math.min(window.innerHeight - top - 36, itemsHeight +
               heightOffset);
       if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
-          this.scrollHeight)
+          this.scrollHeight) {
           newHeight += 16;
+      }
       this.set('mistListHeight', newHeight);
       this.set('headerWidth', this.$.grid.$.header.clientWidth);
   },
@@ -1208,8 +1210,15 @@ Polymer({
       this._clickedItem = grid && grid.activeItem ? grid.activeItem : this._clickedItem;
       // we should either redirect to the proper route path, or expand the item
       if (this._clickedItem) {
-          if (this.route != undefined)
-              this.set('route.path', this._clickedItem[this.primaryFieldName]);
+        if (this.treeView && this._clickedItem.is_dir) {
+            if (!grid._isExpanded(this._clickedItem)) {
+                grid.expandItem(this._clickedItem);
+            } else {
+                grid.collapseItem(this._clickedItem);
+            }
+        } else if (this.route != undefined) {
+            this.set('route.path', this._clickedItem[this.primaryFieldName]);
+        }
       }
   },
 
@@ -1487,10 +1496,12 @@ Polymer({
           }
       }
   },
+
   codeViewerEnterFullscreen(e){
     this.itemFullscreen = true;
     this.fullScreenValue = e.detail.value;
   },
+
   codeViewerExitFullscreen() {
     this.itemFullscreen = false;
     if (this.insideFullscreen) {
@@ -1499,6 +1510,7 @@ Polymer({
         this._exitFullscreen();
     }
   },
+
   _enterFullscreen: function (e) {
       this.insideFullscreen = true;
       this.set('fullscreen', true);
@@ -1530,13 +1542,11 @@ Polymer({
           return true;
       return false;
   },
+
   _computefirstFrozen(_frozen){
       if (this.treeView)
         return this.frozen.shift();
       return "";
-  },
-  _requireDataProvider(rest, treeView){
-      return rest || treeView;
   },
 
   _toggleTreeView(e) {
@@ -1550,13 +1560,14 @@ Polymer({
             if(item.treeNode)
                 this.$.grid.collapseItem(item);
         });
-        this.$.grid.dataProvider = this.$.grid._arrayDataProvider
+        // this.$.grid.dataProvider = this.$.grid._arrayDataProvider
     } else {
         firstFrozen = this.shift('frozen');
         this.set('firstFrozen', firstFrozen);
     }
     e.currentTarget.parentNode.parentNode.close();
   },
+
   _gridItemsChanged(_vcount, mistListHeight){
       let gridHeight = (this.vcount + 1) * 52
       let elementHeight = mistListHeight || 0;
@@ -1566,9 +1577,11 @@ Polymer({
       if(this.combinedFilter && this.items)
         this._filterItems(this.items, this.items.length, this.combinedFilter);
   },
+
   _getTreeViewToggleText(treeView) {
       if (treeView)
         return 'Normal View';
       return 'Tree View';
   }
+
 });
