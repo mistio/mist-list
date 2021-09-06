@@ -1,6 +1,7 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@mistio/vaadin-grid/vaadin-grid.js';
 import '@mistio/vaadin-grid/vaadin-grid-sorter.js';
+import '@mistio/vaadin-grid/vaadin-grid-tree-toggle.js';
 import '@mistio/vaadin-grid/vaadin-grid-selection-column.js';
 import '@polymer/paper-button/paper-button.js';
 import '@vaadin/vaadin-dialog/vaadin-dialog.js';
@@ -8,6 +9,7 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-toggle-button/paper-toggle-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
@@ -135,6 +137,7 @@ Polymer({
                 font-weight: 400;
                 font-size: 14px;
                 color: #424242;
+                background: inherit;
             }
 
             a {
@@ -410,10 +413,15 @@ Polymer({
             code-viewer  #exitFullscreenBtn {
               padding: 8px;
             }
+            .treeToggle[leaf] {
+                float: left;
+                margin-left: -30px;
+
+            }
         </style>
         <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
-        <template is="dom-if" restamp="" if="[[rest]]">
-            <rest-data-provider id="restProvider" url="[[apiurl]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
+        <template is="dom-if" restamp="" if="[[_requireDataProvider(rest, treeView)]]">
+            <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
         <slot id="slottedHeader" name="header"></slot>
         <app-toolbar hidden$="[[!toolbar]]">
@@ -470,7 +478,7 @@ Polymer({
             </vaadin-dialog>
         </template>
 
-        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items="{{selectedItems}}" loading="[[_loading]]" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort="[[multiSort]]" theme\$="[[theme]] no-row-borders row-stripes">
+        <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items="{{selectedItems}}" loading="[[_loading]]" _virtual-count="{{vcount}}" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort="[[multiSort]]" theme\$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
                     <div class="details" on-tap="_preventDefault" on-click="_preventDefault" on-pointerup="_preventDefault" on-mouseup="_preventDefault">
@@ -500,11 +508,29 @@ Polymer({
                             <paper-listbox class="dropdown-content" slot="dropdown-content">
                                 <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
                                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
+                                <paper-item on-tap="_toggleTreeView">[[_getTreeViewToggleText(treeView)]]</paper-item>
                             </paper-listbox>
                         </paper-menu-button>
                     </template>
                     <template>
                         <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;" toggles="" active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden$="[[!expands]]" on-active-changed="_toggleItemExpand"></paper-icon-button>
+                    </template>
+                </vaadin-grid-column>
+            </template>
+            <template is="dom-if" if="[[treeView]]" restamp="">
+                <vaadin-grid-column frozen="" name="[[firstFrozen]]" resizable="" width$="[[columnWidth(firstFrozen,frozenWidth)]]">
+                    <template class="header" style="z-index: -10000" hidden="[[selectedItems.length]]">
+                        <vaadin-grid-sorter style="z-index: -10000;" hidden="[[timeseries]]" path="[[firstFrozen]]" direction\$="[[_getDirection(firstFrozen)]]" cmp="[[_getComparisonFunction(firstFrozen)]]" id\$="sorter-column-[[firstFrozen]]">[[_getTitle(firstFrozen)]]</vaadin-grid-sorter>
+                        <span class="header" hidden$="[[!timeseries]]">[[_getTitle(column)]]</span>
+                    </template>
+                    <template>
+                        <vaadin-grid-tree-toggle
+                        class="treeToggle"
+                        leaf="[[!item.treeNode]]"
+                        expanded="{{expanded}}" 
+                        level="[[level]]">
+                        <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
+                        </vaading-grid-tree-toggle>
                     </template>
                 </vaadin-grid-column>
             </template>
@@ -614,12 +640,16 @@ Polymer({
               return {}
           }
       },
-
       frozen: {
           type: Array,
           value: function () {
               return []
           }
+      },
+
+      firstFrozen: {
+        type: String,
+        computed: '_computefirstFrozen(frozen)'
       },
 
       visible: {
@@ -841,7 +871,19 @@ Polymer({
       itemFullscreen: {
         type: Boolean,
         value: false
-    },
+      },
+      treeView: {
+          type: Boolean,
+          value: false
+      },
+      vcount: {
+          type: Number,
+          value: 0
+      },
+      mistListHeight: {
+          type: Number,
+          value: 0
+      }
   },
 
   observers: [
@@ -852,7 +894,8 @@ Polymer({
       '_selectAllToggled(selectAll)',
       '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
       '_visibleChanged(visible)',
-      '_columnsDialogClosed(columnsDialogOpened)'
+      '_columnsDialogClosed(columnsDialogOpened)',
+      '_gridItemsChanged(vcount, mistListHeight)'
   ],
 
   listeners: {
@@ -934,6 +977,8 @@ Polymer({
               console.log('itemMap updated');
               that.set('items', Object.values(that.itemMap));
           }, 300);
+      } else if (this.itemMap){
+          this._windowResize()
       }
   },
 
@@ -969,7 +1014,7 @@ Polymer({
       }
       var top = this.getBoundingClientRect().top,
           newHeight,
-          itemsHeight = (this.$.grid.items && this.$.grid.items.length || 0) * 56,
+          itemsHeight = (this.itemMap && Object.keys(this.itemMap).length || 0) * 56,
           isSmallScreen = window.innerWidth <= 768,
           outerScroller = this.$.grid.$.outerscroller,
           hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -994,7 +1039,7 @@ Polymer({
       if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
           this.scrollHeight)
           newHeight += 16;
-      this.style.height = newHeight + "px";
+      this.set('mistListHeight', newHeight);
       this.set('headerWidth', this.$.grid.$.header.clientWidth);
   },
 
@@ -1027,10 +1072,16 @@ Polymer({
 
   _filterItems: function (items, length, filter, filterMethod) {
       // console.log('filterItems', filter, this.id);
-      if (this.items) {
+      if(this.treeView && this.items && filter && filter.trim().length > 0){
+           const newItems = this.items.filter(this._applyFilter.bind(this));
+           this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
+           //this.$.grid.set('items', newItems);
+           //this._itemMapUpdated();
+      }
+      else if (this.items) {
           this.debounce('_filterListItems', function (items) {
               console.log('filterItems exec', filter, this.id);
-              var newItems = this.items.filter(this._applyFilter.bind(this));
+              const newItems = this.items.filter(this._applyFilter.bind(this));
               this.set('filteredItems', newItems);
               this.fire('mist-list-filtered-items-length-changed', {
                   length: this.filteredItems.length
@@ -1267,17 +1318,17 @@ Polymer({
   },
 
   _selectAllToggled (selectAll) {
-      if (selectAll && this.count != this.selectedItems.length) {
+      if (selectAll && this.filteredItems.length !== this.selectedItems.length) {
           this.set('selectedItems', this.filteredItems);
-      } else if (!selectAll && this.count == this.selectedItems.length) {
+      } else if (!selectAll && this.filteredItems.length === this.selectedItems.length) {
           this.set('selectedItems', []);
       }
   },
 
   _selectedItemsChanged (itemslength) {
-      if (this.count && this.count == itemslength && !this.selectAll) {
+      if (itemslength > 0 && this.filteredItems.length === itemslength && !this.selectAll) {
           this.set('selectAll', true);
-      } else if (this.count && this.count != itemslength && this.selectAll) {
+      } else if (this.filteredItems && this.filteredItems.length !== itemslength && this.selectAll) {
           this.set('selectAll', false);
       }
   },
@@ -1342,7 +1393,7 @@ Polymer({
   },
 
   _computeColumnMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength, count) {
-      if (!columnMenu || selectedItemsLength || !count)
+      if (!columnMenu || selectedItemsLength || (this.items && !this.items.length))
           return 'display: none';
       if (selectable) return 'margin-left: -8px;';
       return 'margin-left: 4px;';
@@ -1478,5 +1529,46 @@ Polymer({
       if (this.visible && this.visible.length > 0)
           return true;
       return false;
+  },
+  _computefirstFrozen(_frozen){
+      if (this.treeView)
+        return this.frozen.shift();
+      return "";
+  },
+  _requireDataProvider(rest, treeView){
+      return rest || treeView;
+  },
+
+  _toggleTreeView(e) {
+    this.set('treeView', !this.treeView);
+    let firstFrozen;
+    if (!this.treeView) {
+        firstFrozen = this.firstFrozen;
+        this.set('firstFrozen', undefined);
+        this.unshift('frozen', firstFrozen);
+        this.$.grid.items.forEach(item => {
+            if(item.treeNode)
+                this.$.grid.collapseItem(item);
+        });
+        this.$.grid.dataProvider = this.$.grid._arrayDataProvider
+    } else {
+        firstFrozen = this.shift('frozen');
+        this.set('firstFrozen', firstFrozen);
+    }
+    e.currentTarget.parentNode.parentNode.close();
+  },
+  _gridItemsChanged(_vcount, mistListHeight){
+      let gridHeight = (this.vcount + 1) * 52
+      let elementHeight = mistListHeight || 0;
+      if(gridHeight > elementHeight)
+        gridHeight = elementHeight
+      this.$.grid.style.height = `${gridHeight}px`;
+      if(this.combinedFilter && this.items)
+        this._filterItems(this.items, this.items.length, this.combinedFilter);
+  },
+  _getTreeViewToggleText(treeView) {
+      if (treeView)
+        return 'Normal View';
+      return 'Tree View';
   }
 });
