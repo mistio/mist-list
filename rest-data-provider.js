@@ -1,5 +1,7 @@
 import '@polymer/polymer/polymer-legacy.js';
-import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {
+    Polymer
+} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 Polymer({
     is: 'rest-data-provider',
 
@@ -35,7 +37,7 @@ Polymer({
         colmap: {
             type: Object,
             value: function () {
-                return {}
+                return {};
             }
         },
 
@@ -47,21 +49,21 @@ Polymer({
         frozen: {
             type: Array,
             value: function () {
-                return []
+                return [];
             }
         },
 
         itemMap: {
             type: Object,
             value: function () {
-                return {}
+                return {};
             },
             notify: true
         },
 
         primaryFieldName: {
             type: String,
-            value: "id"
+            value: 'id'
         },
 
         timeseries: {
@@ -103,7 +105,7 @@ Polymer({
         '_computeDataProvider(filter, url)'
     ],
 
-    _computeDataProvider: function (filter, url) {
+    _computeDataProvider: function () {
         if (this.url && this.url.length)
             this.debounce('_computeDataProvider', function () {
                 this.stop = 0;
@@ -112,7 +114,7 @@ Polymer({
                 this.finished = false;
                 var _this = this;
                 this.set('provider', function (opts, callback) {
-                    if (_this.rest){
+                    if (_this.rest) {
                         if (_this.finished)
                             return;
                         if (!opts.page) {
@@ -129,13 +131,12 @@ Polymer({
                         }
                         if (_this.filter) {
                             url += 'filter=' + encodeURIComponent(_this.filter);
-                            console.log('filter', _this.filter);
                         }
                         if (opts.sortOrders && opts.sortOrders.length)
                             url += 'order=' + encodeURIComponent(opts.sortOrders.map(
                                 function (b) {
-                                    return (b.direction == 'desc' ? '-' : '') + b.path
-                                }))
+                                    return (b.direction == 'desc' ? '-' : '') + b.path;
+                                }));
                         if (opts.page == 0)
                             _this.set('received', 0);
                         xhr.open('GET', url);
@@ -173,16 +174,14 @@ Polymer({
                                     if (_this.timeseries && items.length == opts.pageSize) {
                                         _this.set('stop', items[items.length - 1][_this
                                             .primaryFieldName
-                                        ])
-                                        console.log('setting stop to', items[items.length -
-                                            1][_this.primaryFieldName])
+                                        ]);
                                     } else if (_this.timeseries && items.length < opts.pageSize) {
                                         _this.count = _this.received;
                                     }
                                 }
                                 callback(items, _this.count);
                                 _this.async(function () {
-                                    _this.fire('resize')
+                                    _this.fire('resize');
                                 }, 500);
                             }
                             _this.loading = false;
@@ -193,35 +192,34 @@ Polymer({
                     } else {
                         let items = (Array.isArray(this.items) ? this.items : []).slice(0);
                         if (this._filters && this._checkPaths(this._filters, 'filtering', items)) {
-                        items = this._filter(items);
+                            items = this._filter(items);
                         }
 
                         this.size = items.length;
                         if (opts.sortOrders.length && this._checkPaths(this._sorters, 'sorting', items)) {
-                        items = items.sort(this._multiSort.bind(this));
+                            items = items.sort(this._multiSort.bind(this));
                         }
-                        if(_this.filteredItems && _this.filter && _this.filter.trim().length > 0){
+                        if (_this.filteredItems && _this.filter && _this.filter.trim().length > 0) {
                             const filterMap = {};
                             _this.filteredItems.forEach(item => {
                                 filterMap[item.id] = item;
                             });
                             // add parents
                             Object.values(filterMap).forEach(item => {
-                                if(item.parent)
+                                if (item.parent)
                                     filterMap[item.parent] = _this.itemMap[item.parent];
                             });
                             items = Object.values(filterMap);
                         }
                         let data = [];
                         if (!_this.treeView) {
-                             data = items;
-                            _this.count = data.length
-                        }
-                        else if (opts.parentItem){
+                            data = items;
+                            _this.count = data.length;
+                        } else if (opts.parentItem) {
                             data = items.filter(item => {
                                 return item.parent === opts.parentItem.id;
                             });
-                            _this.count += data.length
+                            _this.count += data.length;
                         } else {
                             data = items.filter(item => {
                                 return !item.parent;

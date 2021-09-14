@@ -1,9 +1,13 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/iron-icon/iron-icon.js';
-import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import {
+    Polymer
+} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {
+    html
+} from '@polymer/polymer/lib/utils/html-tag.js';
 Polymer({
-  _template: html`
+    _template: html `
         <style>
             :host {
                 display: inline-block;
@@ -98,30 +102,30 @@ Polymer({
         </div>
 `,
 
-  is: 'mist-check',
+    is: 'mist-check',
 
-  properties: {
-      item: {
-          type: Object
-      },
-      selected: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false,
-          notify: true
-      }
-  },
+    properties: {
+        item: {
+            type: Object
+        },
+        selected: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            notify: true
+        }
+    },
 
-  listeners: {
-      'click': 'toggle',
-  },
+    listeners: {
+        'click': 'toggle',
+    },
 
-  toggle: function (e) {
-      e.stopImmediatePropagation();
-      this.set('selected', !this.selected);
-  },
+    toggle: function (e) {
+        e.stopImmediatePropagation();
+        this.set('selected', !this.selected);
+    },
 
-  _hasSlash(icon) {
-      return icon.indexOf('/') != -1;
-  }
+    _hasSlash(icon) {
+        return icon.indexOf('/') != -1;
+    }
 });

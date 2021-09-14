@@ -1,11 +1,17 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/paper-button/paper-button.js';
-import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import {
+    IronResizableBehavior
+} from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
+import {
+    Polymer
+} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {
+    html
+} from '@polymer/polymer/lib/utils/html-tag.js';
 
 Polymer({
-  _template: html`
+    _template: html `
         <style include="shared-styles">
             :host {
                 display: flex;
@@ -109,89 +115,89 @@ Polymer({
         </template>
 `,
 
-  is: 'mist-list-actions',
+    is: 'mist-list-actions',
 
-  behaviors: [
-      IronResizableBehavior
-  ],
+    behaviors: [
+        IronResizableBehavior
+    ],
 
-  properties: {
-      actions: {
-          type: Array
-      },
-      selectedAction: {
-          type: Object
-      },
-      visibleActions: {
-          type: Number,
-          value: 3
-      },
-      topActions: {
-          type: Array,
-          computed: "_computeTopActions(actions, visibleActions)",
-          value: function () {
-              return []
-          }
-      },
-      moreActions: {
-          type: Array,
-          computed: "_computeMoreActions(actions, visibleActions)",
-          value: function () {
-              return []
-          }
-      },
-      useHalfWidth: {
-          type: Boolean,
-          reflectToAttribute: true
-      }
-  },
+    properties: {
+        actions: {
+            type: Array
+        },
+        selectedAction: {
+            type: Object
+        },
+        visibleActions: {
+            type: Number,
+            value: 3
+        },
+        topActions: {
+            type: Array,
+            computed: '_computeTopActions(actions, visibleActions)',
+            value: function () {
+                return [];
+            }
+        },
+        moreActions: {
+            type: Array,
+            computed: '_computeMoreActions(actions, visibleActions)',
+            value: function () {
+                return [];
+            }
+        },
+        useHalfWidth: {
+            type: Boolean,
+            reflectToAttribute: true
+        }
+    },
 
-  observers: [
-      '_actionsChanged(actions)'
-  ],
+    observers: [
+        '_actionsChanged(actions)'
+    ],
 
-  listeners: {
-      'iron-resize': '_updateVisibleActions'
-  },
+    listeners: {
+        'iron-resize': '_updateVisibleActions'
+    },
 
-  attached() {
-      this._updateVisibleActions();
-  },
+    attached() {
+        this._updateVisibleActions();
+    },
 
-  _selectAction: function (e) {
-      if (this.shadowRoot.querySelector('paper-menu-button#actionmenu')) {
-          this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
-      }
-      if (e.model.action) {
-          this.set('selectedAction', e.model.action);
-          this.fire('select-action', {
-              action: e.model.action
-          })
-      }
-  },
+    _selectAction: function (e) {
+        if (this.shadowRoot.querySelector('paper-menu-button#actionmenu')) {
+            this.shadowRoot.querySelector('paper-menu-button#actionmenu').close();
+        }
+        if (e.model.action) {
+            this.set('selectedAction', e.model.action);
+            this.fire('select-action', {
+                action: e.model.action
+            });
+        }
+    },
 
-  _actionsChanged(actions) {
-      if (actions) {
-          this._updateVisibleActions();
-      }
-  },
+    _actionsChanged(actions) {
+        if (actions) {
+            this._updateVisibleActions();
+        }
+    },
 
-  _computeTopActions(_actions, _visibleActions) {
-      if (this.actions)
-          return this.actions.slice(0, this.visibleActions);
-  },
+    _computeTopActions() {
+        if (this.actions)
+            return this.actions.slice(0, this.visibleActions);
+    },
 
-  _computeMoreActions(_actions, _visbleActions) {
-      if (this.actions)
-          return this.actions.slice(this.visibleActions);
-  },
+    _computeMoreActions() {
+        if (this.actions)
+            return this.actions.slice(this.visibleActions);
+    },
 
-  _updateVisibleActions(_e) {
-      var offsetWidth = this.offsetWidth;
-      this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
-  },
+    _updateVisibleActions() {
+        var offsetWidth = this.offsetWidth;
+        this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
+    },
 
-  _hasActions(length) {
-      return length > 0
-  }
+    _hasActions(length) {
+        return length > 0;
+    }
 });
