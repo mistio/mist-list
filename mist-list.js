@@ -1218,6 +1218,12 @@ Polymer({
             }
         } else if (this.route != undefined) {
             this.set('route.path', this._clickedItem[this.primaryFieldName]);
+        } else {
+            this.dispatchEvent(new CustomEvent('active-item-changed', {
+                detail: {id: this._clickedItem[this.primaryFieldName]},
+                bubbles: true,
+                composed: true
+            }));
         }
       }
   },
