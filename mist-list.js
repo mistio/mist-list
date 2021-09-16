@@ -15,6 +15,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@mistio/sortable-list/sortable-list.js';
+import './code-viewer.js';
 import './mist-check.js';
 import './mist-filter.js';
 import './mist-list-actions.js';
