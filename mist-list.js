@@ -9,7 +9,6 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-toggle-button/paper-toggle-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
@@ -1358,6 +1357,11 @@ Polymer({
         } else if (this.filteredItems && this.filteredItems.length !== itemslength && this.selectAll) {
             this.set('selectAll', false);
         }
+        this.dispatchEvent(new CustomEvent('selected-items-changed', {
+            detail: {items: this.selectedItems},
+            bubbles: true,
+            composed: true
+        }));
     },
 
     _computeAllowedActions(acts) {
