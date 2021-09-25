@@ -1088,7 +1088,7 @@ Polymer({
     },
 
     _filterItems: function (items, length, filter) {
-        if (this.treeView && this.items && filter && filter.trim().length > 0) {
+        if (this.rest && this.items && filter && filter.trim().length > 0) {
             const newItems = this.items.filter(this._applyFilter.bind(this));
             this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
         } else if (this.items) {
