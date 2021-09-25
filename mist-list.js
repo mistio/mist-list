@@ -580,7 +580,7 @@ Polymer({
             </template>
         </vaadin-grid>
 
-        <div class="nodata" hidden\$="[[!showNoData]]">
+        <div class="nodata" hidden$="[[!showNoData]]">
             <slot name="no-items-found"></slot>
         </div>
 
@@ -999,8 +999,7 @@ Polymer({
     },
 
     _updateShowNoData: function (items, filteredItems, loading, _loading, justAttached) {
-        if (!(this.loading || this._loading) && !this.items || (this.items && !this.items.length) ||
-            (this.filteredItems && !this.filteredItems.length)) {
+        if (!(this.loading || this._loading) && (this.$.grid.items && !this.$.grid.items.length)) {
             this.set('showNoData', !justAttached && !this.treeView);
         } else {
             this.set('showNoData', false);
