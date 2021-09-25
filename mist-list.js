@@ -1597,6 +1597,7 @@ Polymer({
         let elementHeight = mistListHeight || 0;
         if (gridHeight > elementHeight)
             gridHeight = elementHeight;
+        gridHeight = Math.max(gridHeight, this.clientHeight)
         this.$.grid.style.height = `${gridHeight}px`;
         if (this.combinedFilter && this.items)
             this._filterItems(this.items, this.items.length, this.combinedFilter);
