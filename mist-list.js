@@ -229,6 +229,7 @@ Polymer({
                 text-transform: uppercase;
                 font-size: 14px;
                 font-weight: 400;
+                margin-top: 6px;
             }
 
             paper-input {
@@ -321,8 +322,9 @@ Polymer({
             paper-menu-button.column-menu {
                 z-index: 1;
                 padding: calc(var(--row-height)/2 - 25px) 0;
-                margin-left: -8px;
+                margin-top: 8px;
                 color: #666;
+                float: left;
             }
 
             paper-input#searchInput {
@@ -482,7 +484,14 @@ Polymer({
                 </template>
             </vaadin-dialog>
         </template>
-
+        <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="45" class="column-menu" style\$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
+            <paper-icon-button icon="icons:menu" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
+            <paper-listbox class="dropdown-content" slot="dropdown-content">
+                <paper-item on-tap="_openDialogSelectColumns"><iron-icon icon="icons:view-column"></iron-icon> &nbsp; Select columns</paper-item>
+                <paper-item on-tap="_toggleTreeView"><iron-icon icon="icons:view-list" hidden$=[[!treeView]]></iron-icon> <iron-icon icon="vaadin:file-tree" hidden$=[[treeView]]></iron-icon> &nbsp; [[_getTreeViewToggleText(treeView)]]</paper-item>
+                <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]"><iron-icon icon="icons:file-download"></iron-icon> &nbsp; Download CSV</paper-item>
+            </paper-listbox>
+        </paper-menu-button>
         <vaadin-grid id="grid" data-provider="[[dataProvider]]" selected-items="{{selectedItems}}" loading="[[_loading]]" _virtual-count="{{vcount}}" on-active-item-changed="_activeItemChanged" selection-mode="multi" multi-sort="[[multiSort]]" theme\$="[[theme]] no-row-borders row-stripes">
             <template class="row-details">
                 <div class="details-cell">
@@ -495,7 +504,7 @@ Polymer({
                 <vaadin-grid-selection-column flex-grow="0" frozen="" style="overflow: visible;" width="50px" z-index="5">
                     <template class="header">
                         <mist-check class="mist-check-header" selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
-                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; margin-left:-8px; padding: 8px 8px 13px; z-index: 99999">
+                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; padding: 8px 8px 13px; z-index: 99999">
                             <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions="[[_computeAllowedActions(actions)]]"></mist-list-actions>
                         </div>
@@ -508,14 +517,7 @@ Polymer({
             <template is="dom-if" if="[[_or(expands, columnMenu)]]" restamp="">
                 <vaadin-grid-column width="[[_computeMenuCellWidth(expands)]]" flex-grow="0" frozen="" style="z-index: -1">
                     <template class="header" style="z-index: -1">
-                        <paper-menu-button horizontal-align="left" vertical-align="top" vertical-offset="45" class="column-menu" style\$="[[_computeColumnMenuButtonStyle(selectable, expands, columnMenu, selectedItems.length, count)]]">
-                            <paper-icon-button icon="icons:view-column" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
-                            <paper-listbox class="dropdown-content" slot="dropdown-content">
-                                <paper-item on-tap="_openDialogSelectColumns">Select columns</paper-item>
-                                <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]">Download CSV</paper-item>
-                                <paper-item on-tap="_toggleTreeView">[[_getTreeViewToggleText(treeView)]]</paper-item>
-                            </paper-listbox>
-                        </paper-menu-button>
+
                     </template>
                     <template>
                         <paper-icon-button icon="icons:arrow-drop-down" style$="[[_computeExpandIconStyle(item.expanded,selectable)]]; padding: 8px; width: 36px; height: 36px;" toggles="" active="{{item.expanded}}" id="btn-[[_computeId(item)]]" hidden$="[[!expands]]" on-active-changed="_toggleItemExpand"></paper-icon-button>
@@ -1425,8 +1427,8 @@ Polymer({
     _computeColumnMenuButtonStyle: function (selectable, expands, columnMenu, selectedItemsLength) {
         if (!columnMenu || selectedItemsLength || (this.items && !this.items.length))
             return 'display: none';
-        if (selectable) return 'margin-left: -8px;';
-        return 'margin-left: 4px;';
+        if (selectable) return 'margin-left: 52px;';
+        return 'margin-left: 8px;';
     },
 
     _or: function (a, b) {
@@ -1603,7 +1605,7 @@ Polymer({
 
     _getTreeViewToggleText(treeView) {
         if (treeView)
-            return 'Normal View';
+            return 'List View';
         return 'Tree View';
     }
 
