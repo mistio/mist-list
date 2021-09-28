@@ -425,7 +425,7 @@ Polymer({
 
             }
         </style>
-        <code-viewer theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
+        <code-viewer id='codeViewer' theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
             <rest-data-provider id="restProvider" url="[[apiurl]]" tree-view="[[treeView]]" rest="[[rest]]" provider="{{dataProvider}}" loading="{{_loading}}" count="{{count}}" received="{{received}}" columns="{{columns}}" frozen="[[frozen]]" item-map="{{itemMap}}" primary-field-name="[[primaryFieldName]]" timeseries="[[timeseries]]" filter="[[combinedFilter]]" finished="{{finished}}"></rest-data-provider>
         </template>
@@ -1523,6 +1523,8 @@ Polymer({
 
     codeViewerEnterFullscreen(e) {
         this.itemFullscreen = true;
+        this.$.codeViewer.shadowRoot.querySelector('monaco-element').
+            iframe.contentWindow.location.reload();
         this.fullScreenValue = e.detail.value;
     },
 
