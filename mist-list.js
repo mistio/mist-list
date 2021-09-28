@@ -533,7 +533,7 @@ Polymer({
                     <template>
                         <vaadin-grid-tree-toggle
                         class="treeToggle"
-                        leaf="[[isLeaf(item)]]"
+                        leaf="[[itemIsLeaf(item)]]"
                         expanded="{{expanded}}" 
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
@@ -1617,7 +1617,7 @@ Polymer({
         return 'Tree View';
     },
 
-    isLeaf(item) {
-        return !this.isParent(item)
+    itemIsLeaf(item) {
+        return !this.itemHasChildren(item)
       }
 });
