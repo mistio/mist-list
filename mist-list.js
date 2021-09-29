@@ -533,7 +533,7 @@ Polymer({
                     <template>
                         <vaadin-grid-tree-toggle
                         class="treeToggle"
-                        leaf="[[!item.is_dir]]"
+                        leaf="[[itemIsLeaf(item)]]"
                         expanded="{{expanded}}" 
                         level="[[level]]">
                         <div style="padding: 8px 0px;" inner-h-t-m-l="[[_getBody(firstFrozen, item)]]"></div>
@@ -892,6 +892,11 @@ Polymer({
         mistListHeight: {
             type: Number,
             value: 0
+        },
+        // customProvider should be a function that takes as argument
+        // the vaadin-grid element and returns a data provider
+        customProvider: {
+            type: Object
         }
     },
 
@@ -918,6 +923,9 @@ Polymer({
     },
 
     attached: function () {
+        if(this.customProvider) {
+            this.set('dataProvider', this.customProvider(this.$.grid));
+        }
         var _this = this;
         if (this.resizable) {
             this.resizeHandler = function () {
@@ -1609,6 +1617,9 @@ Polymer({
         if (treeView)
             return 'List View';
         return 'Tree View';
-    }
+    },
 
+    itemIsLeaf(item) {
+        return !this.itemHasChildren(item)
+      }
 });
