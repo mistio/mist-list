@@ -805,12 +805,6 @@ Polymer({
             value: false
         },
 
-        filteredItemsLength: {
-            type: Number,
-            computed: '_computeFilteredItemsLength(filteredItems)',
-            notify: true
-        },
-
         sorters: {
             type: Array,
             value: function () {
@@ -923,9 +917,6 @@ Polymer({
     },
 
     attached: function () {
-        if(this.customProvider) {
-            this.set('dataProvider', this.customProvider(this.$.grid));
-        }
         var _this = this;
         if (this.resizable) {
             this.resizeHandler = function () {
@@ -1000,10 +991,6 @@ Polymer({
         } else if (this.itemMap) {
             this._windowResize();
         }
-    },
-
-    _computeFilteredItemsLength: function (filteredItems) {
-        return filteredItems ? filteredItems.length : 0;
     },
 
     _updateShowNoData: function (items, filteredItems, loading, _loading, justAttached) {
@@ -1104,9 +1091,9 @@ Polymer({
             this.debounce('_filterListItems', function (items) {
                 const newItems = this.items.filter(this._applyFilter.bind(this));
                 this.set('filteredItems', newItems);
-                this.fire('mist-list-filtered-items-length-changed', {
-                    length: this.filteredItems.length
-                });
+                // this.fire('mist-list-filtered-items-length-changed', {
+                //     length: this.filteredItems.length
+                // });
                 this.$.grid.set('items', this.filteredItems);
                 this.async(function () {
                     this.fire('resize');
@@ -1603,14 +1590,8 @@ Polymer({
     },
 
     _gridItemsChanged(_vcount, mistListHeight) {
-        let gridHeight = (this.vcount + 1) * 52;
-        let elementHeight = mistListHeight || 0;
-        if (gridHeight > elementHeight)
-            gridHeight = elementHeight;
-        gridHeight = Math.max(gridHeight, this.clientHeight)
+        let gridHeight = (this.vcount + 1) * 51;
         this.$.grid.style.height = `${gridHeight}px`;
-        if (this.combinedFilter && this.items)
-            this._filterItems(this.items, this.items.length, this.combinedFilter);
     },
 
     _getTreeViewToggleText(treeView) {
