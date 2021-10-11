@@ -1087,6 +1087,10 @@ Polymer({
         if (this.rest && this.items && filter && filter.trim().length > 0) {
             const newItems = this.items.filter(this._applyFilter.bind(this));
             this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
+        } else if (this.treeView && this.items && filter && filter.trim()) {
+            const newItems = this.items.filter(this._applyFilter.bind(this));
+            this.set('filteredItems', newItems);
+            this.$.grid.clearCache();
         } else if (this.items) {
             this.debounce('_filterListItems', function (items) {
                 const newItems = this.items.filter(this._applyFilter.bind(this));
