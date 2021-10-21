@@ -1407,6 +1407,8 @@ Polymer({
                 if (this.$.grid && this.$.grid.get('_cache.items') != undefined) {
                     this.$.grid._cache.size += 1;
                     this.$.grid._cache.effectiveSize += 1;
+                    this.$.grid._effectiveSize += 1;
+                    this.$.grid.items.length += 1;
                     for (var i = Object.keys(this.$.grid._cache.items).length; i > 0; i--) {
                         this.$.grid._cache.items[i] = this.$.grid._cache.items[i - 1];
                     }

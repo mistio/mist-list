@@ -7,7 +7,7 @@
     "Alex Tsiliris <eis@mist.io>",
     "Golfo Vasiliou <golfo@mist.io>"
   ],
-  "version": "3.1.0-beta.8",
+  "version": "3.1.0-beta.9",
   "main": "mist-list.js",
   "scripts": {
     "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
