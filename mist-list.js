@@ -883,10 +883,7 @@ Polymer({
             type: Number,
             value: 0
         },
-        mistListHeight: {
-            type: Number,
-            value: 0
-        },
+
         // customProvider should be a function that takes as argument
         // the vaadin-grid element and returns a data provider
         customProvider: {
@@ -903,7 +900,7 @@ Polymer({
         '_updateShowNoData(items.length, filteredItems.length, loading, _loading, justAttached)',
         '_visibleChanged(visible)',
         '_columnsDialogClosed(columnsDialogOpened)',
-        '_gridItemsChanged(vcount, mistListHeight)'
+        '_debounceResize(vcount)',
     ],
 
     listeners: {
@@ -978,10 +975,6 @@ Polymer({
         }
     },
 
-    _computeGridWidth: function () {
-        return this.$.grid.$.header.clientWidth + 'px';
-    },
-
     _itemMapUpdated: function () {
         if (this.itemMap && !this.rest) {
             var that = this;
@@ -1024,11 +1017,11 @@ Polymer({
         }
         var top = this.getBoundingClientRect().top,
             newHeight,
-            itemsHeight = this.$.grid.items.length * 56,
+            itemsHeight = this.$.grid._virtualCount * 49,
             // isSmallScreen = window.innerWidth <= 768,
-            outerScroller = this.$.grid.$.outerscroller,
+            outerScroller = this.$.grid.$.table,
             hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
-            heightOffset = 36;
+            heightOffset = 53;
         // Calculate and add the height of the content slotted in the header, so
         // it does not push mist-list below visible height.
         var headerSlotElements = this.$.slottedHeader.assignedElements();
@@ -1038,20 +1031,21 @@ Polymer({
             }
         }
         if (hasVerticalScroll) {
-            heightOffset += 19;
+            heightOffset += 14;
         }
         if (this.toolbar)
-            newHeight = Math.min(window.innerHeight - top - 80, itemsHeight +
+            newHeight = Math.min(window.innerHeight - top - 56, itemsHeight +
                 heightOffset);
         else
-            newHeight = Math.min(window.innerHeight - top - 36, itemsHeight +
+            newHeight = Math.min(window.innerHeight - top, itemsHeight +
                 heightOffset);
-        if (this.$.grid.$.items.scrollWidth > itemsHeight && this.$.grid.$.items.scrollHeight <=
-            this.scrollHeight) {
-            newHeight += 16;
-        }
-        this.set('mistListHeight', newHeight);
         this.set('headerWidth', this.$.grid.$.header.clientWidth);
+
+        // this.$.grid.style.height = `${itemsHeight}px`;
+
+        this.style.height = `${newHeight}px`;
+        console.log('resize', newHeight);
+        this.$.grid.fire('iron-resize');
     },
 
     columnWidth: function (column, frozen) {
@@ -1593,11 +1587,6 @@ Polymer({
         e.currentTarget.parentNode.parentNode.close();
     },
 
-    _gridItemsChanged(_vcount, mistListHeight) {
-        let gridHeight = (this.vcount + 1) * 51;
-        this.$.grid.style.height = `${gridHeight}px`;
-    },
-
     _getTreeViewToggleText(treeView) {
         if (treeView)
             return 'List View';
@@ -1606,5 +1595,5 @@ Polymer({
 
     itemIsLeaf(item) {
         return !this.itemHasChildren(item)
-      }
+    }
 });
