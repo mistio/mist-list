@@ -1085,6 +1085,12 @@ Polymer({
             const newItems = this.items.filter(this._applyFilter.bind(this));
             this.set('filteredItems', newItems);
             this.$.grid.clearCache();
+            if (newItems.length) {
+                this.$.grid.querySelectorAll('vaadin-grid-tree-toggle').forEach(
+                    toggle => toggle.expanded = true
+                );
+
+            }
         } else if (this.items) {
             this.debounce('_filterListItems', function (items) {
                 const newItems = this.items.filter(this._applyFilter.bind(this));
