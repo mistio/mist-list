@@ -541,8 +541,18 @@ Polymer({
         this._updateSelectedFilter(userFilter);
       }
       if (this.userFilter || localStorage.getItem(current_filter_key)) {
-        localStorage.setItem(current_filter_key, this.userFilter);
-      }
+        this.presetFilters.forEach(filter => {
+          if(filter.filter.toLowerCase() === this.userFilter.toLowerCase())
+            localStorage.setItem(current_filter_key, this.userFilter);
+        });
+        this.userSavedFilters.forEach(filter => {
+          if(filter.filter.toLowerCase() === this.userFilter.toLowerCase())
+            localStorage.setItem(current_filter_key, this.userFilter);
+        });
+    }
+    if (this.userFilter.trim() === "")
+        localStorage.setItem(current_filter_key, "");
+
       this.dispatchEvent(
         new CustomEvent('filter-change', {
           bubbles: true,
