@@ -947,9 +947,6 @@ Polymer({
       /* eslint-enable no-console */
     }
 
-    this.fire('list-attached', {
-      id: this.id,
-    });
     this.set('headerWidth', this.$.grid.$.header.clientWidth);
 
     if (this.streaming) {
@@ -959,6 +956,9 @@ Polymer({
     setTimeout(
       function () {
         this.set('justAttached', false);
+        this.fire('list-attached', {
+          id: this.id,
+        });
       }.bind(this),
       4000
     );
@@ -1005,8 +1005,7 @@ Polymer({
   ) {
     if (
       !(this.loading || this._loading) &&
-      this.$.grid.items &&
-      !this.$.grid.items.length
+      ( items === 0 || filteredItems === 0)
     ) {
       this.set('showNoData', !justAttached && !this.treeView);
     } else {
