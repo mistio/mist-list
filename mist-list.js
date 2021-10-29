@@ -1426,6 +1426,7 @@ Polymer({
   },
 
   _selectedItemsChanged(itemslength) {
+    this.set('headerWidth', this.$.grid.$.header.clientWidth);
     if (
       itemslength > 0 &&
       this.filteredItems.length === itemslength &&
