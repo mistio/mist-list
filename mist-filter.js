@@ -540,7 +540,14 @@ Polymer({
       if (this.editingFilter) {
         this._updateSelectedFilter(userFilter);
       }
-      if (this.userFilter || localStorage.getItem(current_filter_key)) {
+      if (!this.userFilter && localStorage.getItem(current_filter_key)) {
+        localStorage.setItem(current_filter_key, '');
+      } else if (
+        this.userFilter &&
+        this.presetFilters
+          .concat(this.userSavedFilters)
+          .find(x => x.filter === this.userFilter)
+      ) {
         localStorage.setItem(current_filter_key, this.userFilter);
       }
       this.dispatchEvent(
