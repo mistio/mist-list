@@ -1123,7 +1123,7 @@ Polymer({
     if (this.rest && this.items && filter && filter.trim().length > 0) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
-    } else if (this.treeView && this.items && filter && filter.trim()) {
+    } else if (this.treeView && this.items && this.items.length > 0 && filter && filter.trim().length > 0) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.set('filteredItems', newItems);
       this.$.grid.clearCache();
@@ -1132,7 +1132,7 @@ Polymer({
           .querySelectorAll('vaadin-grid-tree-toggle')
           .forEach(toggle => (toggle.expanded = true));
       }
-    } else if (this.items) {
+    } else if (this.items && this.items.length > 0) {
       this.debounce(
         '_filterListItems',
         function () {
@@ -1559,6 +1559,8 @@ Polymer({
     this.$.getCsv.headers['Accept'] = 'text/csv';
     this.$.getCsv.url =
       this.apiurl + '?columns=' + this.frozen.concat(this.CSVvisible).join();
+    if (this.combinedFilter && this.combinedFilter.trim().length > 0)
+      this.$.getCsv.url = this.$.getCsv.url + "&filter=" + this.combinedFilter;
     this.$.getCsv.generateRequest();
   },
 
