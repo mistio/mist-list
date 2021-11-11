@@ -1180,8 +1180,9 @@ Polymer({
         500
       );
     } else if ( this.items && this.items.length === 0) {
-        this.$.grid.set('items', []);
+        this.filteredItems = [];
         this.set('selectedItems', []);
+        this.$.grid.set('items', []);
       }
   },
 
