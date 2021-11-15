@@ -484,7 +484,9 @@ Polymer({
             <paper-icon-button icon="icons:menu" class="dropdown-trigger" alt="multi select" title="Select columns &amp; export CSV" slot="dropdown-trigger" style="height: 36px; width: 36px;"></paper-icon-button>
             <paper-listbox class="dropdown-content" slot="dropdown-content">
                 <paper-item on-tap="_openDialogSelectColumns"><iron-icon icon="icons:view-column"></iron-icon> &nbsp; Select columns</paper-item>
-                <paper-item on-tap="_toggleTreeView"><iron-icon icon="icons:view-list" hidden$=[[!treeView]]></iron-icon> <iron-icon icon="vaadin:file-tree" hidden$=[[treeView]]></iron-icon> &nbsp; [[_getTreeViewToggleText(treeView)]]</paper-item>
+                <template is="dom-if" if="[[_hasTreeView()]]">
+                  <paper-item on-tap="_toggleTreeView"><iron-icon icon="icons:view-list" hidden$=[[!treeView]]></iron-icon> <iron-icon icon="vaadin:file-tree" hidden$=[[treeView]]></iron-icon> &nbsp; [[_getTreeViewToggleText(treeView)]]</paper-item>
+                </template>
                 <paper-item on-tap="_openDialogExportCsv" disabled$="[[!apiurl]]"><iron-icon icon="icons:file-download"></iron-icon> &nbsp; Download CSV</paper-item>
             </paper-listbox>
         </paper-menu-button>
@@ -876,7 +878,7 @@ Polymer({
     },
     treeView: {
       type: Boolean,
-      value: false,
+      value: undefined,
     },
     vcount: {
       type: Number,
@@ -1122,7 +1124,7 @@ Polymer({
     if (this.rest && this.items && filter && filter.trim().length > 0) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
-    } else if (this.treeView && this.items && filter && filter.trim()) {
+    } else if (this.treeView && this.items && this.items.length > 0 && filter && filter.trim().length > 0) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.set('filteredItems', newItems);
       this.$.grid.clearCache();
@@ -1131,7 +1133,7 @@ Polymer({
           .querySelectorAll('vaadin-grid-tree-toggle')
           .forEach(toggle => (toggle.expanded = true));
       }
-    } else if (this.items) {
+    } else if (this.items && this.items.length > 0) {
       this.debounce(
         '_filterListItems',
         function () {
@@ -1176,7 +1178,11 @@ Polymer({
         },
         500
       );
-    }
+    } else if ( this.items && this.items.length === 0) {
+        this.filteredItems = [];
+        this.set('selectedItems', []);
+        this.$.grid.set('items', []);
+      }
   },
 
   _applyFilter: function (item) {
@@ -1425,6 +1431,7 @@ Polymer({
   },
 
   _selectedItemsChanged(itemslength) {
+    this.set('headerWidth', this.$.grid.$.header.clientWidth);
     if (
       itemslength > 0 &&
       this.filteredItems.length === itemslength &&
@@ -1557,6 +1564,8 @@ Polymer({
     this.$.getCsv.headers['Accept'] = 'text/csv';
     this.$.getCsv.url =
       this.apiurl + '?columns=' + this.frozen.concat(this.CSVvisible).join();
+    if (this.combinedFilter && this.combinedFilter.trim().length > 0)
+      this.$.getCsv.url = this.$.getCsv.url + "&filter=" + this.combinedFilter;
     this.$.getCsv.generateRequest();
   },
 
@@ -1687,13 +1696,11 @@ Polymer({
       firstFrozen = this.firstFrozen;
       this.set('firstFrozen', undefined);
       this.unshift('frozen', firstFrozen);
-      this.$.grid.items.forEach(item => {
-        if (item.treeNode) this.$.grid.collapseItem(item);
-      });
-      // this.$.grid.dataProvider = this.$.grid._arrayDataProvider
+      this.$.grid.clearCache();
     } else {
       firstFrozen = this.shift('frozen');
       this.set('firstFrozen', firstFrozen);
+      this.$.grid.clearCache();
     }
     e.currentTarget.parentNode.parentNode.close();
   },
@@ -1703,6 +1710,9 @@ Polymer({
     return 'Tree View';
   },
 
+  _hasTreeView() {
+    return !(this.treeView == null);
+},
   itemIsLeaf(item) {
     return !this.itemHasChildren(item);
   },
