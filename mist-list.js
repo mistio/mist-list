@@ -1182,7 +1182,8 @@ Polymer({
     } else if ( this.items && this.items.length === 0) {
         this.filteredItems = [];
         this.set('selectedItems', []);
-        this.$.grid.set('items', []);
+        if (this.$.grid.items.length > 0)
+          this.$.grid.set('items', []);
       }
   },
 
