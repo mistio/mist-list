@@ -194,7 +194,9 @@ Polymer({
 
     _updateVisibleActions() {
         var offsetWidth = this.offsetWidth;
-        this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
+        if (offsetWidth > 0) {
+            this.set('visibleActions', Math.floor(offsetWidth - 50) / 150);
+        }
     },
 
     _hasActions(length) {
