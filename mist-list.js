@@ -1075,8 +1075,10 @@ Polymer({
       );
     this.set('headerWidth', this.$.grid.$.header.clientWidth);
 
-    // this.$.grid.style.height = `${itemsHeight}px`;
-
+    if (this.expands && newHeight < 450)
+    // this is in case few items, especially 1 or 2, are in the list
+    // to leave some space for the expanded data to show
+        newHeight = 450;
     this.style.height = `${newHeight}px`;
     console.log('resize', newHeight);
     this.$.grid.fire('iron-resize');
@@ -1134,6 +1136,16 @@ Polymer({
           .querySelectorAll('vaadin-grid-tree-toggle')
           .forEach(toggle => (toggle.expanded = true));
       }
+    } else if (this.dataProvider && this.$.grid.items.length >= 0) {
+      // this is because of manage which uses api/v2 and custom data provider
+      // this method should be rewritten to combine the first 3 conditions
+      this.debounce(
+        '_filterListItems',
+      function () {
+        this.$.grid.clearCache();
+      },
+      500);
+      return;
     } else if (this.items && this.items.length > 0) {
       this.debounce(
         '_filterListItems',
