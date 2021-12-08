@@ -1076,9 +1076,9 @@ Polymer({
     this.set('headerWidth', this.$.grid.$.header.clientWidth);
 
     if (this.expands && newHeight < 450)
-    // this is in case few items, especially 1 or 2, are in the list
-    // to leave some space for the expanded data to show
-        newHeight = 450;
+      // this is in case few items, especially 1 or 2, are in the list
+      // to leave some space for the expanded data to show
+      newHeight = 450;
     this.style.height = `${newHeight}px`;
     console.log('resize', newHeight);
     this.$.grid.fire('iron-resize');
@@ -1127,7 +1127,13 @@ Polymer({
     if (this.rest && this.items && filter && filter.trim().length > 0) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.shadowRoot.querySelector('#restProvider').filteredItems = newItems;
-    } else if (this.treeView && this.items && this.items.length > 0 && filter && filter.trim().length > 0) {
+    } else if (
+      this.treeView &&
+      this.items &&
+      this.items.length > 0 &&
+      filter &&
+      filter.trim().length > 0
+    ) {
       const newItems = this.items.filter(this._applyFilter.bind(this));
       this.set('filteredItems', newItems);
       this.$.grid.clearCache();
@@ -1141,10 +1147,11 @@ Polymer({
       // this method should be rewritten to combine the first 3 conditions
       this.debounce(
         '_filterListItems',
-      function () {
-        this.$.grid.clearCache();
-      },
-      500);
+        function () {
+          this.$.grid.clearCache();
+        },
+        500
+      );
       return;
     } else if (this.items && this.items.length > 0) {
       this.debounce(
@@ -1191,12 +1198,11 @@ Polymer({
         },
         500
       );
-    } else if ( this.items && this.items.length === 0) {
-        this.filteredItems = [];
-        this.set('selectedItems', []);
-        if (this.$.grid.items.length > 0)
-          this.$.grid.set('items', []);
-      }
+    } else if (this.items && this.items.length === 0) {
+      this.filteredItems = [];
+      this.set('selectedItems', []);
+      if (this.$.grid.items.length > 0) this.$.grid.set('items', []);
+    }
   },
 
   _applyFilter: function (item) {
@@ -1330,6 +1336,7 @@ Polymer({
 
   _getBody(column, item) {
     if (item) {
+      /* eslint-disable indent */
       item[column] =
         typeof item[column] == 'string'
           ? item[column]
@@ -1337,6 +1344,7 @@ Polymer({
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;')
           : item[column];
+      /* eslint-enable indent */
       if (this.renderers[column])
         return this.renderers[column].body(item[column], item);
       if (typeof item[column] == 'undefined') return '&nbsp;';
@@ -1579,7 +1587,7 @@ Polymer({
     this.$.getCsv.url =
       this.apiurl + '?columns=' + this.frozen.concat(this.CSVvisible).join();
     if (this.combinedFilter && this.combinedFilter.trim().length > 0)
-      this.$.getCsv.url = this.$.getCsv.url + "&filter=" + this.combinedFilter;
+      this.$.getCsv.url = this.$.getCsv.url + '&filter=' + this.combinedFilter;
     this.$.getCsv.generateRequest();
   },
 
@@ -1726,7 +1734,7 @@ Polymer({
 
   _hasTreeView() {
     return !(this.treeView == null);
-},
+  },
   itemIsLeaf(item) {
     return !this.itemHasChildren(item);
   },
