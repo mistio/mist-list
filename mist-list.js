@@ -1142,7 +1142,7 @@ Polymer({
           .querySelectorAll('vaadin-grid-tree-toggle')
           .forEach(toggle => (toggle.expanded = true));
       }
-    } else if (this.dataProvider && this.$.grid.items.length >= 0) {
+    } else if (!this.treeView && this.dataProvider && this.$.grid.items.length >= 0) {
       // this is because of manage which uses api/v2 and custom data provider
       // this method should be rewritten to combine the first 3 conditions
       this.debounce(
