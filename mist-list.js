@@ -473,6 +473,10 @@ Polymer({
                             </paper-item>
                         </template>
                     </div>
+                    <div id="limitCSV" style="display:flex; align-items:center; flex-direction:row; justify-content:space-between;">
+                      <span style="width=30%;"> Items </span>
+                      <paper-input value="{{CSVLimit}}" id="limit" style="width:80px; text-align:center;"></paper-input>
+                    </div>
                     <div class="buttons">
                         <paper-button on-tap="_dismissDialog">Cancel</paper-button>
                         <paper-button dialog-confirm="" autofocus="" on-tap="_exportCsv">Download CSV</paper-button>
@@ -668,6 +672,11 @@ Polymer({
 
     CSVvisible: {
       type: Array,
+    },
+
+    CSVLimit: {
+      type: String,
+      value: '50'
     },
 
     filterMethod: {
@@ -1583,9 +1592,17 @@ Polymer({
   },
 
   _exportCsv: function () {
+    const limit = Number(this.CSVLimit);
+    if(Number.isNaN(limit)){
+      this.fire('export-list-csv', {
+        message: 'Error in CSV form, Limit is not a number'
+      });
+      return;
+    }
     this.$.getCsv.headers['Accept'] = 'text/csv';
     this.$.getCsv.url =
       this.apiurl + '?columns=' + this.frozen.concat(this.CSVvisible).join();
+    this.$.getCsv.url += `&limit=${limit}`;
     if (this.combinedFilter && this.combinedFilter.trim().length > 0)
       this.$.getCsv.url = this.$.getCsv.url + '&filter=' + this.combinedFilter;
     this.$.getCsv.generateRequest();
