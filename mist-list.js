@@ -692,7 +692,7 @@ Polymer({
 
     CSVLimit: {
       type: String,
-      value: '50'
+      value: '50',
     },
 
     filterMethod: {
@@ -1167,7 +1167,11 @@ Polymer({
           .querySelectorAll('vaadin-grid-tree-toggle')
           .forEach(toggle => (toggle.expanded = true));
       }
-    } else if (!this.treeView && this.dataProvider && this.$.grid.items.length >= 0) {
+    } else if (
+      !this.treeView &&
+      this.dataProvider &&
+      this.$.grid.items.length >= 0
+    ) {
       // this is because of manage which uses api/v2 and custom data provider
       // this method should be rewritten to combine the first 3 conditions
       this.debounce(
@@ -1609,9 +1613,9 @@ Polymer({
 
   _exportCsv: function () {
     const limit = Number(this.CSVLimit);
-    if(Number.isNaN(limit)){
+    if (Number.isNaN(limit)) {
       this.fire('export-list-csv', {
-        message: 'Error in CSV form, Limit is not a number'
+        message: 'Error in CSV form, Limit is not a number',
       });
       return;
     }
