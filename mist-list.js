@@ -420,6 +420,22 @@ Polymer({
                 margin-left: -30px;
 
             }
+
+            #limitCSV {
+              display:flex;
+              align-items:center;
+              flex-direction:row;
+              justify-content:space-between;
+            }
+
+            #limit {
+              width: 80px;
+              text-align:center;
+            }
+
+            #limit-label {
+              width=30%;
+            }
         </style>
         <code-viewer id='codeViewer' theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
@@ -473,9 +489,9 @@ Polymer({
                             </paper-item>
                         </template>
                     </div>
-                    <div id="limitCSV" style="display:flex; align-items:center; flex-direction:row; justify-content:space-between;">
-                      <span style="width=30%;"> Items </span>
-                      <paper-input value="{{CSVLimit}}" id="limit" style="width:80px; text-align:center;"></paper-input>
+                    <div id="limitCSV">
+                      <span id="limit-label"> Items </span>
+                      <paper-input value="{{CSVLimit}}" id="limit"></paper-input>
                     </div>
                     <div class="buttons">
                         <paper-button on-tap="_dismissDialog">Cancel</paper-button>
