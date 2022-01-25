@@ -1088,11 +1088,14 @@ Polymer({
     if (hasVerticalScroll) {
       heightOffset += 14;
     }
-    if (this.toolbar)
+    if (this.toolbar){
+      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar') ? 
+            this.shadowRoot.querySelector('app-toolbar').clientHeight : 0;
       newHeight = Math.min(
         window.innerHeight - top - 56,
-        itemsHeight + heightOffset
+        itemsHeight + heightOffset + toolbarHeight
       );
+    }
     else
       newHeight = Math.min(
         window.innerHeight - top,
