@@ -446,7 +446,7 @@ Polymer({
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
                 <span class="count" hidden$="[[timeseries]]" slot="count">
-                    <sub hidden="[[!count]]"><template is="dom-if" if="[[!_hasReceivedAll(received,count)]]" restamp="">[[received]]/</template>[[count]]</sub>
+                    <sub hidden="[[!count]]"><template is="dom-if" if="[[!_hasReceived(received)]]" restamp="">[[received]]/</template>[[count]]</sub>
                 </span>
             </mist-filter>
             <span hidden$="[[!enableFullscreen]]">
@@ -1076,7 +1076,7 @@ Polymer({
       // isSmallScreen = window.innerWidth <= 768,
       outerScroller = this.$.grid.$.table,
       hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
-      heightOffset = 53;
+      heightOffset = 51;
     // Calculate and add the height of the content slotted in the header, so
     // it does not push mist-list below visible height.
     var headerSlotElements = this.$.slottedHeader.assignedElements();
@@ -1088,11 +1088,14 @@ Polymer({
     if (hasVerticalScroll) {
       heightOffset += 14;
     }
-    if (this.toolbar)
+    if (this.toolbar){
+      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar') ? 
+            this.shadowRoot.querySelector('app-toolbar').clientHeight : 0;
       newHeight = Math.min(
         window.innerHeight - top - 56,
-        itemsHeight + heightOffset
+        itemsHeight + heightOffset + toolbarHeight
       );
+    }
     else
       newHeight = Math.min(
         window.innerHeight - top,
@@ -1406,8 +1409,8 @@ Polymer({
     return ret;
   },
 
-  _hasReceivedAll: function () {
-    return this.received >= this.count;
+  _hasReceived (_received) {
+    return this.received  && this.received >= 1;
   },
 
   _onSortStart() {
