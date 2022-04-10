@@ -307,7 +307,6 @@ Polymer({
 
             span.count {
                 font-size: 14px;
-                display: inline-block;
                 text-align: center;
                 opacity: .5;
                 margin-left: -38px;
@@ -436,6 +435,12 @@ Polymer({
             #limit-label {
               width=30%;
             }
+
+            #sub-container {
+              width: 40px;
+              opacity: .5;
+              line-height: 1;
+            }
         </style>
         <code-viewer id='codeViewer' theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
@@ -446,7 +451,9 @@ Polymer({
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
                 <span class="count" hidden$="[[timeseries]]" slot="count">
+                  <div id="sub-container">
                     <sub hidden="[[!count]]"><template is="dom-if" if="[[!_hasReceived(received)]]" restamp="">[[received]]/</template>[[count]]</sub>
+                  </div>
                 </span>
             </mist-filter>
             <span hidden$="[[!enableFullscreen]]">

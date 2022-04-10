@@ -152,12 +152,12 @@ Polymer({
 
     <div id="form" on-tap="_startEditingFilter">
       <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
-      <slot name="count"></slot>
       <h2
         class="titleh2"
         hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
       >
         <span class="title"> [[displayName]] </span>
+        <slot name="count"></slot>
       </h2>
       <paper-input
         id="searchInput"
