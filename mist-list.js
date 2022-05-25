@@ -264,6 +264,9 @@ Polymer({
                 border: 1px solid #dbdbdb;
                 border-bottom: 0 none;
                 color: #000;
+                display: flex;
+                display-direction: row;
+                justify-content: space-between;
             }
 
             vaadin-dialog {
@@ -309,9 +312,6 @@ Polymer({
                 font-size: 14px;
                 text-align: center;
                 opacity: .5;
-                margin-left: -38px;
-                margin-top: 38px;
-                width: 60px;
             }
 
             paper-menu-button.column-menu {
@@ -437,7 +437,6 @@ Polymer({
             }
 
             #sub-container {
-              width: 40px;
               opacity: .5;
               line-height: 1;
             }

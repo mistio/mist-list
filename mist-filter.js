@@ -95,6 +95,14 @@ Polymer({
         font-size: 20px;
         font-weight: 500;
       }
+      #search-title-wrapper {
+        display:flex;
+        flex-direction: row;
+      }
+      #title-count-wrapper {
+        display:flex;
+        flex-direction: column;
+      }
     </style>
 
     <paper-menu-button
@@ -151,14 +159,18 @@ Polymer({
     </paper-menu-button>
 
     <div id="form" on-tap="_startEditingFilter">
-      <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
-      <h2
-        class="titleh2"
-        hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
-      >
-        <span class="title"> [[displayName]] </span>
+      <div id="search-title-wrapper">
+        <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
+        <div id="title-count-wrapper">
+        <h2
+          class="titleh2"
+          hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
+        >
+          <span class="title"> [[displayName]] </span>
+        </h2>
         <slot name="count"></slot>
-      </h2>
+        </div>
+      </div>
       <paper-input
         id="searchInput"
         hidden$="[[!_showFilterInput(editingFilter,alwaysShowInput)]]"
