@@ -17,7 +17,8 @@
     "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
     "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
     "test": "web-test-runner --coverage",
-    "test:watch": "web-test-runner --watch"
+    "test:watch": "web-test-runner --watch",
+    "start": "web-dev-server"
   },
   "dependencies": {
     "@mistio/monaco-element": "^0.1.8",

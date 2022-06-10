@@ -96,11 +96,11 @@ Polymer({
         font-weight: 500;
       }
       #search-title-wrapper {
-        display:flex;
+        display: flex;
         flex-direction: row;
       }
       #title-count-wrapper {
-        display:flex;
+        display: flex;
         flex-direction: column;
       }
     </style>
@@ -162,13 +162,13 @@ Polymer({
       <div id="search-title-wrapper">
         <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
         <div id="title-count-wrapper">
-        <h2
-          class="titleh2"
-          hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
-        >
-          <span class="title"> [[displayName]] </span>
-        </h2>
-        <slot name="count"></slot>
+          <h2
+            class="titleh2"
+            hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
+          >
+            <span class="title"> [[displayName]] </span>
+          </h2>
+          <slot name="count"></slot>
         </div>
       </div>
       <paper-input

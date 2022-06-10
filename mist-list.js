@@ -1094,15 +1094,15 @@ Polymer({
     if (hasVerticalScroll) {
       heightOffset += 14;
     }
-    if (this.toolbar){
-      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar') ? 
-            this.shadowRoot.querySelector('app-toolbar').clientHeight : 0;
+    if (this.toolbar) {
+      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar')
+        ? this.shadowRoot.querySelector('app-toolbar').clientHeight
+        : 0;
       newHeight = Math.min(
         window.innerHeight - top - 56,
         itemsHeight + heightOffset + toolbarHeight
       );
-    }
-    else
+    } else
       newHeight = Math.min(
         window.innerHeight - top,
         itemsHeight + heightOffset
@@ -1415,8 +1415,8 @@ Polymer({
     return ret;
   },
 
-  _hasReceived (_received) {
-    return this.received  && this.received >= 1;
+  _hasReceived() {
+    return this.received && this.received >= 1;
   },
 
   _onSortStart() {
