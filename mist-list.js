@@ -310,7 +310,7 @@ Polymer({
 
             span.count {
                 font-size: 14px;
-                text-align: center;
+                text-align: left;
                 opacity: .5;
             }
 
@@ -438,7 +438,7 @@ Polymer({
 
             #sub-container {
               opacity: .5;
-              line-height: 1;
+              line-height: 0.5;
             }
         </style>
         <code-viewer id='codeViewer' theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
