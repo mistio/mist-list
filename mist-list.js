@@ -252,6 +252,7 @@ Polymer({
                 color: #fff;
                 display: flex;
                 top: 0;
+                padding: 8px 0px 13px 1px;
             }
 
             div#actions mist-check {
@@ -528,8 +529,8 @@ Polymer({
                 <vaadin-grid-selection-column flex-grow="0" frozen="" style="overflow: visible;" width="50px" z-index="5">
                     <template class="header">
                         <mist-check class="mist-check-header" selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
-                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; padding: 8px 8px 13px; z-index: 99999">
-                            <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
+                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="width: [[headerWidth]]px;">
+                            <mist-check class="mist-check-header" selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions="[[_computeAllowedActions(actions)]]"></mist-list-actions>
                         </div>
                     </template>
