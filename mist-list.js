@@ -252,6 +252,7 @@ Polymer({
                 color: #fff;
                 display: flex;
                 top: 0;
+                padding: 8px 0px 13px 1px;
             }
 
             div#actions mist-check {
@@ -264,6 +265,9 @@ Polymer({
                 border: 1px solid #dbdbdb;
                 border-bottom: 0 none;
                 color: #000;
+                display: flex;
+                display-direction: row;
+                justify-content: space-between;
             }
 
             vaadin-dialog {
@@ -307,12 +311,8 @@ Polymer({
 
             span.count {
                 font-size: 14px;
-                display: inline-block;
-                text-align: center;
+                text-align: left;
                 opacity: .5;
-                margin-left: -38px;
-                margin-top: 38px;
-                width: 60px;
             }
 
             paper-menu-button.column-menu {
@@ -436,6 +436,11 @@ Polymer({
             #limit-label {
               width=30%;
             }
+
+            #sub-container {
+              opacity: .5;
+              line-height: 0.5;
+            }
         </style>
         <code-viewer id='codeViewer' theme="vs-light" mist-list-fullscreen inside-fullscreen="[[insideFullscreen]]" hidden$="[[!itemFullscreen]]" value="[[fullScreenValue]]" language="json" read-only fullscreen></code-viewer>
         <template is="dom-if" restamp="" if="[[rest]]">
@@ -446,7 +451,9 @@ Polymer({
         <app-toolbar hidden$="[[!toolbar]]">
             <mist-filter id$="[[id]]" name="[[name]]" searchable="[[searchable]]" base-filter="[[baseFilter]]" user-filter="{{userFilter}}" combined-filter="{{combinedFilter}}" editing-filter="{{editingFilter}}" preset-filters="[[presetFilters]]">
                 <span class="count" hidden$="[[timeseries]]" slot="count">
+                  <div id="sub-container">
                     <sub hidden="[[!count]]"><template is="dom-if" if="[[!_hasReceived(received)]]" restamp="">[[received]]/</template>[[count]]</sub>
+                  </div>
                 </span>
             </mist-filter>
             <span hidden$="[[!enableFullscreen]]">
@@ -522,8 +529,8 @@ Polymer({
                 <vaadin-grid-selection-column flex-grow="0" frozen="" style="overflow: visible;" width="50px" z-index="5">
                     <template class="header">
                         <mist-check class="mist-check-header" selected="{{selectAll}}" hidden="[[selectedItems.length]]">[[selectedItems.length]]</mist-check>
-                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="position: fixed; width: [[headerWidth]]px; padding: 8px 8px 13px; z-index: 99999">
-                            <mist-check selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
+                        <div id="actions" hidden="[[!selectedItems.length]]" style\$="width: [[headerWidth]]px;">
+                            <mist-check class="mist-check-header" selected="{{selectAll}}">[[selectedItems.length]]</mist-check>
                             <mist-list-actions actions="[[_computeAllowedActions(actions)]]"></mist-list-actions>
                         </div>
                     </template>
@@ -1088,15 +1095,15 @@ Polymer({
     if (hasVerticalScroll) {
       heightOffset += 14;
     }
-    if (this.toolbar){
-      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar') ? 
-            this.shadowRoot.querySelector('app-toolbar').clientHeight : 0;
+    if (this.toolbar) {
+      const toolbarHeight = this.shadowRoot.querySelector('app-toolbar')
+        ? this.shadowRoot.querySelector('app-toolbar').clientHeight
+        : 0;
       newHeight = Math.min(
         window.innerHeight - top - 56,
         itemsHeight + heightOffset + toolbarHeight
       );
-    }
-    else
+    } else
       newHeight = Math.min(
         window.innerHeight - top,
         itemsHeight + heightOffset
@@ -1409,8 +1416,8 @@ Polymer({
     return ret;
   },
 
-  _hasReceived (_received) {
-    return this.received  && this.received >= 1;
+  _hasReceived() {
+    return this.received && this.received >= 1;
   },
 
   _onSortStart() {

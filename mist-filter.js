@@ -80,7 +80,8 @@ Polymer({
       }
 
       iron-icon[icon='search'] {
-        padding: 12px 8px 8px 0px;
+        padding-top: 4px;
+        padding-right: 8px;
         align-self: var(--mist-filter-iron-icon-search-align-self);
         opacity: 0.5;
       }
@@ -94,6 +95,24 @@ Polymer({
       h2.dialog-title {
         font-size: 20px;
         font-weight: 500;
+      }
+      #search-title-wrapper {
+        display: flex;
+        flex-direction: row;
+      }
+      #title-count-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 27.77px;
+      }
+      #search-container {
+        padding-top: 4px;
+        width: 27.77px;
+      }
+      #count-container {
+        height: 8px;
+        padding-left: 4px;
       }
     </style>
 
@@ -151,14 +170,22 @@ Polymer({
     </paper-menu-button>
 
     <div id="form" on-tap="_startEditingFilter">
-      <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
-      <slot name="count"></slot>
-      <h2
-        class="titleh2"
-        hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
-      >
-        <span class="title"> [[displayName]] </span>
-      </h2>
+      <div id="search-title-wrapper">
+        <div id="title-count-wrapper">
+          <div id="search-container">
+            <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
+          </div>
+          <div id="count-container">
+            <slot name="count"></slot>
+          </div>
+        </div>
+        <h2
+          class="titleh2"
+          hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
+        >
+          <span class="title"> [[displayName]] </span>
+        </h2>
+      </div>
       <paper-input
         id="searchInput"
         hidden$="[[!_showFilterInput(editingFilter,alwaysShowInput)]]"
