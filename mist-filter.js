@@ -79,10 +79,15 @@ Polymer({
         font-size: var(--mist-filter-paper-menu-button-paper-button-font-size);
       }
 
-      iron-icon[icon='search'] {
+      iron-icon#first-search-icon {
         padding-top: 4px;
         padding-right: 8px;
         align-self: var(--mist-filter-iron-icon-search-align-self);
+        opacity: 0.5;
+      }
+
+      iron-icon#second-search-icon {
+        padding-top: 14px;
         opacity: 0.5;
       }
 
@@ -99,6 +104,8 @@ Polymer({
       #search-title-wrapper {
         display: flex;
         flex-direction: row;
+        cursor: text;
+        width: 100%;
       }
       #title-count-wrapper {
         display: flex;
@@ -170,22 +177,31 @@ Polymer({
     </paper-menu-button>
 
     <div id="form" on-tap="_startEditingFilter">
-      <div id="search-title-wrapper">
+      <div
+        id="search-title-wrapper"
+        hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
+      >
         <div id="title-count-wrapper">
           <div id="search-container">
-            <iron-icon icon="search" hidden$="[[!searchable]]"></iron-icon>
+            <iron-icon
+              id="first-search-icon"
+              icon="search"
+              hidden$="[[!searchable]]"
+            ></iron-icon>
           </div>
           <div id="count-container">
             <slot name="count"></slot>
           </div>
         </div>
-        <h2
-          class="titleh2"
-          hidden$="[[_showFilterInput(editingFilter,alwaysShowInput)]]"
-        >
+        <h2 class="titleh2">
           <span class="title"> [[displayName]] </span>
         </h2>
       </div>
+      <iron-icon
+        id="second-search-icon"
+        icon="search"
+        hidden$="[[!_showFilterInput(editingFilter,alwaysShowInput)]]"
+      ></iron-icon>
       <paper-input
         id="searchInput"
         hidden$="[[!_showFilterInput(editingFilter,alwaysShowInput)]]"
