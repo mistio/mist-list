@@ -88,6 +88,7 @@ Polymer({
 
       iron-icon#second-search-icon {
         padding-top: 14px;
+        min-width: 27.77px;
         opacity: 0.5;
       }
 
