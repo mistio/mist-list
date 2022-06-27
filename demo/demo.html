@@ -1,9 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
 
 <head>
     <meta charset="utf-8" />
     <style>
+        mist-list {
+            height: 600px;
+        }
+        app-toolbar {
+            height: 60px;
+        }
     </style>
 </head>
 <body>
@@ -18,24 +24,54 @@
         let presets = [
             {id:"simple"},
             {id:"selectable"},
+            {id:"searchable"},
+            {id:"treeview"},
             {id:"streaming"},
-            {id:"treeview"}
         ]
+        function resetList() {
+            const list = document.querySelector('mist-list');
+            list.searchable = false;
+            list.selectable = false;
+            list.itemMap = {};
+            list.treeView = false;
+            list.renderers = {};
+            list.toolbar = false;
+        }
 
         function updateTab(e) {
             const preset = e ? e.detail.value : 0;
-            const url = `${presets[preset].id  }.json`;
+            const url = `${presets[preset].id}.json`;
+            resetList();
             fetch(url)
             .then(response => response.json())
             .then(async body => {
-                // populate mist-list with data
+                const list = document.querySelector('mist-list');
+                list.itemMap = body.itemMap;
+                list.visible = body.visibleColumns;
+                list.frozen = body.frozenColumns;
+                if(body.renderers)
+                    list.renderers = body.renderers;
+                if(body.dataProvider)
+                    list.dataProvider = body.dataProvider;
+                if(body.attributes) {
+                    Object.keys(body.attributes).forEach(key => {
+                        list[key] = body.attributes[key]
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading spec:', error);
             });
         }
         render(
             html`
                 <vaadin-tabs @selected-changed="${updateTab}">
                     ${repeat(presets, item => item, (item) => html`<vaadin-tab>${item.title || item.id}</vaadin-tab>`)}
-                </vaadin-tabs>      
+                </vaadin-tabs> 
+                <mist-list
+                    id="playground"
+                >
+                </mist-list>   
             `, document.querySelector('#demo')
         );
 
