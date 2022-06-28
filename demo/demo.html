@@ -5,8 +5,26 @@
     <meta charset="utf-8" />
     <style>
         mist-list {
+            display: inline-block;
+            background-color: #888;
+            color: #fff;
+            font-size: 14px;
+            padding: 0 0.5em;
+            margin: 0 1px;
+            border-radius: 2px;
+            letter-spacing: .4px;
+            font-weight: 500 !important;
+            word-break: break-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
             height: 600px;
-        }
+            font-size: 75%;
+            --row-height: 48px;
+
+    }
+
         app-toolbar {
             height: 60px;
         }
@@ -20,22 +38,28 @@
         import {repeat} from 'lit/directives/repeat.js';
         import '@vaadin/tabs';
         import '../mist-list.js';
+        import {treeViewDataProvider, hasChildren} from './tree-view-data-provider.js'
 
         let presets = [
             {id:"simple"},
             {id:"selectable"},
             {id:"searchable"},
             {id:"treeview"},
-            {id:"streaming"},
+            // {id:"streaming"},
         ]
+        // const originalDataProvider = document.querySelector('mist-list').$.grid.dataProvider;
+        const dataProvider = treeViewDataProvider.bind(document);
+
         function resetList() {
             const list = document.querySelector('mist-list');
             list.searchable = false;
             list.selectable = false;
             list.itemMap = {};
             list.treeView = false;
+            // list.dataProvider = originalDataProvider;
             list.renderers = {};
             list.toolbar = false;
+
         }
 
         function updateTab(e) {
@@ -46,13 +70,16 @@
             .then(response => response.json())
             .then(async body => {
                 const list = document.querySelector('mist-list');
+                if(body.treeView) {
+                    list.itemHasChildren = hasChildren;
+                    list.dataProvider = dataProvider;
+                    list.treeView = true;
+                }
                 list.itemMap = body.itemMap;
                 list.visible = body.visibleColumns;
                 list.frozen = body.frozenColumns;
                 if(body.renderers)
                     list.renderers = body.renderers;
-                if(body.dataProvider)
-                    list.dataProvider = body.dataProvider;
                 if(body.attributes) {
                     Object.keys(body.attributes).forEach(key => {
                         list[key] = body.attributes[key]
@@ -60,7 +87,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error loading spec:', error);
+                console.error('Error loading list:', error);
             });
         }
         render(
