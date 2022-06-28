@@ -3,108 +3,131 @@
         "001": {
             "parent": "",
             "id": "001",
-            "name": "A1"
+            "name": "A1",
+            "hasChildren": true
         },
         "002": {
             "parent": "001",
             "id": "002",
-            "name": "AA1"
-
+            "name": "AA1",
+            "hasChildren": true
         },
         "003": {
             "parent": "",
             "id": "003",
-            "name": "A3"
+            "name": "A3",
+            "hasChildren": true
         },
         "004": {
             "parent": "002",
             "id": "004",
-            "name": "AAA1"
+            "name": "AAA1",
+            "hasChildren": true
         },
         "005": {
             "parent": "",
             "id": "005",
-            "name": "A5"
+            "name": "A5",
+            "hasChildren": true
         },
         "006": {
             "parent": "003",
             "id": "006",
-            "name": "AA3"
+            "name": "AA3",
+            "hasChildren": true
         },
         "007": {
             "parent": "",
             "id": "007",
-            "name": "AA7"
+            "name": "AA7",
+            "hasChildren": true
         },
         "008": {
             "parent": "004",
             "id": "008",
-            "name": "AAAA1"
+            "name": "AAAA1",
+            "hasChildren": true
         },
         "009": {
             "parent": "003",
             "id": "009",
-            "name": "AA3-2"
+            "name": "AA3-2",
+            "hasChildren": true
         },
         "010": {
             "parent": "005",
             "id": "010",
-            "name": "AA5"
+            "name": "AA5",
+            "hasChildren": true
         },
         "011": {
             "parent": "",
             "id": "011",
-            "name": "A11"
+            "name": "A11",
+            "hasChildren": false
         },
         "012": {
             "parent": "006",
             "id": "012",
-            "name": "AAA3"
+            "name": "AAA3",
+            "hasChildren": false
         },
         "013": {
             "parent": "",
             "id": "013",
-            "name": "A13"
+            "name": "A13",
+            "hasChildren": false
         },
         "014": {
             "parent": "007",
             "id": "014",
-            "name": "AA7"
+            "name": "AA7",
+            "hasChildren": false
         },
         "015": {
             "parent": "005",
             "id": "015",
-            "name": "AA5-2"
+            "name": "AA5-2",
+            "hasChildren": false
         },
         "016": {
             "parent": "008",
             "id": "016",
-            "name": "AAAAA5"
+            "name": "AAAAA5",
+            "hasChildren": false
         },
         "017": {
             "parent": "",
             "id": "017",
-            "name": "A17"
+            "name": "A17",
+            "hasChildren": false
         },
         "018": {
             "parent": "009",
             "id": "018",
-            "name": "AAA3-2"
+            "name": "AAA3-2",
+            "hasChildren": false
         },
         "019": {
             "parent": "",
             "id": "019",
-            "name": "A19"
+            "name": "A19",
+            "hasChildren": false
         },
         "020": {
             "parent": "010",
             "id": "020",
-            "name": "AAA5"
+            "name": "AAA5",
+            "hasChildren": false
         },
         "021": {
             "parent": "007",
             "id": "021",
-            "name": "AA7-2"
+            "name": "AA7-2",
+            "hasChildren": false
         }
-    }
+    },
+    "frozenColumns": ["name"],
+    "visibleColumns": ["id", "parent"],
+    "treeView": true
 }
