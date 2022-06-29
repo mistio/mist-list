@@ -16,7 +16,7 @@
     "format:eslint": "eslint --ext .js . --fix --ignore-path .gitignore",
     "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
     "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
-    "test": "web-test-runner --coverage",
+    "test": "npx cypress run --browser chrome ; web-test-runner --coverage",
     "test:watch": "web-test-runner --watch",
     "start": "web-dev-server"
   },
@@ -51,6 +51,7 @@
     "analyze": "0.0.14",
     "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
+    "cypress": "^10.2.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-html": "^6.2.0",
