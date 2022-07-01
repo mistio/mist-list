@@ -334,5 +334,5 @@
     
     "visibleColumns": ["Last Name", "Gender", "Age", "Email", "Phone", "Occupation", "Experience (Years)"],
     "frozenColumns": ["First Name"],
-    "attributes": {"selectable": true}
+    "attributes": {"selectable": true, "resizable": true}
 }

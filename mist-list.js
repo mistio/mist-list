@@ -953,7 +953,7 @@ Polymer({
         _this._debounceResize();
       };
       window.addEventListener('resize', this.resizeHandler);
-      this._debounceResize();
+      // this._debounceResize();
       this.async(function () {
         this.fire('resize');
       }, 1000);
