@@ -49,7 +49,7 @@
             {id:"treeview"},
             // {id:"streaming"},
         ]
-        // const originalDataProvider = document.querySelector('mist-list').$.grid.dataProvider;
+
         const dataProvider = treeViewDataProvider.bind(document);
 
         function resetList() {
@@ -58,7 +58,7 @@
             list.selectable = false;
             list.itemMap = {};
             list.treeView = false;
-            // list.dataProvider = originalDataProvider;
+            list.dataProvider = null;
             list.renderers = {};
             list.toolbar = false;
 
@@ -76,6 +76,7 @@
                     list.itemHasChildren = hasChildren;
                     list.dataProvider = dataProvider;
                     list.treeView = true;
+                    list.resizable = true;
                 }
                 list.itemMap = body.itemMap;
                 list.visible = body.visibleColumns;

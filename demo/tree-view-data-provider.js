@@ -1,7 +1,14 @@
 function treeViewDataProvider(opts, callback) {
   const mistList = this.querySelector('mist-list');
   if (!mistList) return;
-  const items = Object.values(mistList.itemMap);
+  const { grid } = mistList.$;
+  let items = Object.values(mistList.itemMap);
+
+  if (
+    opts.sortOrders.length &&
+    grid._checkPaths(grid._sorters, 'sorting', items)
+  )
+    items = items.sort(grid._multiSort.bind(grid));
 
   let data = [];
   if (!mistList.treeView) data = items;
