@@ -23,7 +23,8 @@
   "dependencies": {
     "@mistio/monaco-element": "^0.1.8",
     "@mistio/sortable-list": "^1.0.1",
-    "@mistio/vaadin-grid": "^5.7.7",
+    "@vaadin/grid": "^23.1.3",
+    "@vaadin/polymer-legacy-adapter": "23.1.1",
     "@polymer/iron-resizable-behavior": "^3.0.0",
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-checkbox": "^3.0.0",
@@ -35,7 +36,7 @@
     "@polymer/paper-listbox": "^3.0.0",
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/polymer": "^3.4.1",
-    "@vaadin/vaadin-dialog": "^2.4.5"
+    "@vaadin/dialog": "^23.1.3"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",

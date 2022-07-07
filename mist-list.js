@@ -1,10 +1,11 @@
 import '@polymer/polymer/polymer-legacy.js';
-import '@mistio/vaadin-grid/vaadin-grid.js';
-import '@mistio/vaadin-grid/vaadin-grid-sorter.js';
-import '@mistio/vaadin-grid/vaadin-grid-tree-toggle.js';
-import '@mistio/vaadin-grid/vaadin-grid-selection-column.js';
+import '@vaadin/grid/vaadin-grid.js';
+import '@vaadin/grid/vaadin-grid-sorter.js';
+import '@vaadin/grid/vaadin-grid-tree-toggle.js';
+import '@vaadin/grid/vaadin-grid-selection-column.js';
 import '@polymer/paper-button/paper-button.js';
-import '@vaadin/vaadin-dialog/vaadin-dialog.js';
+import '@vaadin/dialog/vaadin-dialog.js';
+import '@vaadin/polymer-legacy-adapter/template-renderer.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
@@ -1079,7 +1080,7 @@ Polymer({
     }
     var top = this.getBoundingClientRect().top,
       newHeight,
-      itemsHeight = this.$.grid._virtualCount * 49,
+      itemsHeight = this.$.grid.items * 49,
       // isSmallScreen = window.innerWidth <= 768,
       outerScroller = this.$.grid.$.table,
       hasVerticalScroll = outerScroller.scrollWidth > outerScroller.clientWidth,
@@ -1116,7 +1117,12 @@ Polymer({
       newHeight = 450;
     this.style.height = `${newHeight}px`;
     console.log('resize', newHeight);
-    this.$.grid.fire('iron-resize');
+    // this.$.grid.dispatchEvent(
+    //   new CustomEvent('iron-resize', {
+    //     bubbles: true,
+    //     composed: true
+    //   })
+    // );
   },
 
   columnWidth: function (column, frozen) {
@@ -1225,15 +1231,22 @@ Polymer({
               },
               200
             );
-          } else {
-            this.debounce(
-              'iron-resize',
-              function () {
-                this.$.grid.fire('iron-resize');
-              },
-              100
-            );
           }
+          // else {
+          //   this.debounce(
+          //     'iron-resize',
+          //     function () {
+
+          //       this.$.grid.dispatchEvent(
+          //         new CustomEvent('iron-resize', {
+          //           bubbles: true,
+          //           composed: true
+          //         })
+          //         );
+          //     },
+          //     100
+          //   );
+          // }
         },
         500
       );
