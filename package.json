@@ -7,66 +7,42 @@
     "Alex Tsiliris <eis@mist.io>",
     "Golfo Vasiliou <golfo@mist.io>"
   ],
-  "version": "3.1.9",
-  "main": "mist-list.js",
+  "license": "Apache-2.0",
+  "author": "mist-list",
+  "version": "5.0.0-alpha.5",
+  "main": "index.js",
+  "module": "index.js",
   "scripts": {
-    "lint": "npm run lint:eslint && npm run lint:prettier",
-    "format": "npm run format:eslint && npm run format:prettier",
-    "lint:eslint": "eslint --ext .js . --ignore-path .gitignore",
-    "format:eslint": "eslint --ext .js . --fix --ignore-path .gitignore",
-    "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
-    "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
-    "test": "npx cypress run --browser chrome ; web-test-runner --coverage",
+    "analyze": "cem analyze --litelement",
+    "start": "web-dev-server",
+    "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
+    "format": "eslint --ext .js,.html . --fix --ignore-path .gitignore && prettier \"**/*.js\" --write --ignore-path .gitignore",
+    "test": "web-test-runner --coverage",
     "test:watch": "web-test-runner --watch",
-    "start": "web-dev-server"
+    "storybook": "npm run analyze -- --exclude dist && web-dev-server -c .storybook/server.mjs",
+    "storybook:build": "npm run analyze -- --exclude dist && build-storybook"
   },
   "dependencies": {
-    "@mistio/monaco-element": "^0.1.8",
-    "@mistio/sortable-list": "^1.0.1",
-    "@mistio/vaadin-grid": "^5.7.7",
-    "@polymer/iron-resizable-behavior": "^3.0.0",
-    "@polymer/paper-button": "^3.0.0",
-    "@polymer/paper-checkbox": "^3.0.0",
-    "@polymer/paper-dialog": "^3.0.0",
-    "@polymer/paper-dropdown-menu": "^3.0.0",
-    "@polymer/paper-icon-button": "^3.0.2",
-    "@polymer/paper-input": "^3.2.1",
-    "@polymer/paper-item": "^3.0.0",
-    "@polymer/paper-listbox": "^3.0.0",
-    "@polymer/paper-menu-button": "^3.0.0",
-    "@polymer/polymer": "^3.4.1",
-    "@vaadin/vaadin-dialog": "^2.4.5"
+    "lit": "^2.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
-    "@babel/eslint-parser": "^7.16.5",
+    "@custom-elements-manifest/analyzer": "^0.4.17",
     "@open-wc/eslint-config": "^4.3.0",
     "@open-wc/testing": "next",
-    "@polymer/iron-component-page": "^4.0.0",
-    "@polymer/iron-demo-helpers": "^3.1.0",
-    "@polymer/test-fixture": "^4.0.2",
-    "@vaadin/tabs": "^23.1.2",
-    "@web/test-runner": "^0.13.17",
-    "@webcomponents/webcomponentsjs": "^2.4.4",
-    "analyze": "0.0.14",
-    "babel-eslint": "^10.1.0",
-    "chai": "^4.2.0",
-    "cypress": "^10.2.0",
+    "@web/dev-server": "^0.1.28",
+    "@web/dev-server-storybook": "next",
+    "@web/test-runner": "^0.13.22",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-html": "^6.2.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
-    "mocha": "^8.1.3",
-    "prettier": "^2.5.1",
-    "wct-mocha": "^1.1.0"
+    "prettier": "^2.4.1"
   },
-  "overrides": {
-    "@vaadin/vaadin-lumo-styles": "^23.0.10"
-  },
+  "customElements": "custom-elements.json",
   "eslintConfig": {
     "extends": [
-      "@open-wc/eslint-config"
+      "@open-wc",
+      "prettier"
     ]
   },
   "prettier": {
@@ -81,8 +57,7 @@
   "lint-staged": {
     "*.js": [
       "eslint --fix",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   }
 }
