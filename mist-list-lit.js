@@ -17,9 +17,6 @@ export default class MistList extends LitElement {
       items: {
         type: Array,
       },
-      itemMap: {
-        type: Object,
-      },
       frozenColumns: {
         type: Array,
       },
@@ -44,16 +41,6 @@ export default class MistList extends LitElement {
     this.itemMap = {};
     this.frozenColumns = [];
     this.visibleColumns = [];
-  }
-
-  // observed changes
-
-  updated(updatedProperties) {
-    // update items when itemMap changes
-    if (updatedProperties.has('itemMap')) {
-      const newItems = Object.values(this.itemMap);
-      this.items = newItems;
-    }
   }
 
   columnsTemplate() {
