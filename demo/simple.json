@@ -333,5 +333,6 @@
     },
     
     "visibleColumns": ["Last Name", "Gender", "Age", "Email", "Phone", "Occupation", "Experience (Years)"],
-    "frozenColumns": ["First Name"]
+    "frozenColumns": ["First Name"],
+    "actions": ["rename", "edit", "delete"]
 }
