@@ -38,19 +38,20 @@
     <script type="module">
         import { html, render } from 'lit';
         import {repeat} from 'lit/directives/repeat.js';
+        import { createArrayDataProvider } from '@vaadin/grid/src/array-data-provider.js';
         import '@vaadin/tabs';
         import '../mist-list.js';
-        import {treeViewDataProvider, hasChildren} from './tree-view-data-provider.js'
+        //import {treeViewDataProvider, hasChildren} from './tree-view-data-provider.js'
 
         let presets = [
             {id:"simple"},
             {id:"selectable"},
             {id:"searchable"},
-            {id:"treeview"},
+            //{id:"treeview"},
             // {id:"streaming"},
         ]
 
-        const dataProvider = treeViewDataProvider.bind(document);
+        //const dataProvider = treeViewDataProvider.bind(document);
 
         function resetList() {
             const list = document.querySelector('mist-list');
@@ -78,9 +79,11 @@
                     list.treeView = true;
                     list.resizable = true;
                 }
-                list.itemMap = body.itemMap;
-                list.visible = body.visibleColumns;
-                list.frozen = body.frozenColumns;
+                list.itemsURL = url;
+                list.itemsPath = ['itemMap']
+                list.visibleColumns = body.visibleColumns;
+                list.frozenColumns = body.frozenColumns;
+                list.actions = body.actions;
                 if(body.renderers)
                     list.renderers = body.renderers;
                 if(body.attributes) {
@@ -95,6 +98,11 @@
         }
         render(
             html`
+                <style>
+                    mist-list {
+                        width: 100%;
+                    }
+                </style>
                 <vaadin-tabs @selected-changed="${updateTab}">
                     ${repeat(presets, item => item, (item) => html`<vaadin-tab>${item.title || item.id}</vaadin-tab>`)}
                 </vaadin-tabs> 
