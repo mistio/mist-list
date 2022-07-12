@@ -13,6 +13,7 @@ import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
 import '@vaadin/icons';
 import {createDataProvider} from './list_data_provider_gen.js';
+import { debouncer } from "./utils.js";
 
 /* eslint-disable class-methods-use-this */
 export class MistList extends LitElement {
@@ -113,7 +114,7 @@ export class MistList extends LitElement {
       return html``;
     return html`
       <vaadin-horizontal-layout id="header">
-        <vaadin-text-field placeholder="Search" @value-changed="${this.searchValueChanged}">
+        <vaadin-text-field placeholder="Search" @value-changed="${debouncer(this.searchValueChanged.bind(this), 800)}">
           <vaadin-icon id="searchIcon" slot="prefix" icon="vaadin:search"></vaadin-icon>
         </vaadin-text-field>
       </vaadin-horizontal-layout>

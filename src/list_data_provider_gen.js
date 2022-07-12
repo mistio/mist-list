@@ -48,7 +48,7 @@ function multiSort(items, sortOrders) {
 
 function matchesTerm(values, term) {
 
-    return values.some(value => value.toString().toLowerCase().includes(term.toLowerCase()));
+    return values.some(value => value && value.toString().toLowerCase().includes(term.toLowerCase()));
 }
 
 function filterItems(items, filter) {
