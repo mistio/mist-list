@@ -1,6 +1,13 @@
 import { LitElement, html, css, render } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import '@vaadin/grid/vaadin-grid.js';
+import {
+  columnBodyRenderer,
+  columnFooterRenderer,
+  columnHeaderRenderer,
+} from '@vaadin/grid/lit.js';
+import "@vaadin/horizontal-layout";
+import "@vaadin/text-field";
 // import '@vaadin/grid/vaadin-grid-column.js';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
@@ -10,7 +17,20 @@ import {createDataProvider} from './list_data_provider_gen.js';
 /* eslint-disable class-methods-use-this */
 export class MistList extends LitElement {
   static get styles() {
-    return css``;
+    return css`
+      vaadin-grid {
+        height: 100%;
+      }
+
+      #header {
+        height: 50px;
+        background-color: white;
+        align-items: center;
+      }
+      #searchIcon {
+        color: black;
+      }
+    `;
   }
 
   static get properties() {
@@ -18,9 +38,9 @@ export class MistList extends LitElement {
       dataProvider: {
         type: Object,
       },
-      items: {
-        type: Array,
-      },
+      // items: {
+      //   type: Array,
+      // },
       frozenColumns: {
         type: Array,
       },
@@ -35,13 +55,32 @@ export class MistList extends LitElement {
       },
       actions: {
         type: Array
+      },
+      searchable: {
+        type: Boolean
       }
     };
   }
 
+  // observed properties
+
+  // get searchFilter() {
+  //   return this._searchFilter;
+  // }
+
+  // set searchFilter(val) {
+  //   this._searchFilter = val;
+  //   if (this.renderRoot){
+  //     const grid = this.renderRoot.querySelector('vaadin-grid')
+  //     grid._filters = [val];
+  //     grid.__applyFilters();
+  //   }
+  // }
+
   render() {
     return html`
-      <vaadin-grid .dataProvider="${this.dataProvider}" all-rows-visible>
+      ${this.getGridHeaderTemplate()}
+      <vaadin-grid .dataProvider="${this.dataProvider}" multi-sort all-rows-visible>
         ${this.columnsTemplate()}
       </vaadin-grid>
     `;
@@ -69,12 +108,24 @@ export class MistList extends LitElement {
 
   }
 
-  // eslint-disable no-invalid-html
+  getGridHeaderTemplate() {
+    if (!this.searchable)
+      return html``;
+    return html`
+      <vaadin-horizontal-layout id="header">
+        <vaadin-text-field placeholder="Search" @value-changed="${this.searchValueChanged}">
+          <vaadin-icon id="searchIcon" slot="prefix" icon="vaadin:search"></vaadin-icon>
+        </vaadin-text-field>
+      </vaadin-horizontal-layout>
+    `;
+  }
+
   columnsTemplate() {
     // add tree view later!!!
     let frozenTemplate = html``;
     let visibleTemplate = html``;
     let actionsTemplate = html``;
+
     if (this.frozenColumns.length > 0) {
       frozenTemplate = html`
         ${repeat(
@@ -109,7 +160,7 @@ export class MistList extends LitElement {
     return html` ${frozenTemplate} ${visibleTemplate} ${actionsTemplate} `;
   }
 
-  actionsRenderer(root, __, _model) {
+  actionsRenderer(root, _column, _model) {
     render(html`
       <style>
         vaadin-icon {
@@ -118,5 +169,30 @@ export class MistList extends LitElement {
       </style>
       <vaadin-icon icon="vaadin:ellipsis-dots-v"></vaadin-icon>
     `, root);
+  }
+
+  // search value can be a string and then it will search all items and all columns
+  // it can also be a semicolon separated string, the first part is the value
+  // the latter part is the columns to be searched
+  // eg: value = "32ad3:id,owner id, external id"
+  searchValueChanged(e) {
+    // grid not loaded
+    if(!this.renderRoot || !this.renderRoot.querySelector('vaadin-grid'))
+      return;
+    const grid = this.renderRoot.querySelector('vaadin-grid');
+    const initialValue = e.detail.value;
+    // requesting all when showing all
+    if(grid._filters.length === 0 && !initialValue)
+      return
+    let searchFilter;
+    if(!initialValue.includes(":")) {
+      searchFilter = {value: initialValue, path: "all"}
+    } else {
+      const [value, paths] = initialValue.split(":");
+      const path = paths.split(',')
+      searchFilter = {value: value, path: path};
+    }
+    grid._filters = [searchFilter];
+    grid.__applyFilters();
   }
 }
