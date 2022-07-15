@@ -1759,9 +1759,11 @@ Polymer({
   },
 
   _toggleTreeView(e) {
+    localStorage.setItem('mist-list#' + this.id + '/treeView/', !this.treeView);
     this.set('treeView', !this.treeView);
     let firstFrozen;
     if (!this.treeView) {
+      this.$.grid.expandedItems = [];
       firstFrozen = this.firstFrozen;
       this.set('firstFrozen', undefined);
       this.unshift('frozen', firstFrozen);
