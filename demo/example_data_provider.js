@@ -5,7 +5,32 @@
 function getNestedObjValue(path, object) {
     return path.split('.').reduce((obj, property) => (obj || {})[property], object);
 }
-  
+
+
+function checkPaths(arrayToCheck, action, items) {
+    if (items.length === 0) {
+        return false;
+    }
+
+    let result = true;
+
+    for (const i in arrayToCheck) {
+        const path = arrayToCheck[i].path;
+
+        // Skip simple paths
+        if (!path || path.indexOf('.') === -1) {
+        continue;
+        }
+
+        const parentProperty = path.replace(/\.[^.]*$/, ''); // A.b.c -> a.b
+        if (get(parentProperty, items[0]) === undefined) {
+        console.warn(`Path "${path}" used for ${action} does not exist in all of the items, ${action} is disabled.`);
+        result = false;
+        }
+    }
+
+    return result;
+}
 
 function normalizeEmptyValue(value) {
     if ([undefined, null].indexOf(value) >= 0) {
@@ -70,20 +95,32 @@ function filterItems(items, filter) {
     });
 }
 
-
+// this is a data provider that fetches the items from an url
+// and uses a path to find the items in the response.
+// This means that if the url returns a nested object and the items
+// are deep inside, itemsPath should be set.
+// eg: urlResponse = { data: {itemMap: {item1: {}, item2: {}, item3:{}}}
+//                     meta: {...}}
+// In this case itemsPath should be itemsPath = "data.itemMap".
+// The data provider will extract the values of the itemMap to use as items.
+// Of course it will work even if itemMap was an Array with the items.
+// If the url returns an Array with the items, itemsPath should be undefined.
 export const createDataProvider = (url, itemsPath) => {
     return async (params, callback) => {
         const itemsPromise = await fetch(url);
-        let items = await itemsPromise.json();
-
+        const urlResponse = await itemsPromise.json();
+        let items;
         // if itemsPath is given the response must be an object
-        if (itemsPath && !Array.isArray(items))
-            items = getNestedObjValue(itemsPath, items);
-        
-        // if items is still an object, use the values
-        if (!Array.isArray(items) && typeof(items) === 'object') {
-            items = Object.values(items);
-        }
+        if (itemsPath && !Array.isArray(urlResponse)) {
+            items = getNestedObjValue(itemsPath, urlResponse);        
+            // if items is still an object, use the values
+            if (!Array.isArray(items) && typeof(items) === 'object') {
+                items = Object.values(items);
+            }
+        } else if (Array.isArray(urlResponse))
+            items = urlResponse
+        else if (!itemsPath && !Array.isArray(urlResponse))
+            items = Object.values(urlResponse)
 
         if (!items || items.length === 0)
             callback([], 0);

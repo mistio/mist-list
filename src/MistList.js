@@ -11,8 +11,8 @@ import "@vaadin/text-field";
 // import '@vaadin/grid/vaadin-grid-column.js';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
+import '@vaadin/grid/vaadin-grid-selection-column.js';
 import '@vaadin/icons';
-import {createDataProvider} from './list_data_provider_gen.js';
 import { debouncer } from "./utils.js";
 
 /* eslint-disable class-methods-use-this */
@@ -48,43 +48,19 @@ export class MistList extends LitElement {
       visibleColumns: {
         type: Array,
       },
-      itemsURL: {
-        type: String
-      },
-      itemsPath: {
-        type: Array
+      dataProvider: {
+        type: Object
       },
       actions: {
         type: Array
       },
       searchable: {
         type: Boolean
+      },
+      selectable: {
+        type: Boolean
       }
     };
-  }
-
-  // observed properties
-
-  // get searchFilter() {
-  //   return this._searchFilter;
-  // }
-
-  // set searchFilter(val) {
-  //   this._searchFilter = val;
-  //   if (this.renderRoot){
-  //     const grid = this.renderRoot.querySelector('vaadin-grid')
-  //     grid._filters = [val];
-  //     grid.__applyFilters();
-  //   }
-  // }
-
-  render() {
-    return html`
-      ${this.getGridHeaderTemplate()}
-      <vaadin-grid .dataProvider="${this.dataProvider}" multi-sort all-rows-visible>
-        ${this.columnsTemplate()}
-      </vaadin-grid>
-    `;
   }
 
   constructor() {
@@ -94,19 +70,39 @@ export class MistList extends LitElement {
     this.itemMap = {};
     this.frozenColumns = [];
     this.visibleColumns = [];
-    this.itemsURL = "";
     this.actions = [];
-    this.itemsPath = null;
+    this.dataProvider = null;
+    this.searchable = false;
+    this.selectable = false;
   }
 
-  updated(changedProperties) {
-    // Load data provider if itemsURL is given or changed
-    if (changedProperties.has('itemsURL')) {
-      if (this.itemsURL) {
-        this.dataProvider = createDataProvider(this.itemsURL, this.itemsPath);
-      }
-    }
+   disconnectedCallback() {
+    this.removeEventListener('select-all-changed', this.selectAllChanged);
+    super.disconnectedCallback();
+  }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('select-all-changed', this.selectAllChanged);
+  }
+
+  // html stuff, main render and helper renderers
+  render() {
+    return html`
+      ${this.getGridHeaderTemplate()}
+      <vaadin-grid .dataProvider="${this.dataProvider}" .selectedItems="${this.selectedItems}" multi-sort all-rows-visible>
+        ${this.getSelectionColumnTemplate()}
+        ${this.getColumnsTemplate()}
+      </vaadin-grid>
+    `;
+  }
+
+  getSelectionColumnTemplate() {
+    if (!this.selectable)
+      return html``;
+    return html`
+      <vaadin-grid-selection-column></vaadin-grid-selection-column>
+    `;
   }
 
   getGridHeaderTemplate() {
@@ -121,7 +117,7 @@ export class MistList extends LitElement {
     `;
   }
 
-  columnsTemplate() {
+  getColumnsTemplate() {
     // add tree view later!!!
     let frozenTemplate = html``;
     let visibleTemplate = html``;
@@ -154,7 +150,11 @@ export class MistList extends LitElement {
 
     if (this.actions.length > 1) {
       actionsTemplate = html`
-        <vaadin-grid-column frozen-to-end header="Actions" .renderer="${this.actionsRenderer}" auto-width">
+        <vaadin-grid-column
+          frozen-to-end
+          text-align="center"
+          .renderer="${this.actionsRenderer}"
+          width="40px">
         </vaadin-grid-column>
       `;
     }
@@ -171,11 +171,13 @@ export class MistList extends LitElement {
       <vaadin-icon icon="vaadin:ellipsis-dots-v"></vaadin-icon>
     `, root);
   }
+  // end html stuff
 
   // search value can be a string and then it will search all items and all columns
   // it can also be a semicolon separated string, the first part is the value
   // the latter part is the columns to be searched
   // eg: value = "32ad3:id,owner id, external id"
+  // this needs proper implementantion in the data provider to work
   searchValueChanged(e) {
     // grid not loaded
     if(!this.renderRoot || !this.renderRoot.querySelector('vaadin-grid'))
@@ -195,5 +197,9 @@ export class MistList extends LitElement {
     }
     grid._filters = [searchFilter];
     grid.__applyFilters();
+  }
+
+  selectAllChanged(e) {
+    debugger;
   }
 }
