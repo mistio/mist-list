@@ -681,7 +681,7 @@ Polymer({
 
     firstFrozen: {
       type: String,
-      computed: '_computefirstFrozen(frozen)',
+      computed: '_computefirstFrozen(frozen, treeView)',
     },
 
     visible: {
@@ -1755,24 +1755,18 @@ Polymer({
 
   _computefirstFrozen() {
     if (this.treeView) return this.frozen.shift();
-    return '';
+    else {
+      if (this.firstFrozen && this.firstFrozen.length)
+        this.unshift('frozen', this.firstFrozen);
+      return '';
+    }
   },
 
   _toggleTreeView(e) {
     localStorage.setItem('mist-list#' + this.id + '/treeView/', !this.treeView);
+    if (!this.treeView) this.$.grid.expandedItems = [];
     this.set('treeView', !this.treeView);
-    let firstFrozen;
-    if (!this.treeView) {
-      this.$.grid.expandedItems = [];
-      firstFrozen = this.firstFrozen;
-      this.set('firstFrozen', undefined);
-      this.unshift('frozen', firstFrozen);
-      this.$.grid.clearCache();
-    } else {
-      firstFrozen = this.shift('frozen');
-      this.set('firstFrozen', firstFrozen);
-      this.$.grid.clearCache();
-    }
+    this.$.grid.clearCache();
     e.currentTarget.parentNode.parentNode.close();
   },
 
