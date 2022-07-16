@@ -7,7 +7,7 @@
     "Alex Tsiliris <eis@mist.io>",
     "Golfo Vasiliou <golfo@mist.io>"
   ],
-  "version": "3.1.8",
+  "version": "3.1.9",
   "main": "mist-list.js",
   "scripts": {
     "lint": "npm run lint:eslint && npm run lint:prettier",
