@@ -1764,7 +1764,7 @@ Polymer({
 
   _toggleTreeView(e) {
     localStorage.setItem('mist-list#' + this.id + '/treeView/', !this.treeView);
-    if (!this.treeView) this.$.grid.expandedItems = [];
+    if (this.treeView) this.$.grid.expandedItems = [];
     this.set('treeView', !this.treeView);
     this.$.grid.clearCache();
     e.currentTarget.parentNode.parentNode.close();
