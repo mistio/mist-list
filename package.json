@@ -6,7 +6,7 @@
     "name": "Dimitris Moraitis",
     "email": "dimo@mist.io"
   },
-  "version": "4.0.0-alpha.1",
+  "version": "5.0.0-alpha.1",
   "main": "index.js",
   "module": "index.js",
   "scripts": {
