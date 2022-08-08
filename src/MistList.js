@@ -1,20 +1,24 @@
 import { LitElement, html, css, render } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
-import '@vaadin/grid/vaadin-grid.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import '@vaadin/grid';
 import {
-  columnBodyRenderer,
-  columnFooterRenderer,
   columnHeaderRenderer,
-} from '@vaadin/grid/lit.js';
+  columnBodyRenderer,
+  // columnFooterRenderer,
+  // gridRowDetailsRenderer,
+  // GridRowDetailsLitRenderer
+} from 'lit-vaadin-helpers';
 import "@vaadin/horizontal-layout";
 import "@vaadin/text-field";
-// import '@vaadin/grid/vaadin-grid-column.js';
+import '@vaadin/grid/vaadin-grid-column.js';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
 import '@vaadin/grid/vaadin-grid-selection-column.js';
 import '@vaadin/icons';
+import '@polymer/iron-icons';
+import '@polymer/iron-icon';
 import { debouncer } from "./utils.js";
-
 /* eslint-disable class-methods-use-this */
 export class MistList extends LitElement {
   static get styles() {
@@ -27,21 +31,21 @@ export class MistList extends LitElement {
         height: 50px;
         background-color: white;
         align-items: center;
+        justify-content: space-between;
       }
-      #searchIcon {
+
+      #filterIcon {
         color: black;
+      }
+
+      div.listTools {
+        margin-left: 6px;
       }
     `;
   }
 
   static get properties() {
     return {
-      dataProvider: {
-        type: Object,
-      },
-      // items: {
-      //   type: Array,
-      // },
       frozenColumns: {
         type: Array,
       },
@@ -59,6 +63,18 @@ export class MistList extends LitElement {
       },
       selectable: {
         type: Boolean
+      },
+      timeseries: {
+        type: Boolean
+      },
+      treeView: {
+        type: Boolean
+      },
+      renderers: {
+        type: Object
+      },
+      primaryField: {
+        type: String
       }
     };
   }
@@ -66,58 +82,69 @@ export class MistList extends LitElement {
   constructor() {
     super();
     this.dataProvider = null;
-    this.items = [];
-    this.itemMap = {};
-    this.frozenColumns = [];
-    this.visibleColumns = [];
     this.actions = [];
-    this.dataProvider = null;
     this.searchable = false;
     this.selectable = false;
+    this.timeseries = false;
+    this.treeView = false;
+    this.primaryField = 'id';
+    this.renderers = {};
+    this.frozenColumns = [];
+    this.visibleColumns = [];
+    this.allColumns = new Set();
   }
 
-   disconnectedCallback() {
-    this.removeEventListener('select-all-changed', this.selectAllChanged);
-    super.disconnectedCallback();
-  }
+  // disconnectedCallback() {
+  //   this.removeEventListener('select-all-changed', this.selectAllChanged);
+  //   super.disconnectedCallback();
+  // }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('select-all-changed', this.selectAllChanged);
+  // connectedCallback() {
+  //   super.connectedCallback();
+  //   this.addEventListener('select-all-changed', this.selectAllChanged);
+  // }
+
+  willUpdate(changedProperties) {
+    if (changedProperties.has('dataProvider')) {
+      this.dataProvider = this.dataProvider.bind(this);
+    }
+    if (changedProperties.has('renderers')) {
+      debugger;
+    }
   }
 
   // html stuff, main render and helper renderers
   render() {
     return html`
-      ${this.getGridHeaderTemplate()}
-      <vaadin-grid .dataProvider="${this.dataProvider}" .selectedItems="${this.selectedItems}" multi-sort all-rows-visible>
-        ${this.getSelectionColumnTemplate()}
-        ${this.getColumnsTemplate()}
+      ${this.searchable ? html`
+      <vaadin-horizontal-layout id="header">
+        <div class="listTools">
+          <vaadin-text-field placeholder="Filter" @value-changed="${debouncer(this.searchValueChanged.bind(this), 800)}">
+            <iron-icon id="filterIcon" slot="prefix" icon="icons:filter-list"></iron-icon>
+          </vaadin-text-field>
+        </div>
+        <slot></slot>
+      </vaadin-horizontal-layout>
+    ` : ''}
+      <vaadin-grid id="grid"
+        .dataProvider="${this.dataProvider}"
+        .selectedItems="${this.selectedItems}"
+        multi-sort all-rows-visible theme="no-border"
+        @active-item-changed=${
+          (e)=>{e.target.parentNode.host.dispatchEvent(
+            new CustomEvent('active-item-changed', {
+              detail: e.detail, composed: true, bubbles: true }))}
+        }
+      >
+        ${this.selectable ? html`
+      <vaadin-grid-selection-column frozen></vaadin-grid-selection-column>
+    ` : ''}
+        ${this.renderColumns()}
       </vaadin-grid>
     `;
   }
 
-  getSelectionColumnTemplate() {
-    if (!this.selectable)
-      return html``;
-    return html`
-      <vaadin-grid-selection-column></vaadin-grid-selection-column>
-    `;
-  }
-
-  getGridHeaderTemplate() {
-    if (!this.searchable)
-      return html``;
-    return html`
-      <vaadin-horizontal-layout id="header">
-        <vaadin-text-field placeholder="Search" @value-changed="${debouncer(this.searchValueChanged.bind(this), 800)}">
-          <vaadin-icon id="searchIcon" slot="prefix" icon="vaadin:search"></vaadin-icon>
-        </vaadin-text-field>
-      </vaadin-horizontal-layout>
-    `;
-  }
-
-  getColumnsTemplate() {
+  renderColumns() {
     // add tree view later!!!
     let frozenTemplate = html``;
     let visibleTemplate = html``;
@@ -128,10 +155,7 @@ export class MistList extends LitElement {
         ${repeat(
           this.frozenColumns,
           column => column,
-          column => html`
-            <vaadin-grid-sort-column frozen path="${column}" resizable>
-            </vaadin-grid-sort-column>
-          `
+          column => this.renderColumn(column, true)
         )}
       `;
     }
@@ -140,10 +164,7 @@ export class MistList extends LitElement {
         ${repeat(
           this.visibleColumns,
           column => column,
-          column => html`
-            <vaadin-grid-sort-column path="${column}" resizable>
-            </vaadin-grid-sort-column>
-          `
+          column => this.renderColumn(column, false)
         )}
       `;
     }
@@ -153,7 +174,7 @@ export class MistList extends LitElement {
         <vaadin-grid-column
           frozen-to-end
           text-align="center"
-          .renderer="${this.actionsRenderer}"
+          .renderer="${this.renderActions}"
           width="40px">
         </vaadin-grid-column>
       `;
@@ -161,7 +182,29 @@ export class MistList extends LitElement {
     return html` ${frozenTemplate} ${visibleTemplate} ${actionsTemplate} `;
   }
 
-  actionsRenderer(root, _column, _model) {
+  renderColumn(column, frozen=false) {
+    if (this.renderers && this.renderers[column] && this.renderers[column].title) {
+      return html`
+            <vaadin-grid-column
+              ?frozen=${frozen} path="${column}" resizable
+              ${this.renderers && this.renderers[column] ? columnHeaderRenderer(this.renderers[column].title, []) : () => html``}
+              ${this.renderers && this.renderers[column] ? columnBodyRenderer(this.renderers[column].body, []) : () => html``}
+            >
+            </vaadin-grid-column>
+          `
+    } else {
+      return html`
+            <vaadin-grid-sort-column
+              frozen path="${column}" resizable
+              header=${this.renderers && this.renderers[column] && this.renderers[column].title && this.renderers[column].title()}
+              ${this.renderers && this.renderers[column] ? columnBodyRenderer(this.renderers[column].body, []) : () => html``}
+            >
+            </vaadin-grid-sort-column>
+          `
+    }
+  }
+
+  renderActions(root, _column, _model) {
     render(html`
       <style>
         vaadin-icon {
