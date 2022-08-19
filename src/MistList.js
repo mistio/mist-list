@@ -26,6 +26,7 @@ import '@polymer/iron-icons';
 import '@polymer/iron-icon';
 import { debouncer } from './utils.js';
 /* eslint-disable class-methods-use-this */
+/* eslint-disable lit/no-template-bind */
 export class MistList extends LitElement {
   static get styles() {
     return css`
@@ -60,7 +61,8 @@ export class MistList extends LitElement {
       div.listTools {
         display: inline-flex;
         margin-left: 6px;
-        width: 50%;
+        margin-right: 8px;
+        width: 100%;
         justify-content: end;
         align-items: end;
         height: 62px;
@@ -83,6 +85,34 @@ export class MistList extends LitElement {
       h2.title {
         text-transform: capitalize;
       }
+      .selectColumnsButton {
+        margin-right: -4px;
+      }
+      .lds-dual-ring {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        margin: 0px 1px 0px 2px;
+      }
+      .lds-dual-ring:after {
+        content: ' ';
+        display: block;
+        width: 16x;
+        height: 16px;
+        margin: 4px;
+        border-radius: 50%;
+        border: 1px solid #444;
+        border-color: #444 transparent #444 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+      }
+      @keyframes lds-dual-ring {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     `;
   }
 
@@ -103,6 +133,9 @@ export class MistList extends LitElement {
       },
       actions: {
         type: Array,
+      },
+      loading: {
+        type: Boolean,
       },
       searchable: {
         type: Boolean,
@@ -148,6 +181,7 @@ export class MistList extends LitElement {
     this.searchable = false;
     this.selectable = false;
     this.fullscreen = false;
+    this.loading = false;
     this.selectedItems = [];
     this.timeseries = false;
     this.treeView = false;
@@ -162,14 +196,9 @@ export class MistList extends LitElement {
     this.savedFilters = [{ id: 'yo', name: 'yolo' }];
   }
 
-  // disconnectedCallback() {
-  //   super.disconnectedCallback();
-  // }
-
-  // connectedCallback() {
-  //   super.connectedCallback();
-  // }
-
+  get grid() {
+    return this.shadowRoot && this.shadowRoot.querySelector('vaadin-grid#grid');
+  }
   // _computeFilter: function (baseFilter, userFilter) {
   //   if (!baseFilter) return userFilter;
   //   if (!userFilter) return baseFilter;
@@ -185,17 +214,6 @@ export class MistList extends LitElement {
     // }
   }
 
-  // updateComplete(changedProperties) {
-  //   if (changedProperties.has('selectedItems')) {
-  //     this.dispatchEvent(
-  //       new CustomEvent('selected-items-changed', {
-  //         detail: {value: this.selectedItems},
-  //         bubbles: true,
-  //         composed: true,
-  //       }));
-  //   }
-  // }
-
   render() {
     return html`
       ${this.renderHeader()}
@@ -205,6 +223,7 @@ export class MistList extends LitElement {
         .selectedItems="${this.selectedItems}"
         multi-sort
         all-rows-visible
+        item-has-children-path="hasChildren"
         theme="no-border row-stripes"
         @active-item-changed=${e => {
           e.target.parentNode.host.dispatchEvent(
@@ -253,7 +272,7 @@ export class MistList extends LitElement {
                 action => action,
                 action => html`
                   <vaadin-button
-                    @click=${action.run(this.selectedItems)}
+                    @click=${action.run(this.selectedItems, this)}
                     theme="${action.theme}"
                     >${action.name(this.selectedItems)}</vaadin-button
                   >
@@ -263,6 +282,25 @@ export class MistList extends LitElement {
           </vaadin-horizontal-layout>
           <vaadin-horizontal-layout class="header">
             <div class="listTools">
+              ${this.loading
+                ? html`<div class="lds-dual-ring"></div>`
+                : html` <vaadin-button
+                    theme="icon small tertiary"
+                    aria-label="Reload"
+                    @click=${this.reload}
+                  >
+                    <vaadin-icon icon="lumo:reload"></vaadin-icon>
+                  </vaadin-button>`}
+              <vaadin-button
+                theme="icon small ${this.treeView ? '' : 'tertiary'}"
+                aria-label="Toggle tree view"
+                @click=${() => {
+                  this.treeView = !this.treeView;
+                  this.reload();
+                }}
+              >
+                <vaadin-icon icon="vaadin:file-tree-small"></vaadin-icon>
+              </vaadin-button>
               <vaadin-multi-select-combo-box
                 clear-button-visible
                 allow-custom-value
@@ -291,32 +329,21 @@ export class MistList extends LitElement {
               <iron-icon id="filterIcon" slot="prefix" icon="icons:filter-list"></iron-icon>
               <iron-icon id="saveIcon" icon="icons:save" slot="suffix"></iron-icon>
               <iron-icon id="dropdownIcon" icon="lumo:dropdown" slot="suffix"></iron-icon>
-          </vaadin-text-field> -->
-            </div>
-            <div class="listTools">
+              </vaadin-text-field> -->
+
+              ${this.exportable
+                ? html` <vaadin-button
+                    theme="icon small tertiary"
+                    aria-label="Export"
+                    @click=${() => {}}
+                  >
+                    <vaadin-icon icon="vaadin:download"></vaadin-icon>
+                  </vaadin-button>`
+                : ''}
               <vaadin-button
-                theme="icon ${this.treeView ? '' : 'tertiary'}"
-                aria-label="Toggle tree view"
-                @click=${() => {
-                  this.treeView = !this.treeView;
-                }}
-              >
-                <vaadin-icon icon="vaadin:file-tree-small"></vaadin-icon>
-              </vaadin-button>
-              <vaadin-context-menu
-                open-on="click"
-                ${contextMenuRenderer(this.renderColumnSelectContextMenuItem)}
-              >
-                <vaadin-button
-                  theme="icon tertiary"
-                  aria-label="Select columns"
-                >
-                  <iron-icon icon="icons:view-column"></iron-icon>
-                </vaadin-button>
-              </vaadin-context-menu>
-              <vaadin-button
-                theme="icon tertiary"
-                aria-label="Select columns"
+                style="padding-left: 5px"
+                theme="icon tertiary small"
+                aria-label="Fullscreen"
                 @click=${() => {
                   if (this.getAttribute('fullscreen') == null) {
                     this.setAttribute('fullscreen', true);
@@ -344,8 +371,11 @@ export class MistList extends LitElement {
     if (this.treeView) {
       frozenTemplate = html` <vaadin-grid-tree-column
         frozen
+        width="50%"
         path="${this.primaryField}"
-        item-has-children-path="hasChildren"
+        ${this.renderers && this.renderers[this.primaryField]
+          ? columnBodyRenderer(() => html`lalala`, [])
+          : () => html``}
       ></vaadin-grid-tree-column>`;
     } else if (this.frozenColumns.length > 0) {
       frozenTemplate = html`
@@ -371,7 +401,21 @@ export class MistList extends LitElement {
         <vaadin-grid-column
           frozen-to-end
           text-align="end"
-          .renderer="${this.renderActionButton}"
+          .renderer="${this.renderActionButton.bind(this)}"
+          ${columnHeaderRenderer(
+            () => html` <vaadin-context-menu
+              class="selectColumnsButton"
+              open-on="click"
+              ${contextMenuRenderer(this.renderColumnSelectContextMenuItem)}
+            >
+              <vaadin-button
+                theme="icon tertiary small"
+                aria-label="Select columns"
+              >
+                <iron-icon icon="icons:view-column"></iron-icon>
+              </vaadin-button>
+            </vaadin-context-menu>`
+          )}
           theme="wrap-cell-content"
           width="40px"
         >
@@ -392,6 +436,7 @@ export class MistList extends LitElement {
           ?frozen=${frozen}
           path="${column}"
           resizable
+          width=${frozen ? '50%' : ''}
           ${this.renderers && this.renderers[column]
             ? columnHeaderRenderer(this.renderers[column].title, [])
             : () => html``}
@@ -420,10 +465,21 @@ export class MistList extends LitElement {
     `;
   }
 
-  renderActionButton(root) {
+  renderActionButton(root, row, column) {
     render(
       html`
         <vaadin-context-menu
+          @item-selected=${e => {
+            const action = this.actions.find(
+              i => i.name() === e.detail.value.text
+            );
+            action.run([column.item])();
+            this.dispatchEvent(
+              new CustomEvent('select-action', {
+                detail: { action: e.detail.value.text, item: column.item },
+              })
+            );
+          }}
           open-on="click"
           .items=${this.actions
             ? this.actions
@@ -525,6 +581,12 @@ export class MistList extends LitElement {
       }
     });
     return ret;
+  }
+
+  reload() {
+    const dp = this.dataProvider;
+    this.dataProvider = () => {};
+    this.dataProvider = dp;
   }
 
   // search value can be a string and then it will search all items and all columns
