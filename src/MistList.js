@@ -149,6 +149,9 @@ export class MistList extends LitElement {
       timeseries: {
         type: Boolean,
       },
+      hierarchical: {
+        type: Boolean,
+      },
       treeView: {
         type: Boolean,
       },
@@ -184,6 +187,7 @@ export class MistList extends LitElement {
     this.loading = false;
     this.selectedItems = [];
     this.timeseries = false;
+    this.hierarchical = false;
     this.treeView = false;
     this.primaryField = 'name';
     this.renderers = {};
@@ -209,9 +213,12 @@ export class MistList extends LitElement {
     if (changedProperties.has('dataProvider')) {
       this.dataProvider = this.dataProvider.bind(this);
     }
-    // if (changedProperties.has('renderers')) {
-    //   debugger;
-    // }
+    if (
+      changedProperties.has('hierarchical') &&
+      !changedProperties.has('treeView')
+    ) {
+      this.treeView = this.hierarchical;
+    }
   }
 
   render() {
@@ -291,16 +298,18 @@ export class MistList extends LitElement {
                   >
                     <vaadin-icon icon="lumo:reload"></vaadin-icon>
                   </vaadin-button>`}
-              <vaadin-button
-                theme="icon small ${this.treeView ? '' : 'tertiary'}"
-                aria-label="Toggle tree view"
-                @click=${() => {
-                  this.treeView = !this.treeView;
-                  this.reload();
-                }}
-              >
-                <vaadin-icon icon="vaadin:file-tree-small"></vaadin-icon>
-              </vaadin-button>
+              ${this.hierarchical
+                ? html`<vaadin-button
+                    theme="icon small ${this.treeView ? '' : 'tertiary'}"
+                    aria-label="Toggle tree view"
+                    @click=${() => {
+                      this.treeView = !this.treeView;
+                      this.reload();
+                    }}
+                  >
+                    <vaadin-icon icon="vaadin:file-tree-small"></vaadin-icon>
+                  </vaadin-button>`
+                : ''}
               <vaadin-multi-select-combo-box
                 clear-button-visible
                 allow-custom-value
