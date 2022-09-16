@@ -85,6 +85,11 @@ export class MistList extends LitElement {
       h2.title {
         text-transform: capitalize;
       }
+      h2.title > span {
+        text-transform: none;
+        font-weight: 300;
+        font-size: 80%;
+      }
       .selectColumnsButton {
         margin-right: -4px;
       }
@@ -232,6 +237,19 @@ export class MistList extends LitElement {
         all-rows-visible
         item-has-children-path="hasChildren"
         theme="no-border row-stripes"
+        @mousedown=${e => {
+          const checkbox =
+            e.path[0].querySelector('vaadin-checkbox') ||
+            (e.path[0].querySelector('slot') &&
+              e.path[0]
+                .querySelector('slot')
+                .assignedElements()[0]
+                .querySelector('vaadin-checkbox'));
+          if (checkbox) {
+            checkbox.click();
+            e.preventDefault();
+          }
+        }}
         @active-item-changed=${e => {
           e.target.parentNode.host.dispatchEvent(
             new CustomEvent('active-item-changed', {
@@ -269,9 +287,15 @@ export class MistList extends LitElement {
       ? html`
           <vaadin-horizontal-layout class="header">
             <h2 class="title">
-              ${this.name}${this.selectedItems.length === 1
-                ? `: "${this.selectedItems[0].name}"`
-                : this.selectedItems.length || ''}
+              ${this.name}${this.selectedItems.length
+                ? html`:
+                    <span>&ldquo;${this.selectedItems[0].name}&rdquo;</span
+                    >${this.selectedItems.length > 1
+                      ? html` <span
+                          >&amp; ${this.selectedItems.length - 1} more</span
+                        >`
+                      : ''}`
+                : ''}
             </h2>
             <div class="actions">
               ${repeat(
@@ -595,6 +619,7 @@ export class MistList extends LitElement {
   reload() {
     const dp = this.dataProvider;
     this.dataProvider = () => {};
+    this.grid.clearCache();
     this.dataProvider = dp;
   }
 
