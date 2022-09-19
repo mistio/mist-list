@@ -6,7 +6,7 @@
     "name": "Dimitris Moraitis",
     "email": "dimo@mist.io"
   },
-  "version": "5.0.0-alpha.4",
+  "version": "5.0.0-alpha.5",
   "main": "index.js",
   "module": "index.js",
   "scripts": {
@@ -22,12 +22,14 @@
   "dependencies": {
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-icons": "^3.0.1",
+    "@polymer/paper-toggle-button": "^3.0.1",
     "@vaadin/button": "^23.1.5",
     "@vaadin/combo-box": "^23.1.5",
     "@vaadin/context-menu": "^23.1.5",
     "@vaadin/grid": "^23.1.4",
     "@vaadin/horizontal-layout": "^23.1.4",
     "@vaadin/icons": "^23.1.4",
+    "@vaadin/menu-bar": "^23.2.1",
     "@vaadin/multi-select-combo-box": "^23.1.5",
     "@vaadin/text-field": "^23.1.4",
     "@vaadin/vaadin-lumo-styles": "^23.1.5",

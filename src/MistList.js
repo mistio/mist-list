@@ -17,7 +17,6 @@ import {
 } from 'lit-vaadin-helpers';
 import '@vaadin/horizontal-layout';
 import '@vaadin/text-field';
-import '@vaadin/grid';
 import '@vaadin/grid/vaadin-grid-column.js';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
@@ -81,7 +80,7 @@ export class MistList extends LitElement {
       }
 
       vaadin-menu-bar.actions {
-        max-width: 50%
+        max-width: 50%;
       }
 
       h2.title {
@@ -125,7 +124,6 @@ export class MistList extends LitElement {
           transform: rotate(360deg);
         }
       }
-
     `;
   }
 
@@ -249,9 +247,7 @@ export class MistList extends LitElement {
           const checkbox =
             e.path[0].querySelector('vaadin-checkbox') ||
             (e.path[0].querySelector('slot') &&
-              e.path[0]
-                .querySelector('slot')
-                .assignedElements()[0] &&
+              e.path[0].querySelector('slot').assignedElements()[0] &&
               e.path[0]
                 .querySelector('slot')
                 .assignedElements()[0]
@@ -308,14 +304,26 @@ export class MistList extends LitElement {
                       : ''}`
                 : ''}
             </h2>
-            <vaadin-menu-bar class="actions"
-              @item-selected=${e=>{e.detail.value.run()()}}
-              .items="${this.actions.filter(action => !action.condition || action.condition(this.selectedItems)).map(action => action.component ? action : {
-                text: action.name(),
-                theme: action.theme,
-                run: action.run,
-                style: action.style
-              })}"
+            <vaadin-menu-bar
+              class="actions"
+              @item-selected=${e => {
+                e.detail.value.run()();
+              }}
+              .items="${this.actions
+                .filter(
+                  action =>
+                    !action.condition || action.condition(this.selectedItems)
+                )
+                .map(action =>
+                  action.component
+                    ? action
+                    : {
+                        text: action.name(),
+                        theme: action.theme,
+                        run: action.run,
+                        style: action.style,
+                      }
+                )}"
             ></vaadin-menu-bar>
           </vaadin-horizontal-layout>
           <vaadin-horizontal-layout class="header">
@@ -372,12 +380,12 @@ export class MistList extends LitElement {
               </vaadin-text-field> -->
 
               <vaadin-button
-                    theme="icon small tertiary"
-                    aria-label="Export"
-                    @click=${() => {}}
-                  >
-                    <vaadin-icon icon="vaadin:download"></vaadin-icon>
-                  </vaadin-button>
+                theme="icon small tertiary"
+                aria-label="Export"
+                @click=${() => {}}
+              >
+                <vaadin-icon icon="vaadin:download"></vaadin-icon>
+              </vaadin-button>
               <vaadin-button
                 style="padding-left: 5px"
                 theme="icon tertiary small"
@@ -541,94 +549,145 @@ export class MistList extends LitElement {
   }
 
   renderColumnSelectContextMenuItem() {
-    return html` <vaadin-grid
-      id="visibleColumns"
-      @click=${e => {
-        e.stopPropagation();
-      }}
-      style='width: 250px; border: none; border-bottom: 1px solid #eee; height: ${49 + this.visibleColumns.length*32}px'
-      .items=${this.visibleColumns.map(x=>({name: x}))}
-      ?rows-draggable="${true}"
-      drop-mode="between"
-      @grid-dragstart="${event => {
-        [this.draggedItem] = event.detail.draggedItems;
-      }}"
-      @grid-dragend="${() => {
-        delete this.draggedItem;
-      }}"
-      @grid-drop="${event => {
-        const { dropTargetItem, dropLocation } = event.detail;
-        // only act when dropping on another item
-        if (this.draggedItem && dropTargetItem !== this.draggedItem) {
-          // remove the item from its previous position
-          const draggedItemIndex = this.visibleColumns.indexOf(
-            this.draggedItem.name
-          );
-          this.visibleColumns.splice(draggedItemIndex, 1);
-          // re-insert the item at its new position
-          const dropIndex =
-            this.visibleColumns.indexOf(dropTargetItem.name) +
-            (dropLocation === 'below' ? 1 : 0);
-          this.visibleColumns.splice(dropIndex, 0, this.draggedItem.name);
-          // re-assign the array to refresh the grid
-          this.visibleColumns = [...this.visibleColumns];
-          this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
-        }
-      }}"
-    >
-      <vaadin-grid-column
-        path="name"
-        ${columnHeaderRenderer(() => html`    <div style="float: right; font-size: 70%; color: #555">drag to reorder</div>Columns`)}
-        ${columnBodyRenderer((item) => html`
-          <iron-icon icon="editor:drag-handle" style="float: right"></iron-icon>
-          <paper-toggle-button
-            checked
-            @change=${(e)=>{
-              const col = e.target.textContent.trim();
-              let i = this.visibleColumns.indexOf(col);
-              if (i>-1) {
-                this.visibleColumns.splice(i, 1);
-              }
-              this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
-              document.body.querySelector('vaadin-grid#visibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=true;})
-              document.body.querySelector('vaadin-grid#invisibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=false;})
-              this.requestUpdate();
-            }}>
-            <strong>${item.name}</strong>
-          </paper-toggle-button>
-          `)}
-      ></vaadin-grid-column>
-    </vaadin-grid>
-    <vaadin-grid
-      id="invisibleColumns"
-      .items=${Array.from(this.allColumns).filter(x=>!this.visibleColumns.find(v=>v===x)).map(x=>({name: x}))}
-      @click=${e => {
-        e.stopPropagation();
-      }}
-      style='width: 250px; border: none; height: ${(this.allColumns.size-this.visibleColumns.length)*33}px'
+    return html`
+      <vaadin-grid
+        id="visibleColumns"
+        @click=${e => {
+          e.stopPropagation();
+        }}
+        style="width: 250px; border: none; border-bottom: 1px solid #eee; height: ${49 +
+        this.visibleColumns.length * 32}px"
+        .items=${this.visibleColumns.map(x => ({ name: x }))}
+        ?rows-draggable="${true}"
+        drop-mode="between"
+        @grid-dragstart="${event => {
+          [this.draggedItem] = event.detail.draggedItems;
+        }}"
+        @grid-dragend="${() => {
+          delete this.draggedItem;
+        }}"
+        @grid-drop="${event => {
+          const { dropTargetItem, dropLocation } = event.detail;
+          // only act when dropping on another item
+          if (this.draggedItem && dropTargetItem !== this.draggedItem) {
+            // remove the item from its previous position
+            const draggedItemIndex = this.visibleColumns.indexOf(
+              this.draggedItem.name
+            );
+            this.visibleColumns.splice(draggedItemIndex, 1);
+            // re-insert the item at its new position
+            const dropIndex =
+              this.visibleColumns.indexOf(dropTargetItem.name) +
+              (dropLocation === 'below' ? 1 : 0);
+            this.visibleColumns.splice(dropIndex, 0, this.draggedItem.name);
+            // re-assign the array to refresh the grid
+            this.visibleColumns = [...this.visibleColumns];
+            this.shadowRoot
+              .querySelector('vaadin-context-menu.selectColumnsButton')
+              .requestContentUpdate();
+          }
+        }}"
       >
-      <vaadin-grid-column
-        path="name"
-        ${columnHeaderRenderer(() => html``)}
-        ${columnBodyRenderer((item) => html`
-          <paper-toggle-button
-            ?checked=${false}
-            @change=${(e)=>{
-              const col = e.target.textContent.trim();
-              let i = this.visibleColumns.indexOf(col);
-              if (i === -1) {
-                this.visibleColumns.push(col);
-              }
-              this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
-              document.body.querySelector('vaadin-grid#visibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=true;})
-              document.body.querySelector('vaadin-grid#invisibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=false;})
-              this.requestUpdate();
-            }}>
-            ${item.name}
-          </paper-toggle-button>
-          `)}
-      ></vaadin-grid-column>
-    </vaadin-grid>
+        <vaadin-grid-column
+          path="name"
+          ${columnHeaderRenderer(
+            () =>
+              html` <div style="float: right; font-size: 70%; color: #555">
+                  drag to reorder
+                </div>
+                Columns`
+          )}
+          ${columnBodyRenderer(
+            item => html`
+              <iron-icon
+                icon="editor:drag-handle"
+                style="float: right"
+              ></iron-icon>
+              <paper-toggle-button
+                checked
+                @change=${e => {
+                  const col = e.target.textContent.trim();
+                  const i = this.visibleColumns.indexOf(col);
+                  if (i > -1) {
+                    this.visibleColumns.splice(i, 1);
+                  }
+                  this.shadowRoot
+                    .querySelector('vaadin-context-menu.selectColumnsButton')
+                    .requestContentUpdate();
+                  // eslint-disable-next-line no-param-reassign
+                  document.body
+                    .querySelector('vaadin-grid#visibleColumns')
+                    .querySelectorAll('paper-toggle-button')
+                    .forEach(x => {
+                      x.checked = true;
+                    });
+                  // eslint-disable-next-line no-param-reassign
+                  document.body
+                    .querySelector('vaadin-grid#invisibleColumns')
+                    .querySelectorAll('paper-toggle-button')
+                    .forEach(x => {
+                      x.checked = false;
+                    });
+                  this.requestUpdate();
+                }}
+              >
+                <strong>${item.name}</strong>
+              </paper-toggle-button>
+            `
+          )}
+        ></vaadin-grid-column>
+      </vaadin-grid>
+      <vaadin-grid
+        id="invisibleColumns"
+        .items=${Array.from(this.allColumns)
+          .filter(x => !this.visibleColumns.find(v => v === x))
+          .map(x => ({ name: x }))}
+        @click=${e => {
+          e.stopPropagation();
+        }}
+        style="width: 250px; border: none; height: ${(this.allColumns.size -
+          this.visibleColumns.length) *
+        33}px"
+      >
+        <vaadin-grid-column
+          path="name"
+          ${columnHeaderRenderer(() => html``)}
+          ${columnBodyRenderer(
+            item => html`
+              <paper-toggle-button
+                ?checked=${false}
+                @change=${e => {
+                  const col = e.target.textContent.trim();
+                  const i = this.visibleColumns.indexOf(col);
+                  if (i === -1) {
+                    this.visibleColumns.push(col);
+                  }
+                  this.shadowRoot
+                    .querySelector('vaadin-context-menu.selectColumnsButton')
+                    .requestContentUpdate();
+                  // eslint-disable-next-line no-param-reassign
+                  document.body
+                    .querySelector('vaadin-grid#visibleColumns')
+                    .querySelectorAll('paper-toggle-button')
+                    .forEach(x => {
+                      x.checked = true;
+                    });
+                  // eslint-disable-next-line no-param-reassign
+                  document.body
+                    .querySelector('vaadin-grid#invisibleColumns')
+                    .querySelectorAll('paper-toggle-button')
+                    .forEach(x => {
+                      x.checked = false;
+                    });
+                  this.requestUpdate();
+                }}
+              >
+                ${item.name}
+              </paper-toggle-button>
+            `
+          )}
+        ></vaadin-grid-column>
+      </vaadin-grid>
     `;
   }
 
