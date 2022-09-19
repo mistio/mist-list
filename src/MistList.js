@@ -6,6 +6,7 @@ import '@vaadin/combo-box';
 import '@vaadin/multi-select-combo-box';
 // import '@mistio/multi-select-search-box';
 import '@vaadin/context-menu';
+import '@vaadin/menu-bar';
 import {
   columnHeaderRenderer,
   columnBodyRenderer,
@@ -16,6 +17,7 @@ import {
 } from 'lit-vaadin-helpers';
 import '@vaadin/horizontal-layout';
 import '@vaadin/text-field';
+import '@vaadin/grid';
 import '@vaadin/grid/vaadin-grid-column.js';
 import '@vaadin/grid/vaadin-grid-sort-column.js';
 import '@vaadin/grid/vaadin-grid-tree-column.js';
@@ -24,6 +26,8 @@ import '@vaadin/icons';
 import '@vaadin/vaadin-lumo-styles/icons.js';
 import '@polymer/iron-icons';
 import '@polymer/iron-icon';
+import '@polymer/paper-toggle-button';
+
 import { debouncer } from './utils.js';
 /* eslint-disable class-methods-use-this */
 /* eslint-disable lit/no-template-bind */
@@ -76,10 +80,8 @@ export class MistList extends LitElement {
         margin-top: 4px;
       }
 
-      div.actions {
-        display: flex;
-        align-items: baseline;
-        justify-content: end;
+      vaadin-menu-bar.actions {
+        max-width: 50%
       }
 
       h2.title {
@@ -92,6 +94,11 @@ export class MistList extends LitElement {
       }
       .selectColumnsButton {
         margin-right: -4px;
+      }
+      paper-toggle-button {
+        --paper-toggle-button-checked-bar-color: var(--paper-blue-600);
+        --paper-toggle-button-checked-button-color: var(--paper-blue-600);
+        --paper-toggle-button-checked-ink-color: var(--paper-blue-600);
       }
       .lds-dual-ring {
         display: inline-block;
@@ -118,6 +125,7 @@ export class MistList extends LitElement {
           transform: rotate(360deg);
         }
       }
+
     `;
   }
 
@@ -243,9 +251,12 @@ export class MistList extends LitElement {
             (e.path[0].querySelector('slot') &&
               e.path[0]
                 .querySelector('slot')
+                .assignedElements()[0] &&
+              e.path[0]
+                .querySelector('slot')
                 .assignedElements()[0]
                 .querySelector('vaadin-checkbox'));
-          if (checkbox) {
+          if (checkbox && e.path[0].tagName !== 'TBODY') {
             checkbox.click();
             e.preventDefault();
           }
@@ -297,19 +308,15 @@ export class MistList extends LitElement {
                       : ''}`
                 : ''}
             </h2>
-            <div class="actions">
-              ${repeat(
-                this.actions.filter(x => x.condition(this.selectedItems)),
-                action => action,
-                action => html`
-                  <vaadin-button
-                    @click=${action.run(this.selectedItems, this)}
-                    theme="${action.theme}"
-                    >${action.name(this.selectedItems)}</vaadin-button
-                  >
-                `
-              )}
-            </div>
+            <vaadin-menu-bar class="actions"
+              @item-selected=${e=>{e.detail.value.run()()}}
+              .items="${this.actions.filter(action => !action.condition || action.condition(this.selectedItems)).map(action => action.component ? action : {
+                text: action.name(),
+                theme: action.theme,
+                run: action.run,
+                style: action.style
+              })}"
+            ></vaadin-menu-bar>
           </vaadin-horizontal-layout>
           <vaadin-horizontal-layout class="header">
             <div class="listTools">
@@ -364,15 +371,13 @@ export class MistList extends LitElement {
               <iron-icon id="dropdownIcon" icon="lumo:dropdown" slot="suffix"></iron-icon>
               </vaadin-text-field> -->
 
-              ${this.exportable
-                ? html` <vaadin-button
+              <vaadin-button
                     theme="icon small tertiary"
                     aria-label="Export"
                     @click=${() => {}}
                   >
                     <vaadin-icon icon="vaadin:download"></vaadin-icon>
-                  </vaadin-button>`
-                : ''}
+                  </vaadin-button>
               <vaadin-button
                 style="padding-left: 5px"
                 theme="icon tertiary small"
@@ -404,7 +409,7 @@ export class MistList extends LitElement {
     if (this.treeView) {
       frozenTemplate = html` <vaadin-grid-tree-column
         frozen
-        width="50%"
+        width="30%"
         path="${this.primaryField}"
         ${this.renderers && this.renderers[this.primaryField]
           ? columnBodyRenderer(() => html`lalala`, [])
@@ -469,7 +474,6 @@ export class MistList extends LitElement {
           ?frozen=${frozen}
           path="${column}"
           resizable
-          width=${frozen ? '50%' : ''}
           ${this.renderers && this.renderers[column]
             ? columnHeaderRenderer(this.renderers[column].title, [])
             : () => html``}
@@ -516,8 +520,8 @@ export class MistList extends LitElement {
           open-on="click"
           .items=${this.actions
             ? this.actions
-                .filter(x => x.condition([x]))
-                .map(x => ({ text: x.name([x]) }))
+                .filter(x => !x.condition || x.condition([x]))
+                .map(x => (x.component ? x : { text: x.name([x]) }))
             : []}
         >
           <vaadin-button
@@ -538,37 +542,16 @@ export class MistList extends LitElement {
 
   renderColumnSelectContextMenuItem() {
     return html` <vaadin-grid
-      id="selectColumns"
+      id="visibleColumns"
       @click=${e => {
         e.stopPropagation();
       }}
-      style="width: 250px"
-      .items=${this.orderedColumns(this.frozenColumns, this.visibleColumns)}
+      style='width: 250px; border: none; border-bottom: 1px solid #eee; height: ${49 + this.visibleColumns.length*32}px'
+      .items=${this.visibleColumns.map(x=>({name: x}))}
       ?rows-draggable="${true}"
       drop-mode="between"
-      @loading-changed=${e => {
-        // this.frozenColumns.forEach(i => e.target.selectItem(e.target.items.find(j => j.name === i)));
-        this.visibleColumns.forEach(i =>
-          e.target.selectItem(e.target.items.find(j => j.name === i))
-        );
-        e.target.addEventListener('selected-items-changed', ev => {
-          this.visibleColumns.forEach(c => {
-            if (!ev.target.selectedItems.find(i => i.name === c)) {
-              this.visibleColumns.splice(this.visibleColumns.indexOf(c), 1);
-              this.requestUpdate();
-            }
-          });
-          ev.target.selectedItems.forEach(i => {
-            if (this.visibleColumns.indexOf(i.name) === -1) {
-              this.visibleColumns.push(i.name);
-              this.requestUpdate();
-            }
-          });
-          ev.stopPropagation();
-        });
-      }}
       @grid-dragstart="${event => {
-        this.draggedItem = [event.detail.draggedItems];
+        [this.draggedItem] = event.detail.draggedItems;
       }}"
       @grid-dragend="${() => {
         delete this.draggedItem;
@@ -586,18 +569,67 @@ export class MistList extends LitElement {
           const dropIndex =
             this.visibleColumns.indexOf(dropTargetItem.name) +
             (dropLocation === 'below' ? 1 : 0);
-          this.visibleColumns.splice(dropIndex, 0, this.draggedItem);
+          this.visibleColumns.splice(dropIndex, 0, this.draggedItem.name);
           // re-assign the array to refresh the grid
           this.visibleColumns = [...this.visibleColumns];
+          this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
         }
       }}"
     >
-      <vaadin-grid-selection-column></vaadin-grid-selection-column>
       <vaadin-grid-column
         path="name"
-        header="Select &amp; reorder columns"
+        ${columnHeaderRenderer(() => html`    <div style="float: right; font-size: 70%; color: #555">drag to reorder</div>Columns`)}
+        ${columnBodyRenderer((item) => html`
+          <iron-icon icon="editor:drag-handle" style="float: right"></iron-icon>
+          <paper-toggle-button
+            checked
+            @change=${(e)=>{
+              const col = e.target.textContent.trim();
+              let i = this.visibleColumns.indexOf(col);
+              if (i>-1) {
+                this.visibleColumns.splice(i, 1);
+              }
+              this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
+              document.body.querySelector('vaadin-grid#visibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=true;})
+              document.body.querySelector('vaadin-grid#invisibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=false;})
+              this.requestUpdate();
+            }}>
+            <strong>${item.name}</strong>
+          </paper-toggle-button>
+          `)}
       ></vaadin-grid-column>
-    </vaadin-grid>`;
+    </vaadin-grid>
+    <vaadin-grid
+      id="invisibleColumns"
+      .items=${Array.from(this.allColumns).filter(x=>!this.visibleColumns.find(v=>v===x)).map(x=>({name: x}))}
+      @click=${e => {
+        e.stopPropagation();
+      }}
+      style='width: 250px; border: none; height: ${(this.allColumns.size-this.visibleColumns.length)*33}px'
+      >
+      <vaadin-grid-column
+        path="name"
+        ${columnHeaderRenderer(() => html``)}
+        ${columnBodyRenderer((item) => html`
+          <paper-toggle-button
+            ?checked=${false}
+            @change=${(e)=>{
+              const col = e.target.textContent.trim();
+              let i = this.visibleColumns.indexOf(col);
+              if (i === -1) {
+                this.visibleColumns.push(col);
+              }
+              this.shadowRoot.querySelector('vaadin-context-menu.selectColumnsButton').requestContentUpdate();
+              document.body.querySelector('vaadin-grid#visibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=true;})
+              document.body.querySelector('vaadin-grid#invisibleColumns').querySelectorAll('paper-toggle-button').forEach(x=>{x.checked=false;})
+              this.requestUpdate();
+            }}>
+            ${item.name}
+          </paper-toggle-button>
+          `)}
+      ></vaadin-grid-column>
+    </vaadin-grid>
+    `;
   }
 
   orderedColumns() {
@@ -606,17 +638,18 @@ export class MistList extends LitElement {
     //   ret.push({name: i});
     // });
     this.visibleColumns.forEach(i => {
-      ret.push({ name: i });
+      ret.push({ name: i, visible: true });
     });
     Array.from(this.allColumns).forEach(i => {
       if (!ret.find(j => j.name === i)) {
-        ret.push({ name: i });
+        ret.push({ name: i, visible: false });
       }
     });
     return ret;
   }
 
   reload() {
+    this.selectedItems = [];
     const dp = this.dataProvider;
     this.dataProvider = () => {};
     this.grid.clearCache();
